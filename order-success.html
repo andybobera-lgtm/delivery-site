@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Спасибо за заказ</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main style="max-width:600px;margin:60px auto;text-align:center;">
+    <h1>Спасибо за заказ!</h1>
+    <p id="status">Проверяем статус оплаты...</p>
+    <p>Мы свяжемся с вами по указанному телефону, чтобы уточнить детали доставки.</p>
+    <a href="/">Вернуться на главную</a>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('orderId');
+    const statusEl = document.getElementById('status');
+
+    if (orderId) {
+      fetch('/api/orders/' + orderId)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.status === 'оплачен') {
+            statusEl.textContent = 'Оплата подтверждена. Заказ №' + orderId.slice(0, 8);
+          } else {
+            statusEl.textContent = 'Статус заказа: ' + (data.status || 'обрабатывается');
+          }
+        })
+        .catch(() => {
+          statusEl.textContent = 'Не удалось проверить статус, но заказ сохранён.';
+        });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Доставка еды — оформление заказа</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">Название вашего бренда</div>
+    <div class="age-badge" title="Возрастная маркировка по 436-ФЗ">0+</div>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="menu">
+    <h1>Меню</h1>
+    <div id="products" class="products-grid">Загрузка меню...</div>
+  </section>
+
+  <aside class="cart">
+    <h2>Ваш заказ</h2>
+    <div id="cart-items">Корзина пуста</div>
+    <div class="cart-total">Итого: <span id="cart-total">0</span> ₽</div>
+
+    <form id="checkout-form">
+      <input type="text" id="name" placeholder="Ваше имя" required />
+      <input type="tel" id="phone" placeholder="Телефон (+7...)" required />
+      <input type="text" id="address" placeholder="Адрес доставки" required />
+      <textarea id="comment" placeholder="Комментарий к заказу (необязательно)"></textarea>
+
+      <label class="agree">
+        <input type="checkbox" id="agree" required />
+        Согласен с
+        <a href="/legal/offer.html" target="_blank">договором оферты</a>
+        и
+        <a href="/legal/privacy-policy.html" target="_blank">политикой обработки персональных данных</a>
+      </label>
+
+      <button type="submit">Оформить и оплатить</button>
+      <div id="form-error" class="form-error"></div>
+    </form>
+  </aside>
+</main>
+
+<footer class="footer">
+  <p>ИП [Фамилия Имя Отчество], ИНН [ИНН], ОГРНИП [ОГРНИП]</p>
+  <p>Адрес: [юридический/фактический адрес], тел.: [телефон], email: [email]</p>
+  <p><a href="/legal/privacy-policy.html">Политика обработки персональных данных</a> ·
+     <a href="/legal/offer.html">Договор оферты</a></p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
