@@ -90,6 +90,16 @@ function renderProductCard(p) {
   card.appendChild(thumb);
   card.appendChild(body);
 
+  // Клик по самой картинке тоже открывает окно выбора (для вариантов и наборов),
+  // как и кнопка "+" — так удобнее, не нужно целиться точно в маленькую кнопку
+  if (p.type === 'variant') {
+    thumb.style.cursor = 'pointer';
+    thumb.addEventListener('click', () => openVariantPicker(p));
+  } else if (p.type === 'combo') {
+    thumb.style.cursor = 'pointer';
+    thumb.addEventListener('click', () => openComboPicker(p));
+  }
+
   renderCardAction(card, p);
   return card;
 }
