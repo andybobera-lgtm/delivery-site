@@ -4,27 +4,60 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Доставка еды — оформление заказа</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<header class="header">
-  <div class="header-inner">
-    <div class="logo">Название вашего бренда</div>
+<header class="site-header">
+  <div class="site-header-inner">
+    <div class="brand">
+      <span class="brand-name">Название вашего бренда</span>
+      <span class="brand-tagline">доставка · от 60 минут</span>
+    </div>
     <div class="age-badge" title="Возрастная маркировка по 436-ФЗ">0+</div>
   </div>
 </header>
 
-<main class="layout">
-  <section class="menu">
-    <h1>Меню</h1>
-    <div id="products" class="products-grid">Загрузка меню...</div>
-  </section>
+<nav class="category-nav" id="category-nav"></nav>
 
-  <aside class="cart">
+<main class="menu-wrap">
+  <div id="menu-sections">Загрузка меню...</div>
+</main>
+
+<footer class="footer">
+  <p>ИП [Фамилия Имя Отчество], ИНН [ИНН], ОГРНИП [ОГРНИП]</p>
+  <p>Адрес: [юридический/фактический адрес], тел.: [телефон], email: [email]</p>
+  <p><a href="/legal/privacy-policy.html">Политика обработки персональных данных</a> ·
+     <a href="/legal/offer.html">Договор оферты</a></p>
+</footer>
+
+<!-- Плавающая кнопка корзины -->
+<button id="cart-fab" class="cart-fab" hidden>
+  <span class="cart-fab-count" id="cart-fab-count">0</span>
+  <span class="cart-fab-label">Корзина</span>
+  <span class="cart-fab-total" id="cart-fab-total">0 ₽</span>
+</button>
+
+<!-- Затемнение фона при открытой корзине -->
+<div id="cart-overlay" class="cart-overlay" hidden></div>
+
+<!-- Выезжающая панель корзины -->
+<aside id="cart-drawer" class="cart-drawer" aria-hidden="true">
+  <div class="cart-drawer-header">
     <h2>Ваш заказ</h2>
-    <div id="cart-items">Корзина пуста</div>
-    <div class="cart-total">Итого: <span id="cart-total">0</span> ₽</div>
+    <button id="cart-close" class="cart-close" aria-label="Закрыть">✕</button>
+  </div>
+
+  <div id="cart-items" class="cart-items">Корзина пуста</div>
+
+  <div class="cart-drawer-footer">
+    <div class="cart-total-row">
+      <span>Итого</span>
+      <span id="cart-total">0 ₽</span>
+    </div>
 
     <form id="checkout-form">
       <input type="text" id="name" placeholder="Ваше имя" required />
@@ -34,24 +67,18 @@
 
       <label class="agree">
         <input type="checkbox" id="agree" required />
-        Согласен с
-        <a href="/legal/offer.html" target="_blank">договором оферты</a>
-        и
-        <a href="/legal/privacy-policy.html" target="_blank">политикой обработки персональных данных</a>
+        <span>Согласен с
+          <a href="/legal/offer.html" target="_blank">договором оферты</a>
+          и
+          <a href="/legal/privacy-policy.html" target="_blank">политикой обработки персональных данных</a>
+        </span>
       </label>
 
-      <button type="submit">Оформить и оплатить</button>
+      <button type="submit" class="checkout-btn">Оформить и оплатить</button>
       <div id="form-error" class="form-error"></div>
     </form>
-  </aside>
-</main>
-
-<footer class="footer">
-  <p>ИП [Фамилия Имя Отчество], ИНН [ИНН], ОГРНИП [ОГРНИП]</p>
-  <p>Адрес: [юридический/фактический адрес], тел.: [телефон], email: [email]</p>
-  <p><a href="/legal/privacy-policy.html">Политика обработки персональных данных</a> ·
-     <a href="/legal/offer.html">Договор оферты</a></p>
-</footer>
+  </div>
+</aside>
 
 <script src="script.js"></script>
 </body>
