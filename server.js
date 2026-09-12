@@ -76,9 +76,41 @@ app.post('/api/orders', async (req, res) => {
     for (const item of items) {
       const product = products.find((p) => p.id === item.id);
       if (!product) continue;
-      const qty = Math.max(1, parseInt(item.qty, 10) || 1);
-      total += product.price * qty;
-      orderItems.push({ id: product.id, name: product.name, price: product.price, qty });
+
+      if (product.type === 'variant') {
+        // Товар с выбором варианта (например, хинкал с разным мясом)
+        const variant = (product.variants || []).find((v) => v.id === item.variantId);
+        if (!variant) continue;
+        const qty = Math.max(1, parseInt(item.qty, 10) || 1);
+        total += variant.price * qty;
+        orderItems.push({
+          id: product.id,
+          name: `${product.name} (${variant.label})`,
+          price: variant.price,
+          qty,
+        });
+      } else if (product.type === 'combo') {
+        // Набор с самостоятельной сборкой (например, набор чуду) — цена фиксированная,
+        // состав нужен только для описания в заказе, на сумму не влияет
+        const selections = Array.isArray(item.comboSelections) ? item.comboSelections : [];
+        const compositionText = selections
+          .filter((s) => s.count > 0)
+          .map((s) => `${s.name} ×${s.count}`)
+          .join(', ');
+        total += product.price;
+        orderItems.push({
+          id: product.id,
+          name: compositionText ? `${product.name}: ${compositionText}` : product.name,
+          price: product.price,
+          qty: 1,
+        });
+      } else {
+        // Обычный товар без вариантов
+        if (typeof product.price !== 'number') continue; // товары без цены заказать нельзя
+        const qty = Math.max(1, parseInt(item.qty, 10) || 1);
+        total += product.price * qty;
+        orderItems.push({ id: product.id, name: product.name, price: product.price, qty });
+      }
     }
 
     if (total <= 0) {
