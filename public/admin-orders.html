@@ -43,6 +43,7 @@
         <th>Телефон</th>
         <th>Адрес</th>
         <th>Состав заказа</th>
+        <th>Приборы</th>
       </tr>
     </thead>
     <tbody id="orders-body"></tbody>
@@ -90,6 +91,7 @@
         <td>${o.customer.phone}</td>
         <td>${o.customer.address}${o.customer.comment ? '<br><em>' + o.customer.comment + '</em>' : ''}</td>
         <td>${itemsText}</td>
+        <td>${o.cutleryCount || 0}</td>
       `;
       tbody.appendChild(tr);
     });
