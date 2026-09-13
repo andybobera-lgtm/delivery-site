@@ -1,8 +1,6 @@
 let products = [];
-// Корзина теперь — объект { lineKey: lineData }, а не просто { productId: qty },
-// потому что один и тот же товар может быть добавлен с разными вариантами
-// (например, хинкал с говядиной и хинкал с колбасой — это две разные строки).
 let cart = {};
+let cutleryCount = 0;
 
 const THUMB_COLORS = ['#b5432a', '#c98a3d', '#7a8f5c', '#5c7a8f', '#8f5c7a'];
 
@@ -39,7 +37,6 @@ function slug(text) {
 function renderMenu() {
   const container = document.getElementById('menu-sections');
   container.innerHTML = '';
-
   const categories = [...new Set(products.map((p) => p.category || 'Меню'))];
 
   categories.forEach((cat) => {
@@ -53,7 +50,6 @@ function renderMenu() {
 
     const grid = document.createElement('div');
     grid.className = 'products-grid';
-
     products.filter((p) => (p.category || 'Меню') === cat).forEach((p) => {
       grid.appendChild(renderProductCard(p));
     });
@@ -63,6 +59,7 @@ function renderMenu() {
   });
 }
 
+/* ================= КАРТОЧКА ТОВАРА ================= */
 function renderProductCard(p) {
   const card = document.createElement('div');
   card.className = 'product-card';
@@ -73,15 +70,12 @@ function renderProductCard(p) {
   thumb.style.background = colorFor(p.id);
   thumb.textContent = (p.name || '?').trim()[0] || '?';
 
-  const priceHtml = renderPriceBlock(p);
-
   const body = document.createElement('div');
   body.className = 'product-body';
   body.innerHTML = `
     <h3>${p.name}</h3>
     <div class="product-meta">${p.weight || ''}</div>
     <div class="product-footer">
-      <span class="product-price">${priceHtml}</span>
       <div class="card-action"></div>
     </div>
   `;
@@ -89,51 +83,42 @@ function renderProductCard(p) {
   card.appendChild(thumb);
   card.appendChild(body);
 
-  // Клик по карточке открывает окно: у хинкала — выбор мяса, у наборов — конструктор,
-  // у обычных блюд — карточка с описанием. Клик по самой кнопке "+"/счётчику
-  // не должен открывать окно повторно — она уже добавляет товар сама.
   card.addEventListener('click', (e) => {
     if (e.target.closest('.card-action')) return;
-    if (p.type === 'variant') openVariantPicker(p);
-    else if (p.type === 'combo') openComboPicker(p);
-    else openSimpleDetail(p);
+    openDetailFor(p);
   });
 
   renderCardAction(card, p);
   return card;
 }
 
-function renderPriceBlock(p) {
-  if (p.type === 'combo') {
-    const old = p.oldPrice ? `<span class="old-price">${p.oldPrice} ₽</span>` : '';
-    return `${old}${p.price} ₽`;
-  }
-  if (typeof p.price !== 'number') {
-    return `<span class="no-price-note">уточняйте</span>`;
-  }
-  return `${p.price} ₽`;
+function openDetailFor(p) {
+  if (p.type === 'variant') openVariantPicker(p);
+  else if (p.type === 'combo') openComboPicker(p);
+  else openSimpleDetail(p);
 }
 
-/* ---------- Действие на карточке (кнопка/счётчик) ---------- */
+/* Кнопка/счётчик внутри карточки — объединённая "цена + плюс" */
 function renderCardAction(card, product) {
   const slot = card.querySelector('.card-action');
 
   if (typeof product.price !== 'number' && product.type !== 'combo') {
-    slot.innerHTML = '';
+    slot.innerHTML = `<span class="no-price-note">уточняйте</span>`;
     return;
   }
 
   if (product.type === 'combo') {
-    slot.innerHTML = `<button class="add-btn" title="Собрать набор">+</button>`;
-    slot.querySelector('.add-btn').addEventListener('click', () => openComboPicker(product));
+    const old = product.oldPrice ? `<span class="old-price">${product.oldPrice} ₽</span>` : '';
+    slot.innerHTML = `<button class="buy-btn">${old}${product.price} ₽ <span>+</span></button>`;
+    slot.querySelector('.buy-btn').addEventListener('click', () => openComboPicker(product));
     return;
   }
 
   if (product.type === 'variant') {
     const totalQty = totalQtyForProduct(product.id);
     if (totalQty === 0) {
-      slot.innerHTML = `<button class="add-btn" title="Выбрать">+</button>`;
-      slot.querySelector('.add-btn').addEventListener('click', () => openVariantPicker(product));
+      slot.innerHTML = `<button class="buy-btn">${product.price} ₽ <span>+</span></button>`;
+      slot.querySelector('.buy-btn').addEventListener('click', () => openVariantPicker(product));
     } else {
       slot.innerHTML = `<div class="qty-stepper" title="Изменить в корзине"><span>${totalQty}</span></div>`;
       slot.querySelector('.qty-stepper').addEventListener('click', () => openVariantPicker(product));
@@ -145,8 +130,8 @@ function renderCardAction(card, product) {
   const qty = cart[key] ? cart[key].qty : 0;
 
   if (qty === 0) {
-    slot.innerHTML = `<button class="add-btn">+</button>`;
-    slot.querySelector('.add-btn').addEventListener('click', () => {
+    slot.innerHTML = `<button class="buy-btn">${product.price} ₽ <span>+</span></button>`;
+    slot.querySelector('.buy-btn').addEventListener('click', () => {
       addSimpleToCart(product);
       renderCardAction(card, product);
     });
@@ -175,7 +160,7 @@ function totalQtyForProduct(productId) {
     .reduce((sum, line) => sum + line.qty, 0);
 }
 
-/* ---------- Обычные товары ---------- */
+/* ================= ОБЫЧНЫЕ ТОВАРЫ ================= */
 function addSimpleToCart(product) {
   const key = product.id;
   if (!cart[key]) {
@@ -193,159 +178,136 @@ function changeSimpleQty(product, delta) {
   renderCartWidgets();
 }
 
-function openSimpleDetail(product) {
-  const overlay = document.getElementById('picker-overlay');
-  const modal = document.getElementById('picker-modal');
-  const noPrice = typeof product.price !== 'number';
+/* ================= ОБЩЕЕ: показать/скрыть окно с анимацией ================= */
+function showPicker() {
+  document.getElementById('picker-overlay').classList.add('open');
+  document.getElementById('picker-modal').classList.add('open');
+}
+function closePicker() {
+  document.getElementById('picker-overlay').classList.remove('open');
+  document.getElementById('picker-modal').classList.remove('open');
+  refreshAllCards();
+}
+document.getElementById('picker-overlay').addEventListener('click', closePicker);
 
-  function render() {
-    const qty = cart[product.id] ? cart[product.id].qty : 0;
-    modal.innerHTML = `
+function pickerShell(product, bodyHtml, footerHtml) {
+  const modal = document.getElementById('picker-modal');
+  modal.innerHTML = `
+    <div class="picker-photo" style="background:${colorFor(product.id)}">${(product.name || '?').trim()[0] || '?'}</div>
+    <div class="picker-panel">
       <div class="picker-header">
         <h3>${product.name}</h3>
         <button class="cart-close" id="picker-close">✕</button>
       </div>
-      <div class="picker-body">
-        <div class="picker-thumb" style="background:${colorFor(product.id)}">${(product.name || '?').trim()[0] || '?'}</div>
-        ${product.description ? `<div class="picker-description">${product.description}</div>` : ''}
-        <div class="product-meta">${product.weight || ''}</div>
-      </div>
-      <div class="picker-footer">
-        ${noPrice
-          ? `<div class="no-price-note">Цену уточняйте при оформлении заказа</div>`
-          : qty === 0
-            ? `<button class="checkout-btn" id="detail-add">Добавить — ${product.price} ₽</button>`
-            : `<div style="display:flex;align-items:center;justify-content:space-between;">
-                 <div class="qty-stepper" style="background:var(--accent);">
-                   <button id="detail-minus" style="color:white;">−</button>
-                   <span style="color:white;">${qty}</span>
-                   <button id="detail-plus" style="color:white;">+</button>
-                 </div>
-                 <span style="font-weight:700;color:var(--accent);">${product.price * qty} ₽</span>
-               </div>`
-        }
-      </div>
-    `;
+      <div class="picker-body">${bodyHtml}</div>
+      <div class="picker-footer">${footerHtml}</div>
+    </div>
+  `;
+  document.getElementById('picker-close').addEventListener('click', closePicker);
+}
 
-    document.getElementById('picker-close').addEventListener('click', closePicker);
+/* ================= ОПИСАНИЕ ОБЫЧНОГО ТОВАРА ================= */
+function openSimpleDetail(product) {
+  const noPrice = typeof product.price !== 'number';
+
+  function render() {
+    const qty = cart[product.id] ? cart[product.id].qty : 0;
+    const body = `
+      ${product.description ? `<div class="picker-description">${product.description}</div>` : ''}
+      <div class="product-meta">${product.weight || ''}</div>
+    `;
+    const footer = noPrice
+      ? `<div class="no-price-note">Цену уточняйте при оформлении заказа</div>`
+      : qty === 0
+        ? `<button class="checkout-btn" id="detail-add">Добавить — ${product.price} ₽</button>`
+        : `<div style="display:flex;align-items:center;justify-content:space-between;">
+             <div class="qty-stepper" style="background:var(--accent);">
+               <button id="detail-minus" style="color:white;">−</button>
+               <span style="color:white;">${qty}</span>
+               <button id="detail-plus" style="color:white;">+</button>
+             </div>
+             <span style="font-weight:700;color:var(--accent);">${product.price * qty} ₽</span>
+           </div>`;
+
+    pickerShell(product, body, footer);
 
     if (!noPrice) {
       if (qty === 0) {
-        document.getElementById('detail-add').addEventListener('click', () => {
-          addSimpleToCart(product);
-          render();
-        });
+        document.getElementById('detail-add').addEventListener('click', () => { addSimpleToCart(product); render(); });
       } else {
-        document.getElementById('detail-plus').addEventListener('click', () => {
-          changeSimpleQty(product, 1);
-          render();
-        });
-        document.getElementById('detail-minus').addEventListener('click', () => {
-          changeSimpleQty(product, -1);
-          render();
-        });
+        document.getElementById('detail-plus').addEventListener('click', () => { changeSimpleQty(product, 1); render(); });
+        document.getElementById('detail-minus').addEventListener('click', () => { changeSimpleQty(product, -1); render(); });
       }
     }
-
-    overlay.style.display = 'block';
-    modal.style.display = 'flex';
-    overlay.onclick = closePicker;
+    showPicker();
   }
-
   render();
 }
 
-/* ---------- Товары с вариантами (хинкал) ---------- */
+/* ================= ХИНКАЛ (ВАРИАНТЫ) ================= */
 function openVariantPicker(product) {
-  const overlay = document.getElementById('picker-overlay');
-  const modal = document.getElementById('picker-modal');
-
-  const optionsHtml = product.variants.map((v) => {
-    const key = product.id + '::' + v.id;
-    const qty = cart[key] ? cart[key].qty : 0;
-    return `
-      <div class="variant-option" data-variant-id="${v.id}">
-        <div class="variant-option-info">
-          <div>${v.label}</div>
-          <div class="product-meta">${v.weight}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span class="variant-option-price">${v.price} ₽</span>
-          <div class="qty-stepper" style="background:${qty > 0 ? 'var(--accent)' : 'var(--bg)'};">
-            <button data-action="minus" style="color:${qty > 0 ? 'white' : 'var(--accent)'}">−</button>
-            <span style="color:${qty > 0 ? 'white' : 'var(--ink)'}">${qty}</span>
-            <button data-action="plus" style="color:${qty > 0 ? 'white' : 'var(--accent)'}">+</button>
+  function render() {
+    const rows = product.variants.map((v) => {
+      const key = product.id + '::' + v.id;
+      const qty = cart[key] ? cart[key].qty : 0;
+      return `
+        <div class="variant-option" data-variant-id="${v.id}">
+          <div class="variant-option-info">
+            <div>${v.label}</div>
+            <div class="product-meta">${v.weight}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="variant-option-price">${v.price} ₽</span>
+            <div class="qty-stepper" style="background:${qty > 0 ? 'var(--accent)' : 'var(--page-bg)'};">
+              <button data-action="minus" style="color:${qty > 0 ? 'white' : 'var(--accent)'}">−</button>
+              <span style="color:${qty > 0 ? 'white' : 'var(--ink)'}">${qty}</span>
+              <button data-action="plus" style="color:${qty > 0 ? 'white' : 'var(--accent)'}">+</button>
+            </div>
           </div>
         </div>
-      </div>
-    `;
-  }).join('');
+      `;
+    }).join('');
 
-  modal.innerHTML = `
-    <div class="picker-header">
-      <h3>${product.name}</h3>
-      <button class="cart-close" id="picker-close">✕</button>
-    </div>
-    <div class="picker-body">${optionsHtml}</div>
-    <div class="picker-footer">
-      <button class="checkout-btn" id="picker-done">Готово</button>
-    </div>
-  `;
+    const body = (product.description ? `<div class="picker-description">${product.description}</div>` : '') + rows;
+    pickerShell(product, body, `<button class="checkout-btn" id="picker-done">Готово</button>`);
 
-  modal.querySelectorAll('.variant-option').forEach((row) => {
-    const variantId = row.dataset.variantId;
-    const variant = product.variants.find((v) => v.id === variantId);
-    const key = product.id + '::' + variantId;
+    document.querySelectorAll('.variant-option').forEach((row) => {
+      const variantId = row.dataset.variantId;
+      const variant = product.variants.find((v) => v.id === variantId);
+      const key = product.id + '::' + variantId;
 
-    row.querySelector('[data-action="plus"]').addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (!cart[key]) {
-        cart[key] = { productId: product.id, type: 'variant', variantId, name: product.name + ' (' + variant.label + ')', price: variant.price, qty: 0 };
-      }
-      cart[key].qty += 1;
-      renderCartWidgets();
-      openVariantPicker(product);
+      row.querySelector('[data-action="plus"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!cart[key]) cart[key] = { productId: product.id, type: 'variant', variantId, name: product.name + ' (' + variant.label + ')', price: variant.price, qty: 0 };
+        cart[key].qty += 1;
+        renderCartWidgets();
+        render();
+      });
+      row.querySelector('[data-action="minus"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!cart[key]) return;
+        cart[key].qty -= 1;
+        if (cart[key].qty <= 0) delete cart[key];
+        renderCartWidgets();
+        render();
+      });
     });
-    row.querySelector('[data-action="minus"]').addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (!cart[key]) return;
-      cart[key].qty -= 1;
-      if (cart[key].qty <= 0) delete cart[key];
-      renderCartWidgets();
-      openVariantPicker(product);
-    });
-  });
 
-  document.getElementById('picker-close').addEventListener('click', closePicker);
-  document.getElementById('picker-done').addEventListener('click', closePicker);
-
-  overlay.style.display = 'block';
-  modal.style.display = 'flex';
-  overlay.onclick = closePicker;
+    document.getElementById('picker-done').addEventListener('click', closePicker);
+    showPicker();
+  }
+  render();
 }
 
-function closePicker() {
-  document.getElementById('picker-overlay').style.display = 'none';
-  document.getElementById('picker-modal').style.display = 'none';
-  refreshAllCards();
-}
-
-/* ---------- Наборы (чуду) ---------- */
+/* ================= НАБОРЫ (ЧУДУ) ================= */
 function openComboPicker(product) {
   const selection = {};
   product.options.forEach((o) => { selection[o.id] = 0; });
 
-  function totalCount() {
-    return Object.values(selection).reduce((a, b) => a + b, 0);
-  }
-  function meatCount() {
-    return product.options.filter((o) => o.isMeat).reduce((sum, o) => sum + selection[o.id], 0);
-  }
+  function totalCount() { return Object.values(selection).reduce((a, b) => a + b, 0); }
+  function meatCount() { return product.options.filter((o) => o.isMeat).reduce((s, o) => s + selection[o.id], 0); }
 
   function render() {
-    const overlay = document.getElementById('picker-overlay');
-    const modal = document.getElementById('picker-modal');
-
     const rows = product.options.map((o) => {
       const count = selection[o.id];
       const atMeatLimit = o.isMeat && meatCount() >= product.meatMax;
@@ -354,7 +316,7 @@ function openComboPicker(product) {
       return `
         <div class="combo-option-row">
           <span class="combo-option-name">${o.name}</span>
-          <div class="qty-stepper" style="background:${count > 0 ? 'var(--accent)' : 'var(--bg)'};">
+          <div class="qty-stepper" style="background:${count > 0 ? 'var(--accent)' : 'var(--page-bg)'};">
             <button data-opt="${o.id}" data-action="minus" style="color:${count > 0 ? 'white' : 'var(--accent)'}">−</button>
             <span style="color:${count > 0 ? 'white' : 'var(--ink)'}">${count}</span>
             <button data-opt="${o.id}" data-action="plus" ${plusDisabled ? 'disabled style="opacity:0.3"' : `style="color:${count > 0 ? 'white' : 'var(--accent)'}"`}>+</button>
@@ -363,25 +325,19 @@ function openComboPicker(product) {
       `;
     }).join('');
 
-    modal.innerHTML = `
-      <div class="picker-header">
-        <h3>${product.name}</h3>
-        <button class="cart-close" id="picker-close">✕</button>
-      </div>
-      <div class="picker-body">
-        <div class="combo-progress">
-          Выбрано: <b>${totalCount()} / ${product.totalSlots}</b>
-        </div>
-        ${rows}
-      </div>
-      <div class="picker-footer">
-        <button class="checkout-btn" id="picker-done" ${totalCount() === product.totalSlots ? '' : 'disabled style="opacity:0.5"'}>
-          Добавить в корзину — ${product.price} ₽
-        </button>
-      </div>
+    const body = `
+      ${product.description ? `<div class="picker-description">${product.description}</div>` : ''}
+      <div class="combo-progress">Выбрано: <b>${totalCount()} / ${product.totalSlots}</b></div>
+      ${rows}
     `;
+    const footer = `
+      <button class="checkout-btn" id="picker-done" ${totalCount() === product.totalSlots ? '' : 'disabled style="opacity:0.5"'}>
+        Добавить в корзину — ${product.price} ₽
+      </button>
+    `;
+    pickerShell(product, body, footer);
 
-    modal.querySelectorAll('[data-action="plus"]').forEach((btn) => {
+    document.querySelectorAll('[data-action="plus"]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.opt;
         const opt = product.options.find((o) => o.id === id);
@@ -391,7 +347,7 @@ function openComboPicker(product) {
         render();
       });
     });
-    modal.querySelectorAll('[data-action="minus"]').forEach((btn) => {
+    document.querySelectorAll('[data-action="minus"]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.opt;
         if (selection[id] > 0) selection[id] -= 1;
@@ -399,33 +355,17 @@ function openComboPicker(product) {
       });
     });
 
-    document.getElementById('picker-close').addEventListener('click', closePicker);
-
-    const doneBtn = document.getElementById('picker-done');
     if (totalCount() === product.totalSlots) {
-      doneBtn.addEventListener('click', () => {
-        const comboSelections = product.options
-          .filter((o) => selection[o.id] > 0)
-          .map((o) => ({ name: o.name, count: selection[o.id] }));
+      document.getElementById('picker-done').addEventListener('click', () => {
+        const comboSelections = product.options.filter((o) => selection[o.id] > 0).map((o) => ({ name: o.name, count: selection[o.id] }));
         const key = product.id + '::' + Date.now();
-        cart[key] = {
-          productId: product.id,
-          type: 'combo',
-          name: product.name,
-          price: product.price,
-          qty: 1,
-          comboSelections,
-        };
+        cart[key] = { productId: product.id, type: 'combo', name: product.name, price: product.price, qty: 1, comboSelections };
         renderCartWidgets();
         closePicker();
       });
     }
-
-    overlay.style.display = 'block';
-    modal.style.display = 'flex';
-    overlay.onclick = closePicker;
+    showPicker();
   }
-
   render();
 }
 
@@ -436,7 +376,7 @@ function refreshAllCards() {
   });
 }
 
-/* ---------- Итоги корзины ---------- */
+/* ================= ИТОГИ КОРЗИНЫ ================= */
 function cartTotal() {
   return Object.values(cart).reduce((sum, line) => sum + line.price * line.qty, 0);
 }
@@ -456,12 +396,13 @@ function renderCartWidgets() {
     document.getElementById('cart-fab-total').textContent = cartTotal() + ' ₽';
   }
 
-  renderCartDrawerItems();
+  renderCartLines();
+  renderUpsell();
   refreshAllCards();
 }
 
-function renderCartDrawerItems() {
-  const container = document.getElementById('cart-items');
+function renderCartLines() {
+  const container = document.getElementById('cart-lines');
   const totalEl = document.getElementById('cart-total');
   const keys = Object.keys(cart);
 
@@ -514,28 +455,134 @@ function renderCartDrawerItems() {
         renderCartWidgets();
       });
     }
-
     container.appendChild(row);
   });
 
   totalEl.textContent = cartTotal() + ' ₽';
 }
 
-/* ---------- Открытие/закрытие корзины ---------- */
+/* "Добавить ещё" — товары, которых пока нет в корзине */
+function renderUpsell() {
+  const container = document.getElementById('cart-upsell');
+  if (!container) return;
+
+  const inCartIds = new Set(Object.values(cart).map((l) => l.productId));
+  const candidates = products.filter((p) => !inCartIds.has(p.id) && (typeof p.price === 'number' || p.type === 'combo')).slice(0, 8);
+
+  if (candidates.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="cart-upsell-title">Добавить ещё</div>
+    <div class="cart-upsell-row" id="cart-upsell-row"></div>
+  `;
+  const row = document.getElementById('cart-upsell-row');
+  candidates.forEach((p) => {
+    const card = document.createElement('div');
+    card.className = 'upsell-card';
+    card.innerHTML = `
+      <div class="upsell-thumb" style="background:${colorFor(p.id)}">${(p.name || '?').trim()[0] || '?'}</div>
+      <div class="upsell-name">${p.name}</div>
+      <div class="upsell-price">${typeof p.price === 'number' ? p.price + ' ₽' : 'уточняйте'}</div>
+    `;
+    card.addEventListener('click', () => openDetailFor(p));
+    row.appendChild(card);
+  });
+}
+
+/* ================= ПРИБОРЫ ================= */
+function renderCutlery() {
+  document.getElementById('cutlery-count').textContent = cutleryCount;
+}
+document.getElementById('cutlery-plus').addEventListener('click', () => {
+  cutleryCount += 1;
+  renderCutlery();
+});
+document.getElementById('cutlery-minus').addEventListener('click', () => {
+  if (cutleryCount > 0) cutleryCount -= 1;
+  renderCutlery();
+});
+
+/* ================= КОРЗИНА (ПАНЕЛЬ) ================= */
 function openCart() {
   document.getElementById('cart-drawer').classList.add('open');
-  document.getElementById('cart-overlay').hidden = false;
+  document.getElementById('cart-overlay').classList.add('open');
 }
 function closeCart() {
   document.getElementById('cart-drawer').classList.remove('open');
-  document.getElementById('cart-overlay').hidden = true;
+  document.getElementById('cart-overlay').classList.remove('open');
 }
-
 document.getElementById('cart-fab').addEventListener('click', openCart);
 document.getElementById('cart-close').addEventListener('click', closeCart);
 document.getElementById('cart-overlay').addEventListener('click', closeCart);
 
-/* ---------- Оформление заказа ---------- */
+/* ================= АДРЕС ДОСТАВКИ ================= */
+const KITCHEN_COORDS = [55.673030, 37.614196]; // Кулинарная лавка «Дачная беседка»
+const DELIVERY_RADIUS_M = 5000;
+let deliveryMap = null;
+
+function initDeliveryMap() {
+  if (deliveryMap || typeof ymaps === 'undefined') return;
+  ymaps.ready(() => {
+    deliveryMap = new ymaps.Map('delivery-map', {
+      center: KITCHEN_COORDS,
+      zoom: 11,
+      controls: ['zoomControl'],
+    });
+    deliveryMap.geoObjects.add(new ymaps.Placemark(KITCHEN_COORDS, {
+      hintContent: 'Кулинарная лавка «Дачная беседка»',
+    }, { preset: 'islands#orangeDotIcon' }));
+    deliveryMap.geoObjects.add(new ymaps.Circle([KITCHEN_COORDS, DELIVERY_RADIUS_M], {}, {
+      fillColor: '#f15a2422',
+      strokeColor: '#f15a24',
+      strokeWidth: 2,
+    }));
+  });
+}
+
+function openAddressModal() {
+  document.getElementById('address-overlay').classList.add('open');
+  document.getElementById('address-modal').classList.add('open');
+  initDeliveryMap();
+  // Карта иногда рисуется криво, если контейнер был скрыт в момент инициализации —
+  // на всякий случай пересчитываем размер после появления окна
+  setTimeout(() => { if (deliveryMap) deliveryMap.container.fitToViewport(); }, 250);
+}
+function closeAddressModal() {
+  document.getElementById('address-overlay').classList.remove('open');
+  document.getElementById('address-modal').classList.remove('open');
+}
+document.getElementById('open-address-btn').addEventListener('click', openAddressModal);
+document.getElementById('address-close').addEventListener('click', closeAddressModal);
+document.getElementById('address-overlay').addEventListener('click', closeAddressModal);
+
+document.getElementById('addr-save').addEventListener('click', () => {
+  const street = document.getElementById('addr-street').value.trim();
+  const flat = document.getElementById('addr-flat').value.trim();
+  const entrance = document.getElementById('addr-entrance').value.trim();
+  const intercom = document.getElementById('addr-intercom').value.trim();
+  const floor = document.getElementById('addr-floor').value.trim();
+
+  if (!street) {
+    document.getElementById('addr-street').focus();
+    return;
+  }
+
+  const parts = [street];
+  if (flat) parts.push('кв. ' + flat);
+  if (entrance) parts.push('подъезд ' + entrance);
+  if (intercom) parts.push('домофон ' + intercom);
+  if (floor) parts.push('этаж ' + floor);
+  const fullAddress = parts.join(', ');
+
+  document.getElementById('address').value = fullAddress;
+  document.getElementById('address-summary').textContent = fullAddress;
+  closeAddressModal();
+});
+
+/* ================= ОФОРМЛЕНИЕ ЗАКАЗА ================= */
 document.getElementById('checkout-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const errorEl = document.getElementById('form-error');
@@ -547,6 +594,11 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
     return;
   }
 
+  if (!document.getElementById('address').value.trim()) {
+    errorEl.textContent = 'Укажите адрес доставки';
+    return;
+  }
+
   const items = keys.map((key) => {
     const line = cart[key];
     const payload = { id: line.productId, qty: line.qty };
@@ -555,18 +607,21 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
     return payload;
   });
 
+  const courierComment = document.getElementById('addr-comment').value.trim();
+  const orderComment = document.getElementById('comment').value.trim();
+
   const customer = {
     name: document.getElementById('name').value.trim(),
     phone: document.getElementById('phone').value.trim(),
     address: document.getElementById('address').value.trim(),
-    comment: document.getElementById('comment').value.trim(),
+    comment: [orderComment, courierComment ? 'Курьеру: ' + courierComment : ''].filter(Boolean).join(' / '),
   };
 
   try {
     const res = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items, customer }),
+      body: JSON.stringify({ items, customer, cutleryCount }),
     });
     const data = await res.json();
 
