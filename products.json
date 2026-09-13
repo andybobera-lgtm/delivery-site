@@ -52,7 +52,7 @@
     "description": "Соберите свой набор чуду на выбор",
     "type": "combo",
     "oldPrice": 1340,
-    "totalSlots": 6,
+    "totalSlots": 4,
     "meatMax": 2,
     "options": [
       {
