@@ -90,14 +90,14 @@ function renderProductCard(p) {
   card.appendChild(thumb);
   card.appendChild(body);
 
-  // Клик по самой картинке тоже открывает окно выбора (для вариантов и наборов),
-  // как и кнопка "+" — так удобнее, не нужно целиться точно в маленькую кнопку
+  // Вся карточка кликабельна для товаров с выбором (хинкал, наборы) —
+  // клик по кнопке "+" внутри тоже сработает, просто откроет то же самое окно
   if (p.type === 'variant') {
-    thumb.style.cursor = 'pointer';
-    thumb.addEventListener('click', () => openVariantPicker(p));
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => openVariantPicker(p));
   } else if (p.type === 'combo') {
-    thumb.style.cursor = 'pointer';
-    thumb.addEventListener('click', () => openComboPicker(p));
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => openComboPicker(p));
   }
 
   renderCardAction(card, p);
@@ -258,14 +258,14 @@ function openVariantPicker(product) {
   document.getElementById('picker-close').addEventListener('click', closePicker);
   document.getElementById('picker-done').addEventListener('click', closePicker);
 
-  overlay.hidden = false;
-  modal.hidden = false;
+  overlay.style.display = 'block';
+  modal.style.display = 'flex';
   overlay.onclick = closePicker;
 }
 
 function closePicker() {
-  document.getElementById('picker-overlay').hidden = true;
-  document.getElementById('picker-modal').hidden = true;
+  document.getElementById('picker-overlay').style.display = 'none';
+  document.getElementById('picker-modal').style.display = 'none';
   refreshAllCards();
 }
 
@@ -292,7 +292,7 @@ function openComboPicker(product) {
       const plusDisabled = atTotalLimit || atMeatLimit;
       return `
         <div class="combo-option-row">
-          <span class="combo-option-name">${o.name} ${o.isMeat ? '<span class="combo-option-tag">С МЯСОМ</span>' : ''}</span>
+          <span class="combo-option-name">${o.name}</span>
           <div class="qty-stepper" style="background:${count > 0 ? 'var(--accent)' : 'var(--bg)'};">
             <button data-opt="${o.id}" data-action="minus" style="color:${count > 0 ? 'white' : 'var(--accent)'}">−</button>
             <span style="color:${count > 0 ? 'white' : 'var(--ink)'}">${count}</span>
@@ -309,7 +309,7 @@ function openComboPicker(product) {
       </div>
       <div class="picker-body">
         <div class="combo-progress">
-          Выбрано: <b>${totalCount()} / ${product.totalSlots}</b> · с мясом: <b>${meatCount()} / ${product.meatMax}</b>
+          Выбрано: <b>${totalCount()} / ${product.totalSlots}</b>
         </div>
         ${rows}
       </div>
@@ -360,8 +360,8 @@ function openComboPicker(product) {
       });
     }
 
-    overlay.hidden = false;
-    modal.hidden = false;
+    overlay.style.display = 'block';
+    modal.style.display = 'flex';
     overlay.onclick = closePicker;
   }
 
