@@ -18,6 +18,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/legal', express.static(path.join(__dirname, 'legal')));
 
 const PRODUCTS_FILE = path.join(__dirname, 'products.json');
 const ORDERS_FILE = '/tmp/orders.json';
@@ -47,7 +48,7 @@ app.get('/api/products', (req, res) => {
 // --- Приём нового заказа ---
 app.post('/api/orders', async (req, res) => {
   try {
-    const { items, customer } = req.body;
+    const { items, customer, cutleryCount } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Корзина пуста' });
@@ -123,6 +124,7 @@ app.post('/api/orders', async (req, res) => {
       items: orderItems,
       total,
       customer,
+      cutleryCount: Number.isFinite(parseInt(cutleryCount, 10)) ? parseInt(cutleryCount, 10) : 0,
       status: 'ожидает оплаты',
       paymentId: null,
       createdAt: new Date().toISOString(),
