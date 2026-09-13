@@ -79,7 +79,6 @@ function renderProductCard(p) {
   body.className = 'product-body';
   body.innerHTML = `
     <h3>${p.name}</h3>
-    <p>${p.description || ''}</p>
     <div class="product-meta">${p.weight || ''}</div>
     <div class="product-footer">
       <span class="product-price">${priceHtml}</span>
@@ -90,15 +89,15 @@ function renderProductCard(p) {
   card.appendChild(thumb);
   card.appendChild(body);
 
-  // Вся карточка кликабельна для товаров с выбором (хинкал, наборы) —
-  // клик по кнопке "+" внутри тоже сработает, просто откроет то же самое окно
-  if (p.type === 'variant') {
-    card.style.cursor = 'pointer';
-    card.addEventListener('click', () => openVariantPicker(p));
-  } else if (p.type === 'combo') {
-    card.style.cursor = 'pointer';
-    card.addEventListener('click', () => openComboPicker(p));
-  }
+  // Клик по карточке открывает окно: у хинкала — выбор мяса, у наборов — конструктор,
+  // у обычных блюд — карточка с описанием. Клик по самой кнопке "+"/счётчику
+  // не должен открывать окно повторно — она уже добавляет товар сама.
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('.card-action')) return;
+    if (p.type === 'variant') openVariantPicker(p);
+    else if (p.type === 'combo') openComboPicker(p);
+    else openSimpleDetail(p);
+  });
 
   renderCardAction(card, p);
   return card;
@@ -192,6 +191,68 @@ function changeSimpleQty(product, delta) {
   cart[key].qty += delta;
   if (cart[key].qty <= 0) delete cart[key];
   renderCartWidgets();
+}
+
+function openSimpleDetail(product) {
+  const overlay = document.getElementById('picker-overlay');
+  const modal = document.getElementById('picker-modal');
+  const noPrice = typeof product.price !== 'number';
+
+  function render() {
+    const qty = cart[product.id] ? cart[product.id].qty : 0;
+    modal.innerHTML = `
+      <div class="picker-header">
+        <h3>${product.name}</h3>
+        <button class="cart-close" id="picker-close">✕</button>
+      </div>
+      <div class="picker-body">
+        <div class="picker-thumb" style="background:${colorFor(product.id)}">${(product.name || '?').trim()[0] || '?'}</div>
+        ${product.description ? `<div class="picker-description">${product.description}</div>` : ''}
+        <div class="product-meta">${product.weight || ''}</div>
+      </div>
+      <div class="picker-footer">
+        ${noPrice
+          ? `<div class="no-price-note">Цену уточняйте при оформлении заказа</div>`
+          : qty === 0
+            ? `<button class="checkout-btn" id="detail-add">Добавить — ${product.price} ₽</button>`
+            : `<div style="display:flex;align-items:center;justify-content:space-between;">
+                 <div class="qty-stepper" style="background:var(--accent);">
+                   <button id="detail-minus" style="color:white;">−</button>
+                   <span style="color:white;">${qty}</span>
+                   <button id="detail-plus" style="color:white;">+</button>
+                 </div>
+                 <span style="font-weight:700;color:var(--accent);">${product.price * qty} ₽</span>
+               </div>`
+        }
+      </div>
+    `;
+
+    document.getElementById('picker-close').addEventListener('click', closePicker);
+
+    if (!noPrice) {
+      if (qty === 0) {
+        document.getElementById('detail-add').addEventListener('click', () => {
+          addSimpleToCart(product);
+          render();
+        });
+      } else {
+        document.getElementById('detail-plus').addEventListener('click', () => {
+          changeSimpleQty(product, 1);
+          render();
+        });
+        document.getElementById('detail-minus').addEventListener('click', () => {
+          changeSimpleQty(product, -1);
+          render();
+        });
+      }
+    }
+
+    overlay.style.display = 'block';
+    modal.style.display = 'flex';
+    overlay.onclick = closePicker;
+  }
+
+  render();
 }
 
 /* ---------- Товары с вариантами (хинкал) ---------- */
@@ -296,7 +357,7 @@ function openComboPicker(product) {
           <div class="qty-stepper" style="background:${count > 0 ? 'var(--accent)' : 'var(--bg)'};">
             <button data-opt="${o.id}" data-action="minus" style="color:${count > 0 ? 'white' : 'var(--accent)'}">−</button>
             <span style="color:${count > 0 ? 'white' : 'var(--ink)'}">${count}</span>
-            <button data-opt="${o.id}" data-action="plus" ${plusDisabled ? 'disabled style="opacity:0.3"' : 'style="color:var(--accent)"'}>+</button>
+            <button data-opt="${o.id}" data-action="plus" ${plusDisabled ? 'disabled style="opacity:0.3"' : `style="color:${count > 0 ? 'white' : 'var(--accent)'}"`}>+</button>
           </div>
         </div>
       `;
