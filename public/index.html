@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
+<script src="https://api-maps.yandex.ru/2.1/?apikey=eb4568c4-7bc0-49b3-9399-df3353256da9&lang=ru_RU"></script>
 </head>
 <body>
 
@@ -42,11 +43,11 @@
 </button>
 
 <!-- Затемнение фона при открытой корзине -->
-<div id="cart-overlay" class="cart-overlay" hidden></div>
+<div id="cart-overlay" class="cart-overlay"></div>
 
 <!-- Всплывающее окно выбора варианта / сборки набора -->
-<div id="picker-overlay" class="cart-overlay" hidden></div>
-<div id="picker-modal" class="picker-modal" hidden></div>
+<div id="picker-overlay" class="cart-overlay"></div>
+<div id="picker-modal" class="picker-modal"></div>
 
 <!-- Выезжающая панель корзины -->
 <aside id="cart-drawer" class="cart-drawer" aria-hidden="true">
@@ -55,9 +56,21 @@
     <button id="cart-close" class="cart-close" aria-label="Закрыть">✕</button>
   </div>
 
-  <div id="cart-items" class="cart-items">Корзина пуста</div>
+  <div id="cart-items" class="cart-items">
+    <div id="cart-lines">Корзина пуста</div>
+    <div id="cart-upsell" class="cart-upsell"></div>
+  </div>
 
   <div class="cart-drawer-footer">
+    <div class="cutlery-row">
+      <span>🍴 Приборы</span>
+      <div class="qty-stepper" id="cutlery-stepper" style="background:var(--page-bg);">
+        <button id="cutlery-minus" style="color:var(--accent);">−</button>
+        <span id="cutlery-count" style="color:var(--ink);">0</span>
+        <button id="cutlery-plus" style="color:var(--accent);">+</button>
+      </div>
+    </div>
+
     <div class="cart-total-row">
       <span>Итого</span>
       <span id="cart-total">0 ₽</span>
@@ -66,7 +79,13 @@
     <form id="checkout-form">
       <input type="text" id="name" placeholder="Ваше имя" required />
       <input type="tel" id="phone" placeholder="Телефон (+7...)" required />
-      <input type="text" id="address" placeholder="Адрес доставки" required />
+
+      <button type="button" id="open-address-btn" class="address-btn">
+        <span id="address-summary">Указать адрес доставки</span>
+        <span>›</span>
+      </button>
+      <input type="hidden" id="address" required />
+
       <textarea id="comment" placeholder="Комментарий к заказу (необязательно)"></textarea>
 
       <label class="agree">
@@ -83,6 +102,30 @@
     </form>
   </div>
 </aside>
+
+<!-- Окно ввода адреса доставки -->
+<div id="address-overlay" class="cart-overlay"></div>
+<div id="address-modal" class="address-modal">
+  <div class="picker-header">
+    <h3>Адрес доставки</h3>
+    <button class="cart-close" id="address-close">✕</button>
+  </div>
+  <div class="picker-body">
+    <input type="text" id="addr-street" placeholder="Улица, дом" />
+    <div class="address-grid">
+      <input type="text" id="addr-flat" placeholder="Квартира" />
+      <input type="text" id="addr-entrance" placeholder="Подъезд" />
+      <input type="text" id="addr-intercom" placeholder="Домофон" />
+      <input type="text" id="addr-floor" placeholder="Этаж" />
+    </div>
+    <textarea id="addr-comment" placeholder="Комментарий для курьера"></textarea>
+    <div id="delivery-map" style="height:220px;border-radius:10px;margin-top:8px;background:var(--page-bg);"></div>
+    <div class="product-meta" style="margin-top:6px;">Зона доставки — 5 км от кулинарной лавки «Дачная беседка»</div>
+  </div>
+  <div class="picker-footer">
+    <button class="checkout-btn" id="addr-save">Сохранить</button>
+  </div>
+</div>
 
 <script src="script.js"></script>
 </body>
