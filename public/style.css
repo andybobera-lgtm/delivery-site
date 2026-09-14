@@ -293,8 +293,8 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
 .picker-modal {
   display: flex;
   flex-direction: row;
-  width: min(820px, 94vw);
-  height: min(520px, 85vh);
+  width: min(900px, 95vw);
+  height: min(600px, 88vh);
 }
 .picker-photo {
   height: 100%;
