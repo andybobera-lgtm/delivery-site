@@ -39,7 +39,7 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
   align-items: center;
   justify-content: space-between;
 }
-.brand-logo { height: 64px; display: block; }
+.brand-logo { height: 128px; display: block; }
 
 .promo-banner {
   background: #f4f4f4;
@@ -61,7 +61,7 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
 /* ---------- Category nav (плоский стиль, как у daglavka) ---------- */
 .category-nav-row {
   position: sticky;
-  top: 66px;
+  top: 160px;
   z-index: 19;
   background: var(--page-bg);
   display: flex;
