@@ -535,11 +535,38 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 10px;
+  background: var(--page-bg);
+  border-radius: 999px;
+  padding: 10px 8px 10px 18px;
+  margin-bottom: 14px;
   font-size: 15px;
   font-weight: 600;
+}
+.cutlery-stepper {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cutlery-stepper button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  font-size: 19px;
+  cursor: pointer;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cutlery-stepper button:hover { background: #f2ece0; }
+.cutlery-stepper span {
+  font-weight: 700;
+  font-size: 15px;
+  min-width: 16px;
+  text-align: center;
 }
 
 /* ---------- Добавить ещё (в корзине) ---------- */
