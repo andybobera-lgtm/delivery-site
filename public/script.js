@@ -625,7 +625,8 @@ function initDeliveryMap() {
     // Метка адреса — её можно перетаскивать, а клик по карте переставляет её на новое место.
     // Сплошной оранжевый круг вместо стандартной синей капли.
     const addressMark = new ymaps.Placemark(KITCHEN_COORDS, {}, {
-      preset: 'islands#orangeIcon',
+      preset: 'islands#dotIcon',
+      iconColor: '#ff6900',
       draggable: true,
     });
     deliveryMap.geoObjects.add(addressMark);
@@ -762,3 +763,4 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
 });
 
 loadProducts();
+  
