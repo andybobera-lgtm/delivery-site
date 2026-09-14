@@ -19,6 +19,7 @@ async function loadProducts() {
 
 function renderCategoryNav() {
   const categories = [...new Set(products.map((p) => p.category || 'Меню'))];
+
   const nav = document.getElementById('category-nav');
   nav.innerHTML = '';
   categories.forEach((cat) => {
@@ -28,7 +29,29 @@ function renderCategoryNav() {
     a.textContent = cat;
     nav.appendChild(a);
   });
+
+  const mobileList = document.getElementById('mobile-menu-list');
+  mobileList.innerHTML = '';
+  categories.forEach((cat) => {
+    const a = document.createElement('a');
+    a.href = '#cat-' + slug(cat);
+    a.textContent = cat;
+    a.addEventListener('click', closeMobileMenu);
+    mobileList.appendChild(a);
+  });
 }
+
+function openMobileMenu() {
+  document.getElementById('mobile-menu-drawer').classList.add('open');
+  document.getElementById('mobile-menu-overlay').classList.add('open');
+}
+function closeMobileMenu() {
+  document.getElementById('mobile-menu-drawer').classList.remove('open');
+  document.getElementById('mobile-menu-overlay').classList.remove('open');
+}
+document.getElementById('mobile-menu-btn').addEventListener('click', openMobileMenu);
+document.getElementById('mobile-menu-close').addEventListener('click', closeMobileMenu);
+document.getElementById('mobile-menu-overlay').addEventListener('click', closeMobileMenu);
 
 function slug(text) {
   return text.toLowerCase().replace(/[^a-zа-я0-9]+/gi, '-');
@@ -520,7 +543,7 @@ document.getElementById('cart-overlay').addEventListener('click', closeCart);
 
 /* ================= АДРЕС ДОСТАВКИ ================= */
 const KITCHEN_COORDS = [55.673030, 37.614196]; // Кулинарная лавка «Дачная беседка»
-const DELIVERY_RADIUS_M = 5000;
+const DELIVERY_RADIUS_M = 4000;
 let deliveryMap = null;
 
 function initDeliveryMap() {
@@ -528,17 +551,50 @@ function initDeliveryMap() {
   ymaps.ready(() => {
     deliveryMap = new ymaps.Map('delivery-map', {
       center: KITCHEN_COORDS,
-      zoom: 11,
-      controls: ['zoomControl'],
+      zoom: 12,
+      controls: [],
     });
-    deliveryMap.geoObjects.add(new ymaps.Placemark(KITCHEN_COORDS, {
-      hintContent: 'Кулинарная лавка «Дачная беседка»',
-    }, { preset: 'islands#orangeDotIcon' }));
+
+    // Аккуратные контролы масштаба и геопозиции (вместо стандартных уродливых плюс/минус)
+    deliveryMap.controls.add(new ymaps.control.ZoomControl({ options: { size: 'large', float: 'right' } }));
+    deliveryMap.controls.add(new ymaps.control.GeolocationControl({ options: { float: 'right' } }));
+
     deliveryMap.geoObjects.add(new ymaps.Circle([KITCHEN_COORDS, DELIVERY_RADIUS_M], {}, {
       fillColor: '#f15a2422',
       strokeColor: '#f15a24',
       strokeWidth: 2,
     }));
+
+    // Метка адреса — её можно перетаскивать, а клик по карте переставляет её на новое место
+    const addressMark = new ymaps.Placemark(KITCHEN_COORDS, {}, {
+      preset: 'islands#redDotIcon',
+      draggable: true,
+    });
+    deliveryMap.geoObjects.add(addressMark);
+
+    function updateAddressFromCoords(coords) {
+      ymaps.geocode(coords).then((res) => {
+        const nearest = res.geoObjects.get(0);
+        if (nearest) {
+          document.getElementById('addr-street').value = nearest.getAddressLine();
+        }
+      });
+    }
+
+    addressMark.events.add('dragend', () => updateAddressFromCoords(addressMark.geometry.getCoordinates()));
+    deliveryMap.events.add('click', (e) => {
+      const coords = e.get('coords');
+      addressMark.geometry.setCoordinates(coords);
+      updateAddressFromCoords(coords);
+    });
+
+    // Клик по кнопке геопозиции — переставляем метку на найденное место
+    deliveryMap.controls.get('geolocationControl').events.add('locationchange', (e) => {
+      const coords = e.get('position');
+      addressMark.geometry.setCoordinates(coords);
+      updateAddressFromCoords(coords);
+      deliveryMap.setCenter(coords, 15);
+    });
   });
 }
 
