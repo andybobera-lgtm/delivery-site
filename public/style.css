@@ -27,10 +27,11 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 25;
   background: var(--page-bg);
-  padding: 16px 20px;
+  padding: 12px 20px;
   border-bottom: 1px solid var(--border);
+  overflow: visible;
 }
 .site-header-inner {
   width: 100%;
@@ -39,7 +40,7 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
   align-items: center;
   justify-content: space-between;
 }
-.brand-logo { height: 128px; display: block; }
+.brand-logo { height: 108px; display: block; margin: -30px 0; }
 
 .promo-banner {
   background: #f4f4f4;
@@ -61,7 +62,7 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
 /* ---------- Category nav (плоский стиль, как у daglavka) ---------- */
 .category-nav-row {
   position: sticky;
-  top: 160px;
+  top: 60px;
   z-index: 19;
   background: var(--page-bg);
   display: flex;
