@@ -299,7 +299,7 @@ function openVariantPicker(product) {
           </div>
           <div style="display:flex;align-items:center;gap:10px;">
             <span class="variant-option-price">${v.price} ₽</span>
-            <div class="qty-stepper" style="background:${qty > 0 ? 'var(--accent)' : 'var(--page-bg)'};">
+            <div class="qty-stepper" style="background:${qty > 0 ? 'var(--accent)' : 'var(--soft-bg)'};">
               <button data-action="minus" style="color:${qty > 0 ? 'white' : 'var(--accent)'}">−</button>
               <span style="color:${qty > 0 ? 'white' : 'var(--ink)'}">${qty}</span>
               <button data-action="plus" style="color:${qty > 0 ? 'white' : 'var(--accent)'}">+</button>
@@ -357,7 +357,7 @@ function openComboPicker(product) {
       return `
         <div class="combo-option-row">
           <span class="combo-option-name">${o.name}</span>
-          <div class="qty-stepper" style="background:${count > 0 ? 'var(--accent)' : 'var(--page-bg)'};">
+          <div class="qty-stepper" style="background:${count > 0 ? 'var(--accent)' : 'var(--soft-bg)'};">
             <button data-opt="${o.id}" data-action="minus" style="color:${count > 0 ? 'white' : 'var(--accent)'}">−</button>
             <span style="color:${count > 0 ? 'white' : 'var(--ink)'}">${count}</span>
             <button data-opt="${o.id}" data-action="plus" ${plusDisabled ? 'disabled style="opacity:0.3"' : `style="color:${count > 0 ? 'white' : 'var(--accent)'}"`}>+</button>
