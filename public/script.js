@@ -625,7 +625,7 @@ function initDeliveryMap() {
     // Метка адреса — её можно перетаскивать, а клик по карте переставляет её на новое место.
     // Сплошной оранжевый круг вместо стандартной синей капли.
     const addressMark = new ymaps.Placemark(KITCHEN_COORDS, {}, {
-      preset: 'islands#orangeCircleIcon',
+      preset: 'islands#orangeIcon',
       draggable: true,
     });
     deliveryMap.geoObjects.add(addressMark);
@@ -634,13 +634,15 @@ function initDeliveryMap() {
     // это надёжнее встроенной ymaps.geocode(), которая требует специфичный тип ключа
     function updateAddressFromCoords(coords) {
       const [lat, lon] = coords; // Яндекс.Карты отдают координаты как [широта, долгота]
-      const url = `https://geocode-maps.yandex.ru/1.x/?apikey=${GEOCODER_API_KEY}&geocode=${lon},${lat}&format=json&results=1`;
+      const url = `https://geocode-maps.yandex.ru/v1/?apikey=${GEOCODER_API_KEY}&geocode=${lon},${lat}&format=json&results=1`;
       fetch(url)
         .then((res) => res.json())
         .then((data) => {
-          const member = data.response.GeoObjectCollection.featureMember[0];
+          const member = data?.response?.GeoObjectCollection?.featureMember?.[0];
           if (member) {
             document.getElementById('addr-street').value = member.GeoObject.metaDataProperty.GeocoderMetaData.text;
+          } else {
+            console.error('Геокодер не вернул адрес:', data);
           }
         })
         .catch((err) => {
