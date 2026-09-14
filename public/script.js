@@ -38,11 +38,12 @@ function renderCategoryNav() {
 
   const nav = document.getElementById('category-nav');
   nav.innerHTML = '';
-  categories.forEach((cat) => {
+  categories.forEach((cat, index) => {
     const a = document.createElement('a');
-    a.className = 'category-chip';
+    a.className = 'category-chip' + (index === 0 ? ' active' : '');
     a.href = '#cat-' + slug(cat);
     a.textContent = cat;
+    a.addEventListener('click', () => setActiveCategoryChip(slug(cat)));
     nav.appendChild(a);
   });
 
@@ -52,9 +53,41 @@ function renderCategoryNav() {
     const a = document.createElement('a');
     a.href = '#cat-' + slug(cat);
     a.textContent = cat;
-    a.addEventListener('click', closeMobileMenu);
+    a.addEventListener('click', () => {
+      setActiveCategoryChip(slug(cat));
+      closeMobileMenu();
+    });
     mobileList.appendChild(a);
   });
+
+  setupCategoryScrollSpy();
+}
+
+function setActiveCategoryChip(catSlug) {
+  document.querySelectorAll('.category-chip').forEach((chip) => {
+    const isActive = chip.getAttribute('href') === '#cat-' + catSlug;
+    chip.classList.toggle('active', isActive);
+    if (isActive) chip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  });
+}
+
+// Подсвечиваем категорию автоматически, когда её раздел появляется в зоне видимости при прокрутке
+function setupCategoryScrollSpy() {
+  const sections = document.querySelectorAll('.menu-section');
+  if (!sections.length) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveCategoryChip(entry.target.id.replace('cat-', ''));
+        }
+      });
+    },
+    { rootMargin: '-140px 0px -70% 0px', threshold: 0 }
+  );
+
+  sections.forEach((section) => observer.observe(section));
 }
 
 function openMobileMenu() {
