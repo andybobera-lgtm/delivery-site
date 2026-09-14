@@ -572,11 +572,15 @@ function initDeliveryMap() {
       center: KITCHEN_COORDS,
       zoom: 12,
       controls: [],
+    }, {
+      suppressMapOpenBlock: true, // убираем нижнюю плашку-ссылку "Открыть в Яндекс Картах"
     });
 
-    // Аккуратные контролы масштаба и геопозиции (вместо стандартных уродливых плюс/минус)
-    deliveryMap.controls.add(new ymaps.control.ZoomControl({ options: { size: 'large', float: 'right' } }));
-    deliveryMap.controls.add(new ymaps.control.GeolocationControl({ options: { float: 'right' } }));
+    // Аккуратные контролы масштаба и геопозиции
+    const zoomControl = new ymaps.control.ZoomControl({ options: { size: 'large', float: 'right' } });
+    const geoControl = new ymaps.control.GeolocationControl({ options: { float: 'right' } });
+    deliveryMap.controls.add(zoomControl);
+    deliveryMap.controls.add(geoControl);
 
     deliveryMap.geoObjects.add(new ymaps.Circle([KITCHEN_COORDS, DELIVERY_RADIUS_M], {}, {
       fillColor: '#f15a2422',
@@ -597,6 +601,8 @@ function initDeliveryMap() {
         if (nearest) {
           document.getElementById('addr-street').value = nearest.getAddressLine();
         }
+      }).catch((err) => {
+        console.error('Не удалось определить адрес по точке на карте:', err);
       });
     }
 
@@ -608,7 +614,7 @@ function initDeliveryMap() {
     });
 
     // Клик по кнопке геопозиции — переставляем метку на найденное место
-    deliveryMap.controls.get('geolocationControl').events.add('locationchange', (e) => {
+    geoControl.events.add('locationchange', (e) => {
       const coords = e.get('position');
       addressMark.geometry.setCoordinates(coords);
       updateAddressFromCoords(coords);
