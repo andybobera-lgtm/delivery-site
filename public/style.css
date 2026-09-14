@@ -40,7 +40,7 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
   align-items: center;
   justify-content: space-between;
 }
-.brand-logo { height: 108px; display: block; margin: -30px 0; }
+.brand-logo { height: 68px; display: block; margin: -10px 0; }
 
 .promo-banner {
   background: #f4f4f4;
