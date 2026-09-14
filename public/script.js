@@ -10,6 +10,22 @@ function colorFor(id) {
   return THUMB_COLORS[hash];
 }
 
+// Возвращает CSS-стиль и текст для картинки блюда:
+// если в products.json у товара заполнено поле "image" — показываем настоящее фото,
+// если нет — показываем цветную плашку с первой буквой названия (как сейчас)
+function thumbStyleAndText(product) {
+  if (product.image) {
+    return {
+      style: `background-image:url('${product.image}');background-size:cover;background-position:center;`,
+      text: '',
+    };
+  }
+  return {
+    style: `background:${colorFor(product.id)};`,
+    text: (product.name || '?').trim()[0] || '?',
+  };
+}
+
 async function loadProducts() {
   const res = await fetch('/api/products');
   products = await res.json();
@@ -90,8 +106,9 @@ function renderProductCard(p) {
 
   const thumb = document.createElement('div');
   thumb.className = 'product-thumb';
-  thumb.style.background = colorFor(p.id);
-  thumb.textContent = (p.name || '?').trim()[0] || '?';
+  const thumbData = thumbStyleAndText(p);
+  thumb.style.cssText = thumbData.style;
+  thumb.textContent = thumbData.text;
 
   const body = document.createElement('div');
   body.className = 'product-body';
@@ -215,8 +232,9 @@ document.getElementById('picker-overlay').addEventListener('click', closePicker)
 
 function pickerShell(product, bodyHtml, footerHtml) {
   const modal = document.getElementById('picker-modal');
+  const thumbData = thumbStyleAndText(product);
   modal.innerHTML = `
-    <div class="picker-photo" style="background:${colorFor(product.id)}">${(product.name || '?').trim()[0] || '?'}</div>
+    <div class="picker-photo" style="${thumbData.style}">${thumbData.text}</div>
     <div class="picker-panel">
       <div class="picker-header">
         <h3>${product.name}</h3>
@@ -505,8 +523,9 @@ function renderUpsell() {
   candidates.forEach((p) => {
     const card = document.createElement('div');
     card.className = 'upsell-card';
+    const thumbData = thumbStyleAndText(p);
     card.innerHTML = `
-      <div class="upsell-thumb" style="background:${colorFor(p.id)}">${(p.name || '?').trim()[0] || '?'}</div>
+      <div class="upsell-thumb" style="${thumbData.style}">${thumbData.text}</div>
       <div class="upsell-name">${p.name}</div>
       <div class="upsell-price">${typeof p.price === 'number' ? p.price + ' ₽' : 'уточняйте'}</div>
     `;
