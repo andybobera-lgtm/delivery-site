@@ -27,8 +27,9 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
   position: sticky;
   top: 0;
   z-index: 20;
-  background: var(--brand-dark);
-  padding: 14px 20px;
+  background: var(--page-bg);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
 }
 .site-header-inner {
   max-width: 1100px;
@@ -37,44 +38,96 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
   align-items: center;
   justify-content: space-between;
 }
-.brand-name { font-size: 20px; font-weight: 700; display: block; color: #ffffff; }
-.brand-tagline { font-size: 12px; color: rgba(255,255,255,0.65); }
+.brand-name { font-size: 22px; font-weight: 800; display: block; color: var(--ink); }
+.brand-tagline { font-size: 13px; color: var(--muted); }
 .age-badge {
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 2px 8px;
   font-size: 12px;
-  color: rgba(255,255,255,0.7);
+  color: var(--muted);
 }
 
 /* ---------- Category nav (плоский стиль, как у daglavka) ---------- */
-.category-nav {
+.category-nav-row {
   position: sticky;
-  top: 58px;
+  top: 66px;
   z-index: 19;
-  background: var(--brand-dark);
+  background: var(--page-bg);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 6px 16px;
+}
+.mobile-menu-btn {
+  display: none;
+  flex: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  cursor: pointer;
+  margin-right: 8px;
+  color: var(--ink);
+}
+.category-nav {
   display: flex;
   gap: 2px;
   overflow-x: auto;
-  padding: 6px 16px 10px;
   scrollbar-width: none;
+  flex: 1;
 }
 .category-nav::-webkit-scrollbar { display: none; }
 .category-chip {
   flex: none;
-  padding: 8px 14px;
+  padding: 10px 16px;
   border-radius: 8px;
   background: transparent;
   border: none;
-  color: rgba(255,255,255,0.85);
-  font-size: 14px;
+  color: var(--ink);
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   text-decoration: none;
   transition: background 0.15s ease;
 }
-.category-chip:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.category-chip:hover { background: rgba(0,0,0,0.06); }
+
+/* Мобильное меню-шторка со списком категорий */
+.mobile-menu-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: min(320px, 85vw);
+  background: var(--surface);
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  box-shadow: 8px 0 24px rgba(0,0,0,0.15);
+}
+.mobile-menu-drawer.open { transform: translateX(0); }
+.mobile-menu-list { padding: 8px 12px; overflow-y: auto; }
+.mobile-menu-list a {
+  display: block;
+  padding: 12px 10px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+.mobile-menu-list a:hover { background: var(--page-bg); }
+@media (max-width: 720px) {
+  .mobile-menu-btn { display: block; }
+  .category-nav { display: none; }
+}
 
 /* ---------- Menu ---------- */
 .menu-wrap {
@@ -91,10 +144,7 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
   gap: 14px;
 }
 @media (max-width: 720px) {
-  .products-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 440px) {
-  .products-grid { grid-template-columns: 1fr; }
+  .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
 }
 
 .product-card {
@@ -156,20 +206,20 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
 .qty-stepper {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 14px;
   background: var(--accent);
   border-radius: 999px;
-  padding: 3px 8px;
+  padding: 6px 14px;
 }
 .qty-stepper button {
   background: none;
   border: none;
   color: white;
-  font-size: 15px;
-  width: 18px;
+  font-size: 19px;
+  width: 20px;
   cursor: pointer;
 }
-.qty-stepper span { color: white; font-weight: 700; min-width: 12px; text-align: center; font-size: 13px; }
+.qty-stepper span { color: white; font-weight: 700; min-width: 14px; text-align: center; font-size: 15px; }
 
 /* ---------- Floating cart button ---------- */
 .cart-fab {
@@ -244,9 +294,11 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
   display: flex;
   flex-direction: row;
   width: min(760px, 94vw);
+  height: min(520px, 85vh);
 }
 .picker-photo {
   width: 42%;
+  height: 100%;
   flex: none;
   display: flex;
   align-items: center;
@@ -261,18 +313,38 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  height: 100%;
 }
 .picker-body { flex: 1; min-height: 0; }
 @media (max-width: 640px) {
-  .picker-modal { flex-direction: column; width: min(420px, 92vw); max-height: 90vh; }
-  .picker-photo { width: 100%; aspect-ratio: 16 / 9; }
+  .picker-modal { flex-direction: column; width: min(420px, 92vw); height: min(560px, 90vh); }
+  .picker-photo { width: 100%; height: 200px; }
 }
 
-/* Окно адреса (без фото, обычная форма) */
+/* Окно адреса: форма слева, карта справа и покрупнее */
 .address-modal {
   display: flex;
+  flex-direction: row;
+  width: min(920px, 95vw);
+  height: min(560px, 88vh);
+}
+.address-form-col {
+  width: 360px;
+  flex: none;
+  display: flex;
   flex-direction: column;
-  width: min(480px, 92vw);
+  min-height: 0;
+}
+.address-form-col .picker-body { overflow-y: auto; }
+.address-map-col {
+  flex: 1;
+  min-width: 0;
+}
+#delivery-map { width: 100%; height: 100%; }
+@media (max-width: 780px) {
+  .address-modal { flex-direction: column; width: min(420px, 92vw); height: min(640px, 92vh); }
+  .address-form-col { width: 100%; }
+  .address-map-col { height: 220px; }
 }
 .picker-header {
   padding: 18px 20px;
@@ -437,26 +509,37 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
   color: white;
   border: none;
   border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 13px;
+  padding: 10px 8px 10px 16px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   font-family: 'Montserrat', sans-serif;
 }
 .buy-btn:hover { background: var(--accent-dark); }
+.buy-btn span {
+  background: rgba(255,255,255,0.25);
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
 
 /* ---------- Приборы ---------- */
 .cutlery-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--border);
   margin-bottom: 10px;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 /* ---------- Добавить ещё (в корзине) ---------- */
