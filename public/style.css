@@ -1,10 +1,10 @@
 :root {
   --brand-dark: #152f24;
-  --accent: #ff6a00;
+  --accent: #ff6900;
   --accent-dark: #e05e00;
   --bg: #ffffff;
   --page-bg: #ffffff;
-  --soft-bg: #f3f1ec;
+  --soft-bg: #ececec;
   --surface: #ffffff;
   --ink: #1e1e1e;
   --muted: #8a8a8a;
@@ -404,9 +404,11 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
 
 .old-price {
   text-decoration: line-through;
-  color: var(--muted);
-  font-size: 13px;
-  margin-right: 6px;
+  color: rgba(255,255,255,0.65);
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 4px;
+  white-space: nowrap;
 }
 .no-price-note {
   font-size: 13px;
