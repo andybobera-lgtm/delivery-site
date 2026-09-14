@@ -22,7 +22,19 @@
   </div>
 </header>
 
-<nav class="category-nav" id="category-nav"></nav>
+<div class="category-nav-row">
+  <button class="mobile-menu-btn" id="mobile-menu-btn">☰ Меню</button>
+  <nav class="category-nav" id="category-nav"></nav>
+</div>
+
+<div id="mobile-menu-overlay" class="cart-overlay"></div>
+<div id="mobile-menu-drawer" class="mobile-menu-drawer">
+  <div class="picker-header">
+    <h3>Меню</h3>
+    <button class="cart-close" id="mobile-menu-close">✕</button>
+  </div>
+  <div id="mobile-menu-list" class="mobile-menu-list"></div>
+</div>
 
 <main class="menu-wrap">
   <div id="menu-sections">Загрузка меню...</div>
@@ -106,24 +118,28 @@
 <!-- Окно ввода адреса доставки -->
 <div id="address-overlay" class="cart-overlay"></div>
 <div id="address-modal" class="address-modal">
-  <div class="picker-header">
-    <h3>Адрес доставки</h3>
-    <button class="cart-close" id="address-close">✕</button>
-  </div>
-  <div class="picker-body">
-    <input type="text" id="addr-street" placeholder="Улица, дом" />
-    <div class="address-grid">
-      <input type="text" id="addr-flat" placeholder="Квартира" />
-      <input type="text" id="addr-entrance" placeholder="Подъезд" />
-      <input type="text" id="addr-intercom" placeholder="Домофон" />
-      <input type="text" id="addr-floor" placeholder="Этаж" />
+  <div class="address-form-col">
+    <div class="picker-header">
+      <h3>Адрес доставки</h3>
+      <button class="cart-close" id="address-close">✕</button>
     </div>
-    <textarea id="addr-comment" placeholder="Комментарий для курьера"></textarea>
-    <div id="delivery-map" style="height:220px;border-radius:10px;margin-top:8px;background:var(--page-bg);"></div>
-    <div class="product-meta" style="margin-top:6px;">Зона доставки — 5 км от кулинарной лавки «Дачная беседка»</div>
+    <div class="picker-body">
+      <input type="text" id="addr-street" placeholder="Улица, дом" />
+      <div class="address-grid">
+        <input type="text" id="addr-flat" placeholder="Квартира" />
+        <input type="text" id="addr-entrance" placeholder="Подъезд" />
+        <input type="text" id="addr-intercom" placeholder="Домофон" />
+        <input type="text" id="addr-floor" placeholder="Этаж" />
+      </div>
+      <textarea id="addr-comment" placeholder="Комментарий для курьера"></textarea>
+      <div class="product-meta" style="margin-top:6px;">Зона доставки — 4 км от кулинарной лавки «Дачная беседка». Можно кликнуть по карте или перетащить метку, чтобы выбрать точку.</div>
+    </div>
+    <div class="picker-footer">
+      <button class="checkout-btn" id="addr-save">Сохранить</button>
+    </div>
   </div>
-  <div class="picker-footer">
-    <button class="checkout-btn" id="addr-save">Сохранить</button>
+  <div class="address-map-col">
+    <div id="delivery-map"></div>
   </div>
 </div>
 
