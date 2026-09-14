@@ -182,7 +182,7 @@ function renderCardAction(card, product) {
 
   if (product.type === 'combo') {
     const old = product.oldPrice ? `<span class="old-price">${product.oldPrice} ₽</span>` : '';
-    slot.innerHTML = `<button class="buy-btn">${old}${product.price} ₽ <span>+</span></button>`;
+    slot.innerHTML = `<button class="buy-btn">${old}<span class="cur-price">${product.price} ₽</span><span class="btn-plus">+</span></button>`;
     slot.querySelector('.buy-btn').addEventListener('click', () => openComboPicker(product));
     return;
   }
@@ -190,7 +190,7 @@ function renderCardAction(card, product) {
   if (product.type === 'variant') {
     const totalQty = totalQtyForProduct(product.id);
     if (totalQty === 0) {
-      slot.innerHTML = `<button class="buy-btn">${product.price} ₽ <span>+</span></button>`;
+      slot.innerHTML = `<button class="buy-btn"><span class="cur-price">${product.price} ₽</span><span class="btn-plus">+</span></button>`;
       slot.querySelector('.buy-btn').addEventListener('click', () => openVariantPicker(product));
     } else {
       slot.innerHTML = `<div class="qty-stepper" title="Изменить в корзине"><span>${totalQty}</span></div>`;
@@ -203,7 +203,7 @@ function renderCardAction(card, product) {
   const qty = cart[key] ? cart[key].qty : 0;
 
   if (qty === 0) {
-    slot.innerHTML = `<button class="buy-btn">${product.price} ₽ <span>+</span></button>`;
+    slot.innerHTML = `<button class="buy-btn"><span class="cur-price">${product.price} ₽</span><span class="btn-plus">+</span></button>`;
     slot.querySelector('.buy-btn').addEventListener('click', () => {
       addSimpleToCart(product);
       renderCardAction(card, product);
@@ -293,7 +293,7 @@ function openSimpleDetail(product) {
     const footer = noPrice
       ? `<div class="no-price-note">Цену уточняйте при оформлении заказа</div>`
       : qty === 0
-        ? `<button class="checkout-btn" id="detail-add">Добавить — ${product.price} ₽</button>`
+        ? `<button class="buy-btn wide" id="detail-add"><span class="cur-price">${product.price} ₽</span><span class="btn-plus">+</span></button>`
         : `<div style="display:flex;align-items:center;justify-content:space-between;">
              <div class="qty-stepper" style="background:var(--accent);">
                <button id="detail-minus" style="color:white;">−</button>
@@ -405,8 +405,8 @@ function openComboPicker(product) {
       ${rows}
     `;
     const footer = `
-      <button class="checkout-btn" id="picker-done" ${totalCount() === product.totalSlots ? '' : 'disabled style="opacity:0.5"'}>
-        Добавить в корзину — ${product.price} ₽
+      <button class="buy-btn wide" id="picker-done" ${totalCount() === product.totalSlots ? '' : 'disabled style="opacity:0.5"'}>
+        <span class="cur-price">${product.price} ₽</span><span class="btn-plus">+</span>
       </button>
     `;
     pickerShell(product, body, footer);
@@ -596,6 +596,7 @@ document.getElementById('cart-overlay').addEventListener('click', closeCart);
 /* ================= АДРЕС ДОСТАВКИ ================= */
 const KITCHEN_COORDS = [55.673030, 37.614196]; // Кулинарная лавка «Дачная беседка»
 const DELIVERY_RADIUS_M = 4000;
+const GEOCODER_API_KEY = 'f9e25577-c9c0-49ce-b057-04356e083b98';
 let deliveryMap = null;
 
 function initDeliveryMap() {
@@ -621,22 +622,30 @@ function initDeliveryMap() {
       strokeWidth: 2,
     }));
 
-    // Метка адреса — её можно перетаскивать, а клик по карте переставляет её на новое место
+    // Метка адреса — её можно перетаскивать, а клик по карте переставляет её на новое место.
+    // Сплошной оранжевый круг вместо стандартной синей капли.
     const addressMark = new ymaps.Placemark(KITCHEN_COORDS, {}, {
-      preset: 'islands#orangeDotIcon',
+      preset: 'islands#orangeCircleIcon',
       draggable: true,
     });
     deliveryMap.geoObjects.add(addressMark);
 
+    // Определяем адрес по точке напрямую через HTTP Геокодер (со своим отдельным ключом) —
+    // это надёжнее встроенной ymaps.geocode(), которая требует специфичный тип ключа
     function updateAddressFromCoords(coords) {
-      ymaps.geocode(coords).then((res) => {
-        const nearest = res.geoObjects.get(0);
-        if (nearest) {
-          document.getElementById('addr-street').value = nearest.getAddressLine();
-        }
-      }).catch((err) => {
-        console.error('Не удалось определить адрес по точке на карте:', err);
-      });
+      const [lat, lon] = coords; // Яндекс.Карты отдают координаты как [широта, долгота]
+      const url = `https://geocode-maps.yandex.ru/1.x/?apikey=${GEOCODER_API_KEY}&geocode=${lon},${lat}&format=json&results=1`;
+      fetch(url)
+        .then((res) => res.json())
+        .then((data) => {
+          const member = data.response.GeoObjectCollection.featureMember[0];
+          if (member) {
+            document.getElementById('addr-street').value = member.GeoObject.metaDataProperty.GeocoderMetaData.text;
+          }
+        })
+        .catch((err) => {
+          console.error('Не удалось определить адрес по точке на карте:', err);
+        });
     }
 
     addressMark.events.add('dragend', () => updateAddressFromCoords(addressMark.geometry.getCoordinates()));
