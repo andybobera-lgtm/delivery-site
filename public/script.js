@@ -763,4 +763,3 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
 });
 
 loadProducts();
-  
