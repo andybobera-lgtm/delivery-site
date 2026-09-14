@@ -611,7 +611,7 @@ function initDeliveryMap() {
 
     // Аккуратные контролы масштаба и геопозиции
     const zoomControl = new ymaps.control.ZoomControl({ options: { size: 'large', float: 'right' } });
-    const geoControl = new ymaps.control.GeolocationControl({ options: { float: 'right' } });
+    const geoControl = new ymaps.control.GeolocationControl({ options: { float: 'right', noPlacemark: true } });
     deliveryMap.controls.add(zoomControl);
     deliveryMap.controls.add(geoControl);
 
@@ -623,7 +623,7 @@ function initDeliveryMap() {
 
     // Метка адреса — её можно перетаскивать, а клик по карте переставляет её на новое место
     const addressMark = new ymaps.Placemark(KITCHEN_COORDS, {}, {
-      preset: 'islands#redDotIcon',
+      preset: 'islands#orangeDotIcon',
       draggable: true,
     });
     deliveryMap.geoObjects.add(addressMark);
