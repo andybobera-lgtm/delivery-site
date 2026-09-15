@@ -390,7 +390,7 @@ function openComboPicker(product) {
       return `
         <div class="combo-option-row">
           <span class="combo-option-name">${o.name}</span>
-          <div class="qty-stepper" style="background:${count > 0 ? 'var(--accent)' : 'var(--soft-bg)'};">
+          <div class="qty-stepper mini-stepper" style="background:${count > 0 ? 'var(--accent)' : 'var(--soft-bg)'};">
             <button data-opt="${o.id}" data-action="minus" style="color:${count > 0 ? 'white' : 'var(--accent)'}">−</button>
             <span style="color:${count > 0 ? 'white' : 'var(--ink)'}">${count}</span>
             <button data-opt="${o.id}" data-action="plus" ${plusDisabled ? 'disabled style="opacity:0.3"' : `style="color:${count > 0 ? 'white' : 'var(--accent)'}"`}>+</button>
@@ -626,7 +626,7 @@ function initDeliveryMap() {
     // Метка адреса — её можно перетаскивать, а клик по карте переставляет её на новое место.
     // Сплошной оранжевый круг вместо стандартной синей капли.
     const addressMark = new ymaps.Placemark(KITCHEN_COORDS, {}, {
-      preset: 'islands#dotIcon',
+      preset: 'islands#icon',
       iconColor: '#ff6900',
       draggable: true,
     });
@@ -661,11 +661,27 @@ function initDeliveryMap() {
         });
     }
 
-    addressMark.events.add('dragend', () => updateAddressFromCoords(addressMark.geometry.getCoordinates()));
+    // Проверяем, попадает ли точка в зону доставки, и блокируем сохранение, если нет
+    function checkDeliveryZone(coords) {
+      const distance = ymaps.coordSystem.geo.getDistance(coords, KITCHEN_COORDS);
+      const warning = document.getElementById('zone-warning');
+      const saveBtn = document.getElementById('addr-save');
+      const outside = distance > DELIVERY_RADIUS_M;
+      warning.hidden = !outside;
+      saveBtn.disabled = outside;
+      saveBtn.style.opacity = outside ? '0.5' : '1';
+    }
+
+    addressMark.events.add('dragend', () => {
+      const coords = addressMark.geometry.getCoordinates();
+      updateAddressFromCoords(coords);
+      checkDeliveryZone(coords);
+    });
     deliveryMap.events.add('click', (e) => {
       const coords = e.get('coords');
       addressMark.geometry.setCoordinates(coords);
       updateAddressFromCoords(coords);
+      checkDeliveryZone(coords);
     });
 
     // Клик по кнопке геопозиции — переставляем метку на найденное место
@@ -673,6 +689,7 @@ function initDeliveryMap() {
       const coords = e.get('position');
       addressMark.geometry.setCoordinates(coords);
       updateAddressFromCoords(coords);
+      checkDeliveryZone(coords);
       deliveryMap.setCenter(coords, 15);
     });
   });
@@ -771,5 +788,32 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
     errorEl.textContent = 'Ошибка сети, попробуйте ещё раз';
   }
 });
+
+/* ================= Часы работы ================= */
+function checkWorkingHours() {
+  const hour = new Date().getHours();
+  const banner = document.getElementById('hours-banner');
+  if (hour < 10 || hour >= 22) {
+    banner.hidden = false;
+  } else {
+    banner.hidden = true;
+  }
+}
+checkWorkingHours();
+
+/* ================= Меню категорий появляется при прокрутке ================= */
+function setupNavAppearOnScroll() {
+  const row = document.getElementById('category-nav-row');
+  function update() {
+    if (window.scrollY > 80) {
+      row.classList.add('visible');
+    } else {
+      row.classList.remove('visible');
+    }
+  }
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+}
+setupNavAppearOnScroll();
 
 loadProducts();
