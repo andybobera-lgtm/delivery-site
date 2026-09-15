@@ -26,7 +26,11 @@
   <span>Здесь будут слайды с акциями — пришлите картинки, вставим</span>
 </div>
 
-<div class="category-nav-row">
+<div class="hours-banner" id="hours-banner" hidden>
+  <strong>Готовим для вас каждый день с 10:00 до 22:00.</strong> Ждём ваших заказов завтра утром!
+</div>
+
+<div class="category-nav-row" id="category-nav-row">
   <button class="mobile-menu-btn" id="mobile-menu-btn">☰ Меню</button>
   <nav class="category-nav" id="category-nav"></nav>
 </div>
@@ -137,6 +141,7 @@
       </div>
       <textarea id="addr-comment" placeholder="Комментарий для курьера"></textarea>
       <div class="product-meta" style="margin-top:6px;">Зона доставки — 4 км от кулинарной лавки «Дачная беседка». Можно кликнуть по карте или перетащить метку, чтобы выбрать точку.</div>
+      <div id="zone-warning" class="zone-warning" hidden>Ваш адрес не входит в зону доставки</div>
     </div>
     <div class="picker-footer">
       <button class="checkout-btn" id="addr-save">Сохранить</button>
