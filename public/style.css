@@ -87,7 +87,11 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--border);
-  padding: 6px 16px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 16px;
+  padding-right: 0;
+  overflow: visible;
   opacity: 0;
   transform: translateY(-8px);
   transition: opacity 0.25s ease, transform 0.25s ease;
@@ -115,30 +119,38 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
 .category-nav {
   display: flex;
   flex-wrap: nowrap;
+  white-space: nowrap;
   gap: 10px;
   overflow-x: auto;
+  overflow-y: visible;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   flex: 1;
+  padding-right: 0;
+  margin-right: 0;
 }
 .category-nav::-webkit-scrollbar { display: none; }
 .category-chip {
   flex: none;
   padding: 10px 18px;
   border-radius: 10px;
-  background: #f0ece4;
+  background: transparent;
   border: none;
-  color: var(--ink);
+  color: #888888;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 400;
   cursor: pointer;
   white-space: nowrap;
   text-decoration: none;
   transition: background 0.15s ease, color 0.15s ease;
 }
-.category-chip:hover { background: #e2ddd0; }
-.category-chip.active { background: #223449; color: #ffffff; }
-.category-chip.active:hover { background: var(--brand-dark); }
+.category-chip:hover { color: #444444; }
+.category-chip.active {
+  background: #f4f3ee;
+  color: #000000;
+  font-weight: 600;
+}
+.category-chip.active:hover { background: #f4f3ee; color: #000000; }
 
 /* Мобильное меню-шторка со списком категорий */
 .mobile-menu-drawer {
