@@ -598,6 +598,7 @@ const KITCHEN_COORDS = [55.673030, 37.614196]; // Кулинарная лавк�
 const DELIVERY_RADIUS_M = 4000;
 const GEOCODER_API_KEY = 'f9e25577-c9c0-49ce-b057-04356e083b98';
 let deliveryMap = null;
+let addressMarkerRef = null;
 
 function initDeliveryMap() {
   if (deliveryMap || typeof ymaps === 'undefined') return;
@@ -631,6 +632,7 @@ function initDeliveryMap() {
       draggable: true,
     });
     deliveryMap.geoObjects.add(addressMark);
+    addressMarkerRef = addressMark;
 
     // Определяем адрес по точке напрямую через HTTP Геокодер (со своим отдельным ключом) —
     // это надёжнее встроенной ymaps.geocode(), которая требует специфичный тип ключа.
@@ -665,11 +667,7 @@ function initDeliveryMap() {
     function checkDeliveryZone(coords) {
       const distance = ymaps.coordSystem.geo.getDistance(coords, KITCHEN_COORDS);
       const warning = document.getElementById('zone-warning');
-      const saveBtn = document.getElementById('addr-save');
-      const outside = distance > DELIVERY_RADIUS_M;
-      warning.hidden = !outside;
-      saveBtn.disabled = outside;
-      saveBtn.style.opacity = outside ? '0.5' : '1';
+      warning.hidden = distance <= DELIVERY_RADIUS_M;
     }
 
     addressMark.events.add('dragend', () => {
@@ -721,6 +719,17 @@ document.getElementById('addr-save').addEventListener('click', () => {
   if (!street) {
     document.getElementById('addr-street').focus();
     return;
+  }
+
+  // Проверяем зону доставки заново, по текущему положению метки на карте —
+  // не полагаемся на состояние, выставленное когда-то раньше
+  if (addressMarkerRef && typeof ymaps !== 'undefined') {
+    const coords = addressMarkerRef.geometry.getCoordinates();
+    const distance = ymaps.coordSystem.geo.getDistance(coords, KITCHEN_COORDS);
+    if (distance > DELIVERY_RADIUS_M) {
+      document.getElementById('zone-warning').hidden = false;
+      return;
+    }
   }
 
   const parts = [street];
