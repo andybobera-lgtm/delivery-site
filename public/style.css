@@ -360,8 +360,24 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
 }
 .picker-body { flex: 1; min-height: 0; }
 @media (max-width: 640px) {
-  .picker-modal { flex-direction: column; width: min(420px, 92vw); height: min(640px, 90vh); }
-  .picker-photo { width: 100%; height: auto; aspect-ratio: 1 / 1; }
+  .picker-modal {
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    top: 0;
+    left: 0;
+    transform: none !important;
+    border-radius: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .picker-modal.open { transform: none; }
+  .picker-photo { width: 100%; height: auto; aspect-ratio: 1 / 1; flex: none; }
+  .picker-panel { height: auto; min-height: 0; }
+  .picker-body { flex: none; overflow-y: visible; }
+  .picker-modal .cart-close { position: fixed; }
 }
 
 /* Окно адреса: форма слева, карта справа и покрупнее */
