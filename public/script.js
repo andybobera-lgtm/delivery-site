@@ -632,22 +632,31 @@ function initDeliveryMap() {
     deliveryMap.geoObjects.add(addressMark);
 
     // Определяем адрес по точке напрямую через HTTP Геокодер (со своим отдельным ключом) —
-    // это надёжнее встроенной ymaps.geocode(), которая требует специфичный тип ключа
-    function updateAddressFromCoords(coords) {
-      const [lat, lon] = coords; // Яндекс.Карты отдают координаты как [широта, долгота]
-      const url = `https://geocode-maps.yandex.ru/v1/?apikey=${GEOCODER_API_KEY}&geocode=${lon},${lat}&format=json&results=1`;
-      fetch(url)
+    // это надёжнее встроенной ymaps.geocode(), которая требует специфичный тип ключа.
+    // Пробуем оба варианта адреса геокодера на случай, если один из них не подходит для ключа.
+    function tryGeocode(url) {
+      return fetch(url)
         .then((res) => res.json())
         .then((data) => {
           const member = data?.response?.GeoObjectCollection?.featureMember?.[0];
-          if (member) {
-            document.getElementById('addr-street').value = member.GeoObject.metaDataProperty.GeocoderMetaData.text;
-          } else {
-            console.error('Геокодер не вернул адрес:', data);
-          }
+          if (!member) throw new Error('empty result: ' + JSON.stringify(data));
+          return member.GeoObject.metaDataProperty.GeocoderMetaData.text;
+        });
+    }
+
+    function updateAddressFromCoords(coords) {
+      const [lat, lon] = coords; // Яндекс.Карты отдают координаты как [широта, долгота]
+      const geocodeParam = `${lon},${lat}`;
+      const urlOld = `https://geocode-maps.yandex.ru/1.x/?apikey=${GEOCODER_API_KEY}&geocode=${geocodeParam}&format=json&results=1`;
+      const urlNew = `https://geocode-maps.yandex.ru/v1/?apikey=${GEOCODER_API_KEY}&geocode=${geocodeParam}&format=json&results=1`;
+
+      tryGeocode(urlOld)
+        .catch(() => tryGeocode(urlNew))
+        .then((address) => {
+          if (address) document.getElementById('addr-street').value = address;
         })
         .catch((err) => {
-          console.error('Не удалось определить адрес по точке на карте:', err);
+          console.error('Не удалось определить адрес по точке на карте (оба варианта запроса не сработали):', err);
         });
     }
 
