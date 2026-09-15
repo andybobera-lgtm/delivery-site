@@ -620,6 +620,7 @@ function initDeliveryMap() {
       fillColor: '#f15a2422',
       strokeColor: '#f15a24',
       strokeWidth: 2,
+      interactivityModel: 'default#transparent', // круг не перехватывает клики — они проходят на карту
     }));
 
     // Метка адреса — её можно перетаскивать, а клик по карте переставляет её на новое место.
@@ -640,7 +641,7 @@ function initDeliveryMap() {
         .then((data) => {
           const member = data?.response?.GeoObjectCollection?.featureMember?.[0];
           if (!member) throw new Error('empty result: ' + JSON.stringify(data));
-          return member.GeoObject.metaDataProperty.GeocoderMetaData.text;
+          return member.GeoObject.name;
         });
     }
 
