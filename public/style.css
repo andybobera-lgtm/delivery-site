@@ -133,7 +133,7 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
 .category-nav::-webkit-scrollbar { display: none; }
 .category-chip {
   flex: none;
-  padding: 10px 18px;
+  padding: 12px 18px 8px;
   line-height: 1;
   border-radius: 10px;
   background: transparent;
@@ -147,12 +147,14 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; margin: 0; font-weight: 700;
   transition: background 0.15s ease, color 0.15s ease;
 }
 .category-chip:hover { color: #444444; }
+.category-chip:visited { color: #888888; }
 .category-chip.active {
   background: #f4f3ee;
   color: #000000;
   font-weight: 600;
 }
 .category-chip.active:hover { background: #f4f3ee; color: #000000; }
+.category-chip.active:visited { color: #000000; }
 
 /* Мобильное меню-шторка со списком категорий */
 .mobile-menu-drawer {
