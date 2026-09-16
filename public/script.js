@@ -182,16 +182,16 @@ function renderCardAction(card, product) {
 
   if (product.type === 'combo') {
     const old = product.oldPrice ? `<span class="old-price">${product.oldPrice} ₽</span>` : '';
-    slot.innerHTML = `<button class="buy-btn">${old}<span class="cur-price">${product.price} ₽</span><span class="btn-plus">+</span></button>`;
-    slot.querySelector('.buy-btn').addEventListener('click', () => openComboPicker(product));
+    slot.innerHTML = `<button class="view-btn">${old}<span class="cur-price">${product.price} ₽</span><span class="btn-arrow">→</span></button>`;
+    slot.querySelector('.view-btn').addEventListener('click', () => openComboPicker(product));
     return;
   }
 
   if (product.type === 'variant') {
     const totalQty = totalQtyForProduct(product.id);
     if (totalQty === 0) {
-      slot.innerHTML = `<button class="buy-btn"><span class="cur-price">${product.price} ₽</span><span class="btn-plus">+</span></button>`;
-      slot.querySelector('.buy-btn').addEventListener('click', () => openVariantPicker(product));
+      slot.innerHTML = `<button class="view-btn"><span class="cur-price">${product.price} ₽</span><span class="btn-arrow">→</span></button>`;
+      slot.querySelector('.view-btn').addEventListener('click', () => openVariantPicker(product));
     } else {
       slot.innerHTML = `<div class="qty-stepper" title="Изменить в корзине"><span>${totalQty}</span></div>`;
       slot.querySelector('.qty-stepper').addEventListener('click', () => openVariantPicker(product));
@@ -203,11 +203,8 @@ function renderCardAction(card, product) {
   const qty = cart[key] ? cart[key].qty : 0;
 
   if (qty === 0) {
-    slot.innerHTML = `<button class="buy-btn"><span class="cur-price">${product.price} ₽</span><span class="btn-plus">+</span></button>`;
-    slot.querySelector('.buy-btn').addEventListener('click', () => {
-      addSimpleToCart(product);
-      renderCardAction(card, product);
-    });
+    slot.innerHTML = `<button class="view-btn"><span class="cur-price">${product.price} ₽</span><span class="btn-arrow">→</span></button>`;
+    slot.querySelector('.view-btn').addEventListener('click', () => openSimpleDetail(product));
   } else {
     slot.innerHTML = `
       <div class="qty-stepper">
