@@ -3,13 +3,13 @@
   --accent: #487648;
   --accent-dark: #395f39;
   --accent-orange: rgba(255, 75, 5, 1);
-  --bg: rgba(255, 238, 215, 1);
-  --page-bg: rgba(255, 238, 215, 1);
-  --soft-bg: #f3e6d2;
-  --surface: rgba(255, 238, 215, 1);
+  --bg: #ffffff;
+  --page-bg: #ffffff;
+  --soft-bg: #f3f1ec;
+  --surface: #ffffff;
   --ink: #1e1e1e;
   --muted: #8a8a8a;
-  --border: #ecdcc0;
+  --border: #ece7de;
   --radius: 14px;
 }
 
