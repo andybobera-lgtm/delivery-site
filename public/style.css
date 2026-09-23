@@ -1,771 +1,877 @@
-[
-  {
-    "id": "combo-chudu-big",
-    "category": "Акции и Наборы",
-    "name": "Большой набор Чуду",
-    "price": 2500,
-    "weight": "1.36 кг",
-    "description": "Соберите свой набор чуду на выбор",
-    "type": "combo",
-    "oldPrice": 2620,
-    "totalSlots": 8,
-    "meatMax": 3,
-    "options": [
-      {
-        "id": "zelen",
-        "name": "Чуду тонкое с зеленью",
-        "isMeat": false
-      },
-      {
-        "id": "botishal",
-        "name": "Ботишал",
-        "isMeat": false
-      },
-      {
-        "id": "myaso",
-        "name": "Чуду тонкое с мясом",
-        "isMeat": true
-      },
-      {
-        "id": "syr_zelen",
-        "name": "Чуду тонкое с сыром и зеленью",
-        "isMeat": false
-      },
-      {
-        "id": "tykva",
-        "name": "Чуду тонкое с тыквой",
-        "isMeat": false
-      }
-    ]
-  },
-  {
-    "id": "combo-chudu-two",
-    "category": "Акции и Наборы",
-    "name": "Набор чуду для двоих",
-    "price": 1250,
-    "weight": "680 г",
-    "description": "Соберите свой набор чуду на выбор",
-    "type": "combo",
-    "oldPrice": 1340,
-    "totalSlots": 4,
-    "meatMax": 2,
-    "options": [
-      {
-        "id": "zelen",
-        "name": "Чуду тонкое с зеленью",
-        "isMeat": false
-      },
-      {
-        "id": "botishal",
-        "name": "Ботишал",
-        "isMeat": false
-      },
-      {
-        "id": "myaso",
-        "name": "Чуду тонкое с мясом",
-        "isMeat": true
-      },
-      {
-        "id": "syr_zelen",
-        "name": "Чуду тонкое с сыром и зеленью",
-        "isMeat": false
-      },
-      {
-        "id": "tykva",
-        "name": "Чуду тонкое с тыквой",
-        "isMeat": false
-      }
-    ]
-  },
-  {
-    "id": "set-meat-6",
-    "category": "Акции и Наборы",
-    "name": "Большая мясная компания на 6",
-    "price": 5200,
-    "weight": "3.3 кг",
-    "description": ""
-  },
-  {
-    "id": "set-assorti-4",
-    "category": "Акции и Наборы",
-    "name": "Ассорти сет на 4",
-    "price": 3800,
-    "weight": "2.3 кг",
-    "description": ""
-  },
-  {
-    "id": "set-meat-2",
-    "category": "Акции и Наборы",
-    "name": "Мясной сет на двоих",
-    "price": 1400,
-    "weight": "1.06 кг",
-    "description": ""
-  },
-  {
-    "id": "shashlyk-chicken",
-    "category": "Шашлык",
-    "name": "Шашлык из цыплёнка",
-    "price": 480,
-    "weight": "350 г",
-    "description": ""
-  },
-  {
-    "id": "shashlyk-lamb",
-    "category": "Шашлык",
-    "name": "Шашлык из баранины мякоть",
-    "price": 980,
-    "weight": "350 г",
-    "description": ""
-  },
-  {
-    "id": "lyulya-lamb-turkey",
-    "category": "Шашлык",
-    "name": "Люля баранина/индейка",
-    "price": 530,
-    "weight": "350 г",
-    "description": ""
-  },
-  {
-    "id": "lyulya-chicken",
-    "category": "Шашлык",
-    "name": "Люля из цыплёнка",
-    "price": 480,
-    "weight": "350 г",
-    "description": ""
-  },
-  {
-    "id": "veggie-grill",
-    "category": "Шашлык",
-    "name": "Овощи гриль",
-    "price": 540,
-    "weight": "450 г",
-    "description": ""
-  },
-  {
-    "id": "pleskavica",
-    "category": "Шашлык",
-    "name": "Плескавица с сыром",
-    "price": 530,
-    "weight": "350 г",
-    "description": "Баранина, говядина, индейка, сыр Чеддер, сыр Пармезан"
-  },
-  {
-    "id": "koreika-lamb",
-    "category": "Шашлык",
-    "name": "Корейка ягнёнка с овощами гриль",
-    "price": 1200,
-    "weight": "500 г",
-    "description": ""
-  },
-  {
-    "id": "hinkal-avar",
-    "category": "Хинкал",
-    "name": "Аварский хинкал",
-    "price": 700,
-    "weight": "920 г",
-    "description": "",
-    "type": "variant",
-    "variants": [
-      {
-        "id": "govyadina",
-        "label": "С говядиной",
-        "price": 700,
-        "weight": "920 г"
-      },
-      {
-        "id": "kolbasa",
-        "label": "С сушёной колбасой",
-        "price": 900,
-        "weight": "810 г"
-      },
-      {
-        "id": "myaso",
-        "label": "С сушёным мясом",
-        "price": 900,
-        "weight": "810 г"
-      }
-    ]
-  },
-  {
-    "id": "hinkal-dargin",
-    "category": "Хинкал",
-    "name": "Даргинский хинкал",
-    "price": 700,
-    "weight": "920 г",
-    "description": "",
-    "type": "variant",
-    "variants": [
-      {
-        "id": "govyadina",
-        "label": "С говядиной",
-        "price": 700,
-        "weight": "920 г"
-      },
-      {
-        "id": "kolbasa",
-        "label": "С сушёной колбасой",
-        "price": 900,
-        "weight": "810 г"
-      },
-      {
-        "id": "myaso",
-        "label": "С сушёным мясом",
-        "price": 900,
-        "weight": "810 г"
-      }
-    ]
-  },
-  {
-    "id": "hinkal-laksky",
-    "category": "Хинкал",
-    "name": "Лакский хинкал",
-    "price": 700,
-    "weight": "920 г",
-    "description": "",
-    "type": "variant",
-    "variants": [
-      {
-        "id": "govyadina",
-        "label": "С говядиной",
-        "price": 700,
-        "weight": "920 г"
-      },
-      {
-        "id": "kolbasa",
-        "label": "С сушёной колбасой",
-        "price": 900,
-        "weight": "810 г"
-      },
-      {
-        "id": "myaso",
-        "label": "С сушёным мясом",
-        "price": 900,
-        "weight": "810 г"
-      }
-    ]
-  },
-  {
-    "id": "hinkal-thin",
-    "category": "Хинкал",
-    "name": "Тонкий хинкал",
-    "price": 700,
-    "weight": "920 г",
-    "description": "",
-    "type": "variant",
-    "variants": [
-      {
-        "id": "govyadina",
-        "label": "С говядиной",
-        "price": 700,
-        "weight": "920 г"
-      },
-      {
-        "id": "kolbasa",
-        "label": "С сушёной колбасой",
-        "price": 900,
-        "weight": "810 г"
-      },
-      {
-        "id": "myaso",
-        "label": "С сушёным мясом",
-        "price": 900,
-        "weight": "810 г"
-      }
-    ]
-  },
-  {
-    "id": "hinkal-corn",
-    "category": "Хинкал",
-    "name": "Хинкал кукурузный",
-    "price": 700,
-    "weight": "920 г",
-    "description": "",
-    "type": "variant",
-    "variants": [
-      {
-        "id": "govyadina",
-        "label": "С говядиной",
-        "price": 700,
-        "weight": "920 г"
-      },
-      {
-        "id": "kolbasa",
-        "label": "С сушёной колбасой",
-        "price": 900,
-        "weight": "810 г"
-      }
-    ]
-  },
-  {
-    "id": "chudu-zelen",
-    "category": "Чуду",
-    "name": "Чуду тонкое с зеленью",
-    "price": 320,
-    "weight": "170 г",
-    "description": ""
-  },
-  {
-    "id": "botishal",
-    "category": "Чуду",
-    "name": "Ботишал",
-    "price": 320,
-    "weight": "170 г",
-    "description": ""
-  },
-  {
-    "id": "chudu-myaso",
-    "category": "Чуду",
-    "name": "Чуду тонкое с мясом",
-    "price": 350,
-    "weight": "170 г",
-    "description": ""
-  },
-  {
-    "id": "chudu-syr-zelen",
-    "category": "Чуду",
-    "name": "Чуду тонкое с сыром и зеленью",
-    "price": 320,
-    "weight": "170 г",
-    "description": ""
-  },
-  {
-    "id": "chudu-tykva",
-    "category": "Чуду",
-    "name": "Чуду тонкое с тыквой",
-    "price": 320,
-    "weight": "170 г",
-    "description": ""
-  },
-  {
-    "id": "kurze-govyadina",
-    "category": "Курзе",
-    "name": "Курзе с говядиной",
-    "price": 365,
-    "weight": "200 г",
-    "description": ""
-  },
-  {
-    "id": "kurze-govyadina-baranina",
-    "category": "Курзе",
-    "name": "Курзе с говядиной и бараниной",
-    "price": 365,
-    "weight": "200 г",
-    "description": ""
-  },
-  {
-    "id": "kurze-zelen-yaico",
-    "category": "Курзе",
-    "name": "Курзе с зеленью и яйцом",
-    "price": 345,
-    "weight": "200 г",
-    "description": ""
-  },
-  {
-    "id": "pelmeni-indeyka",
-    "category": "Курзе",
-    "name": "Пельмени с индейкой",
-    "price": 310,
-    "weight": "200 г",
-    "description": ""
-  },
-  {
-    "id": "pelmeni-kuritsa",
-    "category": "Курзе",
-    "name": "Пельмени с курицей",
-    "price": 280,
-    "weight": "200 г",
-    "description": ""
-  },
-  {
-    "id": "manty-baranina-govyadina",
-    "category": "Курзе",
-    "name": "Манты с бараниной и говядиной",
-    "price": 390,
-    "weight": "320 г",
-    "description": ""
-  },
-  {
-    "id": "manty-govyadina",
-    "category": "Курзе",
-    "name": "Манты с говядиной",
-    "price": 390,
-    "weight": "320 г",
-    "description": ""
-  },
-  {
-    "id": "vareniki-kapusta",
-    "category": "Курзе",
-    "name": "Вареники с капустой",
-    "price": 340,
-    "weight": "",
-    "description": ""
-  },
-  {
-    "id": "vareniki-kartoshka",
-    "category": "Курзе",
-    "name": "Вареники с картошкой",
-    "price": 320,
-    "weight": "240 г",
-    "description": ""
-  },
-  {
-    "id": "vareniki-kartoshka-griby",
-    "category": "Курзе",
-    "name": "Вареники с картошкой и грибами",
-    "price": 350,
-    "weight": "240 г",
-    "description": ""
-  },
-  {
-    "id": "vareniki-syr-zelen",
-    "category": "Курзе",
-    "name": "Вареники с сыром и зеленью",
-    "price": 370,
-    "weight": "240 г",
-    "description": ""
-  },
-  {
-    "id": "vareniki-tvorog",
-    "category": "Курзе",
-    "name": "Вареники с домашним творогом",
-    "price": 340,
-    "weight": "240 г",
-    "description": ""
-  },
-  {
-    "id": "uzbek-placeholder",
-    "category": "Узбекская кухня",
-    "name": "[Впишите блюдо узбекской кухни]",
-    "price": 0,
-    "weight": "",
-    "description": "Временная позиция — пришлите список блюд, и я заменю"
-  },
-  {
-    "id": "golubtsy",
-    "category": "Горячие блюда",
-    "name": "Голубцы с мясом",
-    "price": 480,
-    "weight": "400 г",
-    "description": ""
-  },
-  {
-    "id": "zrazy-indeyka",
-    "category": "Горячие блюда",
-    "name": "Зразы Жюльен из индейки с грибами и сыром",
-    "price": 400,
-    "weight": "",
-    "description": ""
-  },
-  {
-    "id": "zrazy-chicken",
-    "category": "Горячие блюда",
-    "name": "Зразы из цыплёнка с грибами и яйцом",
-    "price": 350,
-    "weight": "350 г",
-    "description": ""
-  },
-  {
-    "id": "perec-farsh",
-    "category": "Горячие блюда",
-    "name": "Перец фаршированный",
-    "price": 480,
-    "weight": "400 г",
-    "description": ""
-  },
-  {
-    "id": "hachapuri-megrelsky",
-    "category": "Горячие блюда",
-    "name": "Хачапури по-мегрельски",
-    "price": 730,
-    "weight": "370 г",
-    "description": ""
-  },
-  {
-    "id": "hachapuri-adjarsky",
-    "category": "Горячие блюда",
-    "name": "Хачапури по-аджарски",
-    "price": 730,
-    "weight": "360 г",
-    "description": ""
-  },
-  {
-    "id": "hachapuri-imeretinsky",
-    "category": "Горячие блюда",
-    "name": "Хачапури по-имеретински",
-    "price": 730,
-    "weight": "370 г",
-    "description": ""
-  },
-  {
-    "id": "borsch",
-    "category": "Супы",
-    "name": "Борщ",
-    "price": 400,
-    "weight": "400 г",
-    "description": ""
-  },
-  {
-    "id": "sup-lapsha",
-    "category": "Супы",
-    "name": "Суп-лапша куриный",
-    "price": null,
-    "weight": "400 г",
-    "description": ""
-  },
-  {
-    "id": "lagman-uigursky",
-    "category": "Супы",
-    "name": "Лагман уйгурский жареный",
-    "price": 450,
-    "weight": "400 г",
-    "description": ""
-  },
-  {
-    "id": "lagman-uzbeksky",
-    "category": "Супы",
-    "name": "Лагман узбекистанский",
-    "price": 450,
-    "weight": "400 г",
-    "description": ""
-  },
-  {
-    "id": "salat-ovoshnoy",
-    "category": "Салаты",
-    "name": "Овощной",
-    "price": 300,
-    "weight": "250 г",
-    "description": ""
-  },
-  {
-    "id": "salat-grechesky",
-    "category": "Салаты",
-    "name": "Греческий",
-    "price": 350,
-    "weight": "250 г",
-    "description": ""
-  },
-  {
-    "id": "salat-cezar",
-    "category": "Салаты",
-    "name": "Цезарь с цыплёнком на гриле",
-    "price": 400,
-    "weight": "250 г",
-    "description": ""
-  },
-  {
-    "id": "salat-baklazhany",
-    "category": "Салаты",
-    "name": "Хрустящие баклажаны",
-    "price": 450,
-    "weight": "250 г",
-    "description": ""
-  },
-  {
-    "id": "salat-caprese",
-    "category": "Салаты",
-    "name": "Салат Капрезе с моцареллой",
-    "price": 380,
-    "weight": "250 г",
-    "description": ""
-  },
-  {
-    "id": "salat-caprese-chicken",
-    "category": "Салаты",
-    "name": "Салат Капрезе с цыплёнком-гриль",
-    "price": 480,
-    "weight": "290 г",
-    "description": ""
-  },
-  {
-    "id": "pizza-3myasa",
-    "category": "Пицца",
-    "name": "Неаполитанская пицца 3 мяса",
-    "price": 700,
-    "weight": "450 г",
-    "description": "30 см"
-  },
-  {
-    "id": "pizza-4cheese",
-    "category": "Пицца",
-    "name": "Неаполитанская пицца 4 сыра «Quattro formaggi»",
-    "price": 700,
-    "weight": "450 г",
-    "description": "30 см"
-  },
-  {
-    "id": "pizza-baklazhan",
-    "category": "Пицца",
-    "name": "Неаполитанская пицца с баклажанами-гриль и кинзой",
-    "price": 700,
-    "weight": "450 г",
-    "description": "30 см"
-  },
-  {
-    "id": "pizza-chicken-griby",
-    "category": "Пицца",
-    "name": "Неаполитанская пицца с цыплёнком-гриль и грибочками",
-    "price": 700,
-    "weight": "450 г",
-    "description": "30 см"
-  },
-  {
-    "id": "pizza-margarita",
-    "category": "Пицца",
-    "name": "Неаполитанская пицца Маргарита",
-    "price": 700,
-    "weight": "450 г",
-    "description": "30 см"
-  },
-  {
-    "id": "blinchiki-tvorog",
-    "category": "Блинчики",
-    "name": "Блинчики с домашним творогом",
-    "price": 250,
-    "weight": "220 г",
-    "description": ""
-  },
-  {
-    "id": "blinchiki-myaso",
-    "category": "Блинчики",
-    "name": "Блинчики с мясом (говядина)",
-    "price": 350,
-    "weight": "200 г",
-    "description": ""
-  },
-  {
-    "id": "tort-kapriz",
-    "category": "Десерты",
-    "name": "Торт «Дамский каприз»",
-    "price": 350,
-    "weight": "135 г",
-    "description": ""
-  },
-  {
-    "id": "cake-pops",
-    "category": "Десерты",
-    "name": "Набор кейк-попс",
-    "price": 500,
-    "weight": "170 г",
-    "description": ""
-  },
-  {
-    "id": "cheesecake",
-    "category": "Десерты",
-    "name": "Чизкейк классический",
-    "price": 520,
-    "weight": "210 г",
-    "description": ""
-  },
-  {
-    "id": "tort-merengue",
-    "category": "Десерты",
-    "name": "Меренговый торт с малиной",
-    "price": 450,
-    "weight": "225 г",
-    "description": ""
-  },
-  {
-    "id": "rulet-fistashka",
-    "category": "Десерты",
-    "name": "Фисташковый рулет с малиной",
-    "price": 500,
-    "weight": "160 г",
-    "description": ""
-  },
-  {
-    "id": "tiramisu",
-    "category": "Десерты",
-    "name": "Тирамису",
-    "price": 350,
-    "weight": "170 г",
-    "description": ""
-  },
-  {
-    "id": "sous-bbq",
-    "category": "Соусы",
-    "name": "Барбекю",
-    "price": 70,
-    "weight": "30 г",
-    "description": ""
-  },
-  {
-    "id": "sous-smetana",
-    "category": "Соусы",
-    "name": "Сметана",
-    "price": 50,
-    "weight": "30 г",
-    "description": ""
-  },
-  {
-    "id": "sous-medovo-gorchichny",
-    "category": "Соусы",
-    "name": "Соус медово-горчичный",
-    "price": 90,
-    "weight": "30 г",
-    "description": ""
-  },
-  {
-    "id": "sous-slivochny-chesnok",
-    "category": "Соусы",
-    "name": "Соус сливочный с чесноком",
-    "price": 80,
-    "weight": "30 г",
-    "description": ""
-  },
-  {
-    "id": "sous-adjika",
-    "category": "Соусы",
-    "name": "Аджика домашняя",
-    "price": 80,
-    "weight": "30 г",
-    "description": ""
-  },
-  {
-    "id": "napitok-saperavi",
-    "category": "Напитки",
-    "name": "Натахтари Саперави",
-    "price": 150,
-    "weight": "500 мл",
-    "description": ""
-  },
-  {
-    "id": "napitok-tarhun",
-    "category": "Напитки",
-    "name": "Натахтари Тархун",
-    "price": 150,
-    "weight": "500 мл",
-    "description": ""
-  },
-  {
-    "id": "napitok-grusha",
-    "category": "Напитки",
-    "name": "Натахтари Груша",
-    "price": 150,
-    "weight": "500 мл",
-    "description": ""
-  },
-  {
-    "id": "napitok-cola",
-    "category": "Напитки",
-    "name": "Coca-Cola",
-    "price": 150,
-    "weight": "330 мл",
-    "description": ""
-  },
-  {
-    "id": "napitok-mors",
-    "category": "Напитки",
-    "name": "Морс Смородина",
-    "price": 150,
-    "weight": "330 мл",
-    "description": ""
-  },
-  {
-    "id": "napitok-kompot",
-    "category": "Напитки",
-    "name": "Компот из сухофруктов",
-    "price": 150,
-    "weight": "330 мл",
-    "description": ""
+:root {
+  --brand-dark: #152f24;
+  --accent: #487648;
+  --accent-dark: #395f39;
+  --accent-orange: rgba(255, 75, 5, 1);
+  --bg: #ffffff;
+  --page-bg: #ffffff;
+  --soft-bg: #f3f1ec;
+  --surface: #ffffff;
+  --ink: #1e1e1e;
+  --muted: #8a8a8a;
+  --border: #ece7de;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Manrope', -apple-system, sans-serif;
+  background: var(--page-bg);
+  color: var(--ink);
+}
+
+h1, h2, h3 { font-family: 'Manrope', sans-serif; margin: 0; font-weight: 600; color: var(--ink); }
+
+/* ---------- Header ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  background: var(--page-bg);
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  overflow: visible;
+}
+.site-header-inner {
+  width: 100%;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-logo { height: 68px; display: block; margin: -10px 0; }
+.brand-name { font-weight: 700; font-size: 19px; color: var(--ink); white-space: nowrap; }
+@media (max-width: 480px) {
+  .brand-name { font-size: 15px; }
+}
+
+.promo-banner {
+  background: #f4f4f4;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 18px;
+  margin: 0;
+}
+.hours-banner {
+  background: #1b1c32;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  color: #fdc11c;
+  font-size: 13px;
+  text-align: center;
+  padding: 12px;
+}
+.hours-banner strong { font-weight: 800; }
+.zone-warning {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #fdecea;
+  color: #c0392b;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.age-badge {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- Category nav (плоский стиль, как у daglavka) ---------- */
+.category-nav-row {
+  position: sticky;
+  top: 60px;
+  z-index: 19;
+  background: var(--page-bg);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 16px;
+  padding-right: 0;
+  overflow: visible;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+}
+.category-nav-row.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.mobile-menu-btn {
+  display: none;
+  flex: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+  margin-right: 8px;
+  color: var(--ink);
+}
+.category-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+  padding-right: 0;
+  margin-right: 0;
+}
+.category-nav::-webkit-scrollbar { display: none; }
+.category-chip {
+  flex: none;
+  padding: 10px 18px;
+  line-height: 1;
+  border-radius: 10px;
+  position: relative;
+  top: 3px;
+  background: transparent;
+  border: none;
+  color: #888888;
+  font-size: 15px;
+  font-weight: 400;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.category-chip:hover { color: #444444; }
+.category-chip:visited { color: #888888; }
+.category-chip.active {
+  background: #f4f3ee;
+  color: #000000;
+  font-weight: 600;
+}
+.category-chip.active:hover { background: #f4f3ee; color: #000000; }
+.category-chip.active:visited { color: #000000; }
+
+/* Мобильное меню-шторка со списком категорий */
+.mobile-menu-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: min(320px, 85vw);
+  background: var(--surface);
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  box-shadow: 8px 0 24px rgba(0,0,0,0.15);
+}
+.mobile-menu-drawer.open { transform: translateX(0); }
+.mobile-menu-list { padding: 8px 12px; overflow-y: auto; }
+.mobile-menu-list a {
+  display: block;
+  padding: 12px 10px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+.mobile-menu-list a:hover { background: var(--soft-bg); }
+@media (max-width: 720px) {
+  .mobile-menu-btn { display: block; }
+  .category-nav { display: none; }
+}
+
+/* ---------- Menu ---------- */
+.menu-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 120px;
+}
+.menu-section { margin-bottom: 36px; scroll-margin-top: 140px; }
+.menu-section h2 { font-size: 22px; margin-bottom: 16px; color: var(--ink); font-weight: 600; }
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 720px) {
+  .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+}
+
+.product-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+  cursor: pointer;
+}
+.product-thumb {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+}
+.product-body {
+  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.product-body h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.product-meta { font-size: 11px; color: var(--muted); font-weight: 400; }
+
+.product-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+.product-price { font-weight: 700; font-size: 14px; color: var(--accent); }
+
+.add-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  width: 30px;
+  height: 30px;
+  font-size: 17px;
+  cursor: pointer;
+  line-height: 1;
+  flex: none;
+}
+.add-btn:hover { background: var(--accent-dark); }
+
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--accent);
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+.qty-stepper button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 19px;
+  width: 20px;
+  cursor: pointer;
+}
+.qty-stepper span { color: white; font-weight: 700; min-width: 14px; text-align: center; font-size: 15px; }
+
+/* ---------- Floating cart button ---------- */
+.cart-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 30;
+  background: rgba(255, 75, 5, 1);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(241, 90, 36, 0.4);
+}
+.cart-fab-count {
+  background: rgba(255,255,255,0.25);
+  border-radius: 999px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+/* ---------- Overlay (общий, для корзины и окон выбора) ---------- */
+.cart-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(21, 47, 36, 0.5);
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.cart-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---------- Picker modal (варианты / конструктор / описание товара) ---------- */
+.picker-modal, .address-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 60;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -48%) scale(0.98);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  max-height: 85vh;
+  overflow: hidden;
+}
+.picker-modal.open, .address-modal.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Окно с фото слева (хинкал, наборы, обычные блюда) */
+.picker-modal {
+  display: flex;
+  flex-direction: row;
+  width: min(900px, 95vw);
+  height: min(600px, 88vh);
+}
+.picker-photo {
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+}
+.picker-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+.picker-body { flex: 1; min-height: 0; }
+@media (max-width: 640px) {
+  .picker-modal {
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    top: 0;
+    left: 0;
+    transform: none !important;
+    border-radius: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
-]
+  .picker-modal.open { transform: none; }
+  .picker-photo { width: 100%; height: auto; aspect-ratio: 1 / 1; flex: none; }
+  .picker-panel { height: auto; min-height: 0; }
+  .picker-body { flex: none; overflow-y: visible; }
+  .picker-modal .cart-close { position: fixed; }
+}
+
+/* Окно адреса: форма слева, карта справа и покрупнее */
+.address-modal {
+  display: flex;
+  flex-direction: row;
+  width: min(920px, 95vw);
+  height: min(560px, 88vh);
+}
+.address-form-col {
+  width: 360px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.address-form-col .picker-body { overflow-y: auto; }
+.address-map-col {
+  flex: 1;
+  min-width: 0;
+}
+#delivery-map { width: 100%; height: 100%; }
+@media (max-width: 780px) {
+  .address-modal { flex-direction: column; width: min(420px, 92vw); height: min(680px, 96vh); }
+  .address-form-col {
+    width: 100%;
+    order: 2;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .address-form-col .picker-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .address-form-col .picker-footer {
+    flex: none;
+  }
+  .address-map-col { height: 34vh; min-height: 190px; flex: none; order: 1; }
+}
+.picker-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.picker-modal .cart-close,
+.address-modal .cart-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  background: var(--surface);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  font-size: 15px;
+  color: var(--ink);
+}
+.picker-header h3 { font-size: 18px; color: var(--ink); font-weight: 600; }
+.picker-body { padding: 16px 20px; overflow-y: auto; }
+.picker-footer { padding: 14px 20px 18px; border-top: 1px solid var(--border); }
+
+.picker-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 14px;
+}
+.picker-description { font-size: 14px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+
+.variant-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+.variant-option.selected { border-color: var(--accent); background: #fef1ec; }
+.variant-option-info { font-size: 14px; }
+.variant-option-price { font-weight: 700; }
+
+.combo-progress {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.combo-progress b { color: var(--ink); }
+.combo-option-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 10px;
+}
+.mini-stepper {
+  gap: 8px !important;
+  padding: 3px 8px !important;
+}
+.mini-stepper button {
+  font-size: 15px !important;
+  width: 16px !important;
+}
+.mini-stepper span {
+  font-size: 13px !important;
+  min-width: 10px !important;
+}
+.combo-option-name { font-size: 14px; flex-grow: 1; }
+
+.old-price {
+  text-decoration: line-through;
+  color: rgba(255,255,255,0.9);
+  font-size: 14px;
+  font-weight: 700;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+.no-price-note {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ---------- Cart drawer ---------- */
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(420px, 100%);
+  background: var(--surface);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.28s ease;
+  box-shadow: -8px 0 24px rgba(0,0,0,0.15);
+  font-weight: 500;
+}
+.cart-drawer.open { transform: translateX(0); }
+
+.cart-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.cart-drawer-header h2 { color: var(--ink); font-weight: 600; }
+.cart-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.cart-items {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 12px 20px;
+}
+.cart-line {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.cart-line-thumb {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+}
+.cart-line-info { flex-grow: 1; min-width: 0; }
+.cart-line-name { font-size: 14px; font-weight: 600; display: block; }
+.cart-line-composition {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cart-line-composition li {
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.cart-line-side {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.cart-line-price { font-size: 14px; font-weight: 700; white-space: nowrap; color: var(--accent); }
+.cart-line-remove { color: var(--muted); font-size: 13px; text-decoration: none; }
+
+.cart-line .qty-stepper { background: var(--soft-bg); }
+.cart-line .qty-stepper button { color: var(--accent); }
+.cart-line .qty-stepper span { color: var(--ink); }
+
+.cart-drawer-footer {
+  border-top: 1px solid var(--border);
+  padding: 16px 20px 20px;
+}
+.cart-total-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--brand-dark);
+}
+
+#checkout-form { display: flex; flex-direction: column; gap: 10px; }
+#checkout-form input, #checkout-form textarea {
+  padding: 14px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.checkout-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+}
+.checkout-btn:hover { background: var(--accent-dark); }
+.agree { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: flex-start; }
+.agree a { color: var(--accent); }
+.form-error { color: #c0392b; font-size: 13px; min-height: 16px; }
+
+/* ---------- Объединённая кнопка "цена + плюс" на карточке ---------- */
+.buy-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 10px 8px 10px 16px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Manrope', sans-serif;
+}
+.buy-btn:hover { background: var(--accent-dark); }
+.view-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Manrope', sans-serif;
+}
+.view-btn:hover { background: var(--accent-dark); }
+.view-btn .btn-arrow { font-size: 15px; line-height: 1; }
+.buy-btn.wide {
+  width: 100%;
+  justify-content: center;
+  gap: 16px;
+  padding: 14px 20px;
+  font-size: 16px;
+  border-radius: 14px;
+}
+.buy-btn.wide .btn-plus { width: 32px; height: 32px; font-size: 19px; }
+.buy-btn span.btn-plus {
+  background: rgba(255,255,255,0.25);
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex: none;
+}
+.buy-btn .cur-price { white-space: nowrap; }
+
+/* ---------- Приборы ---------- */
+.cutlery-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--soft-bg);
+  border-radius: 12px;
+  padding: 16px 14px 16px 18px;
+  margin-bottom: 14px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.cutlery-stepper {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cutlery-stepper button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  font-size: 19px;
+  cursor: pointer;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cutlery-stepper button:hover { background: #f2ece0; }
+.cutlery-stepper span {
+  font-weight: 700;
+  font-size: 15px;
+  min-width: 16px;
+  text-align: center;
+}
+
+/* ---------- Добавить ещё (в корзине) ---------- */
+.cart-upsell {
+  margin-top: 16px;
+}
+.cart-upsell-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.cart-upsell-viewport {
+  position: relative;
+}
+.cart-upsell-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.cart-upsell-row::-webkit-scrollbar { display: none; }
+.upsell-arrow {
+  position: absolute;
+  top: 38px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.upsell-arrow-prev { left: -4px; }
+.upsell-arrow-next { right: -4px; }
+.upsell-arrow.is-hidden { opacity: 0; pointer-events: none; }
+.upsell-card {
+  flex: none;
+  width: 110px;
+  cursor: pointer;
+}
+.upsell-thumb {
+  width: 110px;
+  height: 90px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 6px;
+}
+.upsell-name {
+  font-size: 12px;
+  line-height: 1.3;
+  max-height: 2.6em;
+  overflow: hidden;
+}
+.upsell-price { font-size: 12px; font-weight: 700; color: var(--accent); }
+
+/* ---------- Кнопка выбора адреса + окно адреса ---------- */
+.address-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--ink);
+}
+.address-btn span:last-child { color: var(--muted); }
+
+.address-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0;
+}
+#address-modal input, #address-modal textarea {
+  width: 100%;
+  padding: 14px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  margin-bottom: 8px;
+}
+
+.footer {
+  max-width: 1100px;
+  margin: 0 auto 20px;
+  padding: 0 20px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+.footer a { color: var(--muted); }
+
+@media (max-width: 480px) {
+  .cart-drawer { width: 100%; }
+}
