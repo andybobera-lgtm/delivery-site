@@ -486,20 +486,26 @@ function renderCartLines() {
   container.innerHTML = '';
   keys.forEach((key) => {
     const line = cart[key];
+    const product = products.find((p) => p.id === line.productId);
+    const thumbData = thumbStyleAndText(product || { id: line.productId, name: line.name });
+    const thumbHtml = `<div class="cart-line-thumb" style="${thumbData.style}">${thumbData.text}</div>`;
     const row = document.createElement('div');
     row.className = 'cart-line';
 
     if (line.type === 'combo') {
       const extra = line.comboSelections
-        ? `<div class="product-meta">${line.comboSelections.map((s) => s.name + ' ×' + s.count).join(', ')}</div>`
+        ? `<ul class="cart-line-composition">${line.comboSelections.map((s) => `<li>${s.name} ×${s.count}</li>`).join('')}</ul>`
         : '';
       row.innerHTML = `
-        <div style="flex-grow:1;">
+        ${thumbHtml}
+        <div class="cart-line-info">
           <span class="cart-line-name">${line.name}</span>
           ${extra}
         </div>
-        <span class="cart-line-price">${line.price} ₽</span>
-        <a href="#" data-remove="${key}" style="color:var(--muted);">✕</a>
+        <div class="cart-line-side">
+          <span class="cart-line-price">${line.price} ₽</span>
+          <a href="#" data-remove="${key}" class="cart-line-remove">✕</a>
+        </div>
       `;
       row.querySelector('[data-remove]').addEventListener('click', (e) => {
         e.preventDefault();
@@ -508,13 +514,18 @@ function renderCartLines() {
       });
     } else {
       row.innerHTML = `
-        <span class="cart-line-name">${line.name}</span>
-        <div class="qty-stepper">
-          <button data-action="minus">−</button>
-          <span>${line.qty}</span>
-          <button data-action="plus">+</button>
+        ${thumbHtml}
+        <div class="cart-line-info">
+          <span class="cart-line-name">${line.name}</span>
         </div>
-        <span class="cart-line-price">${line.price * line.qty} ₽</span>
+        <div class="cart-line-side">
+          <div class="qty-stepper">
+            <button data-action="minus">−</button>
+            <span>${line.qty}</span>
+            <button data-action="plus">+</button>
+          </div>
+          <span class="cart-line-price">${line.price * line.qty} ₽</span>
+        </div>
       `;
       row.querySelector('[data-action="minus"]').addEventListener('click', () => {
         line.qty -= 1;
@@ -547,7 +558,11 @@ function renderUpsell() {
 
   container.innerHTML = `
     <div class="cart-upsell-title">Добавить ещё</div>
-    <div class="cart-upsell-row" id="cart-upsell-row"></div>
+    <div class="cart-upsell-viewport">
+      <div class="cart-upsell-row" id="cart-upsell-row"></div>
+      <button type="button" class="upsell-arrow upsell-arrow-prev" id="upsell-arrow-prev" aria-label="Назад">‹</button>
+      <button type="button" class="upsell-arrow upsell-arrow-next" id="upsell-arrow-next" aria-label="Вперёд">›</button>
+    </div>
   `;
   const row = document.getElementById('cart-upsell-row');
   candidates.forEach((p) => {
@@ -562,6 +577,23 @@ function renderUpsell() {
     card.addEventListener('click', () => openDetailFor(p));
     row.appendChild(card);
   });
+
+  const prevBtn = document.getElementById('upsell-arrow-prev');
+  const nextBtn = document.getElementById('upsell-arrow-next');
+  const scrollStep = () => Math.round(row.clientWidth * 0.8) || 120;
+  const updateArrows = () => {
+    const maxScroll = row.scrollWidth - row.clientWidth - 1;
+    prevBtn.classList.toggle('is-hidden', row.scrollLeft <= 2);
+    nextBtn.classList.toggle('is-hidden', row.scrollLeft >= maxScroll || maxScroll <= 0);
+  };
+  prevBtn.addEventListener('click', () => {
+    row.scrollBy({ left: -scrollStep(), behavior: 'smooth' });
+  });
+  nextBtn.addEventListener('click', () => {
+    row.scrollBy({ left: scrollStep(), behavior: 'smooth' });
+  });
+  row.addEventListener('scroll', updateArrows);
+  updateArrows();
 }
 
 /* ================= ПРИБОРЫ ================= */
