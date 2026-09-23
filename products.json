@@ -27,11 +27,6 @@
         "isMeat": true
       },
       {
-        "id": "syr",
-        "name": "Чуду тонкое с сыром",
-        "isMeat": false
-      },
-      {
         "id": "syr_zelen",
         "name": "Чуду тонкое с сыром и зеленью",
         "isMeat": false
@@ -69,11 +64,6 @@
         "id": "myaso",
         "name": "Чуду тонкое с мясом",
         "isMeat": true
-      },
-      {
-        "id": "syr",
-        "name": "Чуду тонкое с сыром",
-        "isMeat": false
       },
       {
         "id": "syr_zelen",
@@ -125,8 +115,7 @@
     "name": "Шашлык из баранины мякоть",
     "price": 980,
     "weight": "350 г",
-    "description": "",
-    "image": "images/shashlyk-lamb.jpg"
+    "description": ""
   },
   {
     "id": "lyulya-lamb-turkey",
@@ -328,14 +317,6 @@
     "category": "Чуду",
     "name": "Чуду тонкое с мясом",
     "price": 350,
-    "weight": "170 г",
-    "description": ""
-  },
-  {
-    "id": "chudu-syr",
-    "category": "Чуду",
-    "name": "Чуду тонкое с сыром",
-    "price": 320,
     "weight": "170 г",
     "description": ""
   },
