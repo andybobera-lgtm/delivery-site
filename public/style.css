@@ -1,3 +1,18 @@
+@font-face {
+  font-family: 'Coolvetica';
+  src: url('fonts/coolvetica-rg.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Soyuz Grotesk';
+  src: url('fonts/SoyuzGrotesk-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --brand-dark: #152f24;
   --accent: #487648;
@@ -17,12 +32,16 @@
 
 body {
   margin: 0;
-  font-family: 'Manrope', -apple-system, sans-serif;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  cursor: default;
+  font-family: 'Soyuz Grotesk', 'Manrope', -apple-system, sans-serif;
   background: var(--page-bg);
   color: var(--ink);
 }
 
-h1, h2, h3 { font-family: 'Manrope', sans-serif; margin: 0; font-weight: 600; color: var(--ink); }
+h1, h2, h3 { font-family: 'Coolvetica', 'Manrope', sans-serif; margin: 0; font-weight: 600; color: var(--ink); }
 
 /* ---------- Header ---------- */
 .site-header {
@@ -41,9 +60,15 @@ h1, h2, h3 { font-family: 'Manrope', sans-serif; margin: 0; font-weight: 600; co
   align-items: center;
   justify-content: space-between;
 }
+input, textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+  cursor: text;
+}
 .brand { display: flex; align-items: center; gap: 10px; }
 .brand-logo { height: 68px; display: block; margin: -10px 0; }
-.brand-name { font-weight: 700; font-size: 19px; color: var(--ink); white-space: nowrap; }
+.brand-name { font-family: 'Coolvetica', 'Manrope', sans-serif; font-weight: 700; font-size: 19px; color: var(--ink); white-space: nowrap; }
 @media (max-width: 480px) {
   .brand-name { font-size: 15px; }
 }
@@ -139,6 +164,7 @@ h1, h2, h3 { font-family: 'Manrope', sans-serif; margin: 0; font-weight: 600; co
 .category-nav::-webkit-scrollbar { display: none; }
 .category-chip {
   flex: none;
+  font-family: 'Coolvetica', 'Manrope', sans-serif;
   padding: 10px 18px;
   line-height: 1;
   border-radius: 10px;
