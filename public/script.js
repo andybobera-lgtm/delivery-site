@@ -260,6 +260,60 @@ function closePicker() {
 }
 document.getElementById('picker-overlay').addEventListener('click', closePicker);
 
+/* ================= КБЖУ ================= */
+function formatWeightGrams(g) {
+  if (!g) return '';
+  if (g >= 1000) {
+    const kg = g / 1000;
+    return (Number.isInteger(kg) ? kg : kg.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')) + ' кг';
+  }
+  return Math.round(g) + ' г';
+}
+
+function nutritionHtml(nutrition) {
+  if (!nutrition || !nutrition.per100) return '';
+  const hasPortion = !!nutrition.perPortion;
+  const initial = hasPortion ? nutrition.perPortion : nutrition.per100;
+  return `
+    <div class="nutrition-block">
+      <div class="nutrition-tabs">
+        ${hasPortion ? `<button type="button" class="nutrition-tab active" data-mode="portion">На позицию ${formatWeightGrams(nutrition.perPortion.weight)}</button>` : ''}
+        <button type="button" class="nutrition-tab ${hasPortion ? '' : 'active'}" data-mode="100">На 100 г</button>
+      </div>
+      <div class="nutrition-tiles">
+        <div class="nutrition-tile"><span class="nutrition-value" data-field="kcal">${initial.kcal}</span><span class="nutrition-label">ккал</span></div>
+        <div class="nutrition-tile"><span class="nutrition-value" data-field="protein">${initial.protein}</span><span class="nutrition-label">белки</span></div>
+        <div class="nutrition-tile"><span class="nutrition-value" data-field="fat">${initial.fat}</span><span class="nutrition-label">жиры</span></div>
+        <div class="nutrition-tile"><span class="nutrition-value" data-field="carbs">${initial.carbs}</span><span class="nutrition-label">углеводы</span></div>
+      </div>
+    </div>
+  `;
+}
+
+function attachNutritionBlock(nutrition) {
+  if (!nutrition) return;
+  const block = document.querySelector('.nutrition-block');
+  if (!block) return;
+  const tabs = block.querySelectorAll('.nutrition-tab');
+  const values = {
+    kcal: block.querySelector('[data-field="kcal"]'),
+    protein: block.querySelector('[data-field="protein"]'),
+    fat: block.querySelector('[data-field="fat"]'),
+    carbs: block.querySelector('[data-field="carbs"]'),
+  };
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const mode = tab.dataset.mode;
+      const src = mode === '100' ? nutrition.per100 : (nutrition.perPortion || nutrition.per100);
+      values.kcal.textContent = src.kcal;
+      values.protein.textContent = src.protein;
+      values.fat.textContent = src.fat;
+      values.carbs.textContent = src.carbs;
+      tabs.forEach((t) => t.classList.toggle('active', t === tab));
+    });
+  });
+}
+
 function pickerShell(product, bodyHtml, footerHtml) {
   const modal = document.getElementById('picker-modal');
   const thumbData = thumbStyleAndText(product);
@@ -286,6 +340,7 @@ function openSimpleDetail(product) {
     const body = `
       ${product.description ? `<div class="picker-description">${product.description}</div>` : ''}
       <div class="product-meta">${product.weight || ''}</div>
+      ${nutritionHtml(product.nutrition)}
     `;
     const footer = noPrice
       ? `<div class="no-price-note">Цену уточняйте при оформлении заказа</div>`
@@ -301,6 +356,7 @@ function openSimpleDetail(product) {
            </div>`;
 
     pickerShell(product, body, footer);
+    attachNutritionBlock(product.nutrition);
 
     if (!noPrice) {
       if (qty === 0) {
@@ -339,8 +395,9 @@ function openVariantPicker(product) {
       `;
     }).join('');
 
-    const body = (product.description ? `<div class="picker-description">${product.description}</div>` : '') + rows;
+    const body = (product.description ? `<div class="picker-description">${product.description}</div>` : '') + rows + nutritionHtml(product.nutrition);
     pickerShell(product, body, `<button class="checkout-btn" id="picker-done">Готово</button>`);
+    attachNutritionBlock(product.nutrition);
 
     document.querySelectorAll('.variant-option').forEach((row) => {
       const variantId = row.dataset.variantId;
@@ -400,6 +457,7 @@ function openComboPicker(product) {
       ${product.description ? `<div class="picker-description">${product.description}</div>` : ''}
       <div class="combo-progress">Выбрано: <b>${totalCount()} / ${product.totalSlots}</b></div>
       ${rows}
+      ${nutritionHtml(product.nutrition)}
     `;
     const footer = `
       <button class="buy-btn wide" id="picker-done" ${totalCount() === product.totalSlots ? '' : 'disabled style="opacity:0.5"'}>
@@ -407,6 +465,7 @@ function openComboPicker(product) {
       </button>
     `;
     pickerShell(product, body, footer);
+    attachNutritionBlock(product.nutrition);
 
     document.querySelectorAll('[data-action="plus"]').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -617,6 +676,7 @@ function openCart() {
 function closeCart() {
   document.getElementById('cart-drawer').classList.remove('open');
   document.getElementById('cart-overlay').classList.remove('open');
+  closeAddressModal();
 }
 document.getElementById('cart-fab').addEventListener('click', openCart);
 document.getElementById('cart-close').addEventListener('click', closeCart);
@@ -639,6 +699,9 @@ function initDeliveryMap() {
     }, {
       suppressMapOpenBlock: true, // убираем нижнюю плашку-ссылку "Открыть в Яндекс Картах"
     });
+
+    // Отключаем зум по двойному клику/тапу — карта должна приближаться только щипком двумя пальцами
+    deliveryMap.behaviors.disable('dblClickZoom');
 
     // Аккуратные контролы масштаба и геопозиции
     const zoomControl = new ymaps.control.ZoomControl({ options: { size: 'large', float: 'right' } });
@@ -739,14 +802,28 @@ document.getElementById('address-close').addEventListener('click', closeAddressM
 document.getElementById('address-overlay').addEventListener('click', closeAddressModal);
 
 document.getElementById('addr-save').addEventListener('click', () => {
-  const street = document.getElementById('addr-street').value.trim();
-  const flat = document.getElementById('addr-flat').value.trim();
-  const entrance = document.getElementById('addr-entrance').value.trim();
-  const intercom = document.getElementById('addr-intercom').value.trim();
-  const floor = document.getElementById('addr-floor').value.trim();
+  const streetEl = document.getElementById('addr-street');
+  const flatEl = document.getElementById('addr-flat');
+  const entranceEl = document.getElementById('addr-entrance');
+  const intercomEl = document.getElementById('addr-intercom');
+  const floorEl = document.getElementById('addr-floor');
 
-  if (!street) {
-    document.getElementById('addr-street').focus();
+  const street = streetEl.value.trim();
+  const flat = flatEl.value.trim();
+  const entrance = entranceEl.value.trim();
+  const intercom = intercomEl.value.trim();
+  const floor = floorEl.value.trim();
+
+  // Все поля адреса обязательны, кроме комментария курьеру
+  const requiredFields = [streetEl, flatEl, entranceEl, intercomEl, floorEl];
+  let firstEmpty = null;
+  requiredFields.forEach((el) => {
+    const empty = !el.value.trim();
+    el.classList.toggle('input-missing', empty);
+    if (empty && !firstEmpty) firstEmpty = el;
+  });
+  if (firstEmpty) {
+    firstEmpty.focus();
     return;
   }
 
@@ -771,6 +848,12 @@ document.getElementById('addr-save').addEventListener('click', () => {
   document.getElementById('address').value = fullAddress;
   document.getElementById('address-summary').textContent = fullAddress;
   closeAddressModal();
+});
+
+// Убираем подсветку "не заполнено" как только пользователь начал вводить значение
+['addr-street', 'addr-flat', 'addr-entrance', 'addr-intercom', 'addr-floor'].forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', () => el.classList.remove('input-missing'));
 });
 
 /* ================= ОФОРМЛЕНИЕ ЗАКАЗА ================= */
