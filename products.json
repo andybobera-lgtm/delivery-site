@@ -36,7 +36,22 @@
         "name": "Чуду тонкое с тыквой",
         "isMeat": false
       }
-    ]
+    ],
+    "nutrition": {
+      "per100": {
+        "kcal": 250,
+        "protein": 8,
+        "fat": 10,
+        "carbs": 30
+      },
+      "perPortion": {
+        "weight": 1360,
+        "kcal": 3400,
+        "protein": 108.8,
+        "fat": 136,
+        "carbs": 408
+      }
+    }
   },
   {
     "id": "combo-chudu-two",
@@ -75,7 +90,22 @@
         "name": "Чуду тонкое с тыквой",
         "isMeat": false
       }
-    ]
+    ],
+    "nutrition": {
+      "per100": {
+        "kcal": 250,
+        "protein": 8,
+        "fat": 10,
+        "carbs": 30
+      },
+      "perPortion": {
+        "weight": 680,
+        "kcal": 1700,
+        "protein": 54.4,
+        "fat": 68,
+        "carbs": 204
+      }
+    }
   },
   {
     "id": "set-meat-6",
@@ -83,7 +113,22 @@
     "name": "Большая мясная компания на 6",
     "price": 5200,
     "weight": "3.3 кг",
-    "description": ""
+    "description": "",
+    "nutrition": {
+      "per100": {
+        "kcal": 230,
+        "protein": 20,
+        "fat": 15,
+        "carbs": 2
+      },
+      "perPortion": {
+        "weight": 3300,
+        "kcal": 7590,
+        "protein": 660,
+        "fat": 495,
+        "carbs": 66
+      }
+    }
   },
   {
     "id": "set-assorti-4",
@@ -91,7 +136,22 @@
     "name": "Ассорти сет на 4",
     "price": 3800,
     "weight": "2.3 кг",
-    "description": ""
+    "description": "",
+    "nutrition": {
+      "per100": {
+        "kcal": 230,
+        "protein": 20,
+        "fat": 15,
+        "carbs": 2
+      },
+      "perPortion": {
+        "weight": 2300,
+        "kcal": 5290,
+        "protein": 460,
+        "fat": 345,
+        "carbs": 46
+      }
+    }
   },
   {
     "id": "set-meat-2",
@@ -99,7 +159,22 @@
     "name": "Мясной сет на двоих",
     "price": 1400,
     "weight": "1.06 кг",
-    "description": ""
+    "description": "",
+    "nutrition": {
+      "per100": {
+        "kcal": 230,
+        "protein": 20,
+        "fat": 15,
+        "carbs": 2
+      },
+      "perPortion": {
+        "weight": 1060,
+        "kcal": 2438,
+        "protein": 212,
+        "fat": 159,
+        "carbs": 21.2
+      }
+    }
   },
   {
     "id": "shashlyk-chicken",
@@ -107,7 +182,22 @@
     "name": "Шашлык из цыплёнка",
     "price": 480,
     "weight": "350 г",
-    "description": ""
+    "description": "Куриное филе, приготовленное на мангале. Подаётся на хрустящем лаваше, c маринованным луком и кабачком.",
+    "nutrition": {
+      "per100": {
+        "kcal": 190,
+        "protein": 25,
+        "fat": 9,
+        "carbs": 1
+      },
+      "perPortion": {
+        "weight": 350,
+        "kcal": 665,
+        "protein": 87.5,
+        "fat": 31.5,
+        "carbs": 3.5
+      }
+    }
   },
   {
     "id": "shashlyk-lamb",
@@ -115,7 +205,22 @@
     "name": "Шашлык из баранины мякоть",
     "price": 980,
     "weight": "350 г",
-    "description": ""
+    "description": "Мякоть баранины, приготовленная на мангале. Подаётся на хрустящем лаваше с маринованным луком и кабачком.",
+    "nutrition": {
+      "per100": {
+        "kcal": 260,
+        "protein": 24,
+        "fat": 18,
+        "carbs": 0
+      },
+      "perPortion": {
+        "weight": 350,
+        "kcal": 910,
+        "protein": 84,
+        "fat": 63,
+        "carbs": 0
+      }
+    }
   },
   {
     "id": "lyulya-lamb-turkey",
@@ -123,7 +228,22 @@
     "name": "Люля баранина/индейка",
     "price": 530,
     "weight": "350 г",
-    "description": ""
+    "description": "Люля из баранины и индейки со специями, приготовленный на мангале. Подаётся на хрустящем лаваше с маринованным луком и кабачком.",
+    "nutrition": {
+      "per100": {
+        "kcal": 250,
+        "protein": 18,
+        "fat": 19,
+        "carbs": 2
+      },
+      "perPortion": {
+        "weight": 350,
+        "kcal": 875,
+        "protein": 63,
+        "fat": 66.5,
+        "carbs": 7
+      }
+    }
   },
   {
     "id": "lyulya-chicken",
@@ -131,7 +251,22 @@
     "name": "Люля из цыплёнка",
     "price": 480,
     "weight": "350 г",
-    "description": ""
+    "description": "Люля из курицы со специями, приготовленный на мангале. Подаётся на хрустящем лаваше с маринованным луком и кабачком.",
+    "nutrition": {
+      "per100": {
+        "kcal": 210,
+        "protein": 19,
+        "fat": 14,
+        "carbs": 2
+      },
+      "perPortion": {
+        "weight": 350,
+        "kcal": 735,
+        "protein": 66.5,
+        "fat": 49,
+        "carbs": 7
+      }
+    }
   },
   {
     "id": "veggie-grill",
@@ -139,7 +274,22 @@
     "name": "Овощи гриль",
     "price": 540,
     "weight": "450 г",
-    "description": ""
+    "description": "Сочное ассорти из запечённых на углях баклажанов, кабачков, цукини, болгарского перца, красного лука, томатов и грибов с аппетитным ароматом костра.",
+    "nutrition": {
+      "per100": {
+        "kcal": 60,
+        "protein": 1.5,
+        "fat": 3,
+        "carbs": 7
+      },
+      "perPortion": {
+        "weight": 450,
+        "kcal": 270,
+        "protein": 6.8,
+        "fat": 13.5,
+        "carbs": 31.5
+      }
+    }
   },
   {
     "id": "pleskavica",
@@ -147,7 +297,22 @@
     "name": "Плескавица с сыром",
     "price": 530,
     "weight": "350 г",
-    "description": "Баранина, говядина, индейка, сыр Чеддер, сыр Пармезан"
+    "description": "Баранина, говядина, индейка, сыр Чеддер, сыр Пармезан",
+    "nutrition": {
+      "per100": {
+        "kcal": 270,
+        "protein": 20,
+        "fat": 20,
+        "carbs": 3
+      },
+      "perPortion": {
+        "weight": 350,
+        "kcal": 945,
+        "protein": 70,
+        "fat": 70,
+        "carbs": 10.5
+      }
+    }
   },
   {
     "id": "koreika-lamb",
@@ -155,7 +320,22 @@
     "name": "Корейка ягнёнка с овощами гриль",
     "price": 1200,
     "weight": "500 г",
-    "description": ""
+    "description": "Приготовленное на углях каре молодого ягнёнка, маринованное в ароматных травах и специях. Подаётся с обжаренными овощами на гриле.",
+    "nutrition": {
+      "per100": {
+        "kcal": 240,
+        "protein": 19,
+        "fat": 17,
+        "carbs": 4
+      },
+      "perPortion": {
+        "weight": 500,
+        "kcal": 1200,
+        "protein": 95,
+        "fat": 85,
+        "carbs": 20
+      }
+    }
   },
   {
     "id": "hinkal-avar",
@@ -163,28 +343,88 @@
     "name": "Аварский хинкал",
     "price": 700,
     "weight": "920 г",
-    "description": "",
+    "description": "Воздушные отварные пышки из кефирного теста. Бульон и отварное мясо подаются отдельно, соус на выбор: сметанный или аджика с чесноком.",
     "type": "variant",
     "variants": [
       {
         "id": "govyadina",
         "label": "С говядиной",
         "price": 700,
-        "weight": "920 г"
+        "weight": "920 г",
+        "nutrition": {
+          "per100": {
+            "kcal": 116,
+            "protein": 6,
+            "fat": 2,
+            "carbs": 17
+          },
+          "perPortion": {
+            "weight": 920,
+            "kcal": 1067.2,
+            "protein": 55.2,
+            "fat": 18.4,
+            "carbs": 156.4
+          }
+        }
       },
       {
         "id": "kolbasa",
         "label": "С сушёной колбасой",
         "price": 900,
-        "weight": "810 г"
+        "weight": "810 г",
+        "nutrition": {
+          "per100": {
+            "kcal": 195,
+            "protein": 13,
+            "fat": 9,
+            "carbs": 15
+          },
+          "perPortion": {
+            "weight": 810,
+            "kcal": 1579.5,
+            "protein": 105.3,
+            "fat": 72.9,
+            "carbs": 121.5
+          }
+        }
       },
       {
         "id": "myaso",
         "label": "С сушёным мясом",
         "price": 900,
-        "weight": "810 г"
+        "weight": "810 г",
+        "nutrition": {
+          "per100": {
+            "kcal": 195,
+            "protein": 13,
+            "fat": 9,
+            "carbs": 15
+          },
+          "perPortion": {
+            "weight": 810,
+            "kcal": 1579.5,
+            "protein": 105.3,
+            "fat": 72.9,
+            "carbs": 121.5
+          }
+        }
       }
-    ]
+    ],
+    "nutrition": {
+      "per100": {
+        "kcal": 116,
+        "protein": 6,
+        "fat": 2,
+        "carbs": 17
+      },
+      "perPortion": {
+        "weight": 920,
+        "kcal": 1067.2,
+        "protein": 55.2,
+        "fat": 18.4,
+        "carbs": 156.4
+      }
+    }
   },
   {
     "id": "hinkal-dargin",
@@ -192,28 +432,88 @@
     "name": "Даргинский хинкал",
     "price": 700,
     "weight": "920 г",
-    "description": "",
+    "description": "Рулеты из воздушно-дрожжевого теста с добавлением ореховой травы, готовятся на пару. Отдельно подаётся бульон, отварное мясо и соус на выбор: сметанный или аджика с чесноком.",
     "type": "variant",
     "variants": [
       {
         "id": "govyadina",
         "label": "С говядиной",
         "price": 700,
-        "weight": "920 г"
+        "weight": "920 г",
+        "nutrition": {
+          "per100": {
+            "kcal": 116,
+            "protein": 6,
+            "fat": 2,
+            "carbs": 17
+          },
+          "perPortion": {
+            "weight": 920,
+            "kcal": 1067.2,
+            "protein": 55.2,
+            "fat": 18.4,
+            "carbs": 156.4
+          }
+        }
       },
       {
         "id": "kolbasa",
         "label": "С сушёной колбасой",
         "price": 900,
-        "weight": "810 г"
+        "weight": "810 г",
+        "nutrition": {
+          "per100": {
+            "kcal": 195,
+            "protein": 13,
+            "fat": 9,
+            "carbs": 15
+          },
+          "perPortion": {
+            "weight": 810,
+            "kcal": 1579.5,
+            "protein": 105.3,
+            "fat": 72.9,
+            "carbs": 121.5
+          }
+        }
       },
       {
         "id": "myaso",
         "label": "С сушёным мясом",
         "price": 900,
-        "weight": "810 г"
+        "weight": "810 г",
+        "nutrition": {
+          "per100": {
+            "kcal": 195,
+            "protein": 13,
+            "fat": 9,
+            "carbs": 15
+          },
+          "perPortion": {
+            "weight": 810,
+            "kcal": 1579.5,
+            "protein": 105.3,
+            "fat": 72.9,
+            "carbs": 121.5
+          }
+        }
       }
-    ]
+    ],
+    "nutrition": {
+      "per100": {
+        "kcal": 116,
+        "protein": 6,
+        "fat": 2,
+        "carbs": 17
+      },
+      "perPortion": {
+        "weight": 920,
+        "kcal": 1067.2,
+        "protein": 55.2,
+        "fat": 18.4,
+        "carbs": 156.4
+      }
+    }
   },
   {
     "id": "hinkal-laksky",
@@ -221,28 +521,88 @@
     "name": "Лакский хинкал",
     "price": 700,
     "weight": "920 г",
-    "description": "",
+    "description": "Маленькие галушки из пресного теста, подаются в наваристом говяжьем бульоне с мясом и соусом на выбор.",
     "type": "variant",
     "variants": [
       {
         "id": "govyadina",
         "label": "С говядиной",
         "price": 700,
-        "weight": "920 г"
+        "weight": "920 г",
+        "nutrition": {
+          "per100": {
+            "kcal": 116,
+            "protein": 6,
+            "fat": 2,
+            "carbs": 17
+          },
+          "perPortion": {
+            "weight": 920,
+            "kcal": 1067.2,
+            "protein": 55.2,
+            "fat": 18.4,
+            "carbs": 156.4
+          }
+        }
       },
       {
         "id": "kolbasa",
         "label": "С сушёной колбасой",
         "price": 900,
-        "weight": "810 г"
+        "weight": "810 г",
+        "nutrition": {
+          "per100": {
+            "kcal": 195,
+            "protein": 13,
+            "fat": 9,
+            "carbs": 15
+          },
+          "perPortion": {
+            "weight": 810,
+            "kcal": 1579.5,
+            "protein": 105.3,
+            "fat": 72.9,
+            "carbs": 121.5
+          }
+        }
       },
       {
         "id": "myaso",
         "label": "С сушёным мясом",
         "price": 900,
-        "weight": "810 г"
+        "weight": "810 г",
+        "nutrition": {
+          "per100": {
+            "kcal": 195,
+            "protein": 13,
+            "fat": 9,
+            "carbs": 15
+          },
+          "perPortion": {
+            "weight": 810,
+            "kcal": 1579.5,
+            "protein": 105.3,
+            "fat": 72.9,
+            "carbs": 121.5
+          }
+        }
       }
-    ]
+    ],
+    "nutrition": {
+      "per100": {
+        "kcal": 116,
+        "protein": 6,
+        "fat": 2,
+        "carbs": 17
+      },
+      "perPortion": {
+        "weight": 920,
+        "kcal": 1067.2,
+        "protein": 55.2,
+        "fat": 18.4,
+        "carbs": 156.4
+      }
+    }
   },
   {
     "id": "hinkal-thin",
@@ -250,28 +610,88 @@
     "name": "Тонкий хинкал",
     "price": 700,
     "weight": "920 г",
-    "description": "",
+    "description": "Тонко раскатанное бездрожжевое тесто, нарезанное небольшими ромбами, подаётся с бульоном, отварным мясом и соусом на выбор: сметанный или аджика с чесноком.",
     "type": "variant",
     "variants": [
       {
         "id": "govyadina",
         "label": "С говядиной",
         "price": 700,
-        "weight": "920 г"
+        "weight": "920 г",
+        "nutrition": {
+          "per100": {
+            "kcal": 116,
+            "protein": 6,
+            "fat": 2,
+            "carbs": 17
+          },
+          "perPortion": {
+            "weight": 920,
+            "kcal": 1067.2,
+            "protein": 55.2,
+            "fat": 18.4,
+            "carbs": 156.4
+          }
+        }
       },
       {
         "id": "kolbasa",
         "label": "С сушёной колбасой",
         "price": 900,
-        "weight": "810 г"
+        "weight": "810 г",
+        "nutrition": {
+          "per100": {
+            "kcal": 195,
+            "protein": 13,
+            "fat": 9,
+            "carbs": 15
+          },
+          "perPortion": {
+            "weight": 810,
+            "kcal": 1579.5,
+            "protein": 105.3,
+            "fat": 72.9,
+            "carbs": 121.5
+          }
+        }
       },
       {
         "id": "myaso",
         "label": "С сушёным мясом",
         "price": 900,
-        "weight": "810 г"
+        "weight": "810 г",
+        "nutrition": {
+          "per100": {
+            "kcal": 195,
+            "protein": 13,
+            "fat": 9,
+            "carbs": 15
+          },
+          "perPortion": {
+            "weight": 810,
+            "kcal": 1579.5,
+            "protein": 105.3,
+            "fat": 72.9,
+            "carbs": 121.5
+          }
+        }
       }
-    ]
+    ],
+    "nutrition": {
+      "per100": {
+        "kcal": 116,
+        "protein": 6,
+        "fat": 2,
+        "carbs": 17
+      },
+      "perPortion": {
+        "weight": 920,
+        "kcal": 1067.2,
+        "protein": 55.2,
+        "fat": 18.4,
+        "carbs": 156.4
+      }
+    }
   },
   {
     "id": "hinkal-corn",
@@ -279,22 +699,67 @@
     "name": "Хинкал кукурузный",
     "price": 700,
     "weight": "920 г",
-    "description": "",
+    "description": "Воздушные медальоны из кукурузной муки, приготовленные на пару. Подаются с бульоном, отварным мясом и соусом на выбор.",
     "type": "variant",
     "variants": [
       {
         "id": "govyadina",
         "label": "С говядиной",
         "price": 700,
-        "weight": "920 г"
+        "weight": "920 г",
+        "nutrition": {
+          "per100": {
+            "kcal": 116,
+            "protein": 6,
+            "fat": 2,
+            "carbs": 17
+          },
+          "perPortion": {
+            "weight": 920,
+            "kcal": 1067.2,
+            "protein": 55.2,
+            "fat": 18.4,
+            "carbs": 156.4
+          }
+        }
       },
       {
         "id": "kolbasa",
         "label": "С сушёной колбасой",
         "price": 900,
-        "weight": "810 г"
+        "weight": "810 г",
+        "nutrition": {
+          "per100": {
+            "kcal": 195,
+            "protein": 13,
+            "fat": 9,
+            "carbs": 15
+          },
+          "perPortion": {
+            "weight": 810,
+            "kcal": 1579.5,
+            "protein": 105.3,
+            "fat": 72.9,
+            "carbs": 121.5
+          }
+        }
       }
-    ]
+    ],
+    "nutrition": {
+      "per100": {
+        "kcal": 116,
+        "protein": 6,
+        "fat": 2,
+        "carbs": 17
+      },
+      "perPortion": {
+        "weight": 920,
+        "kcal": 1067.2,
+        "protein": 55.2,
+        "fat": 18.4,
+        "carbs": 156.4
+      }
+    }
   },
   {
     "id": "chudu-zelen",
@@ -302,7 +767,22 @@
     "name": "Чуду тонкое с зеленью",
     "price": 320,
     "weight": "170 г",
-    "description": ""
+    "description": "Чуду с сочной начинкой из шпината, зелёного лука, укропа и петрушки.",
+    "nutrition": {
+      "per100": {
+        "kcal": 230,
+        "protein": 6,
+        "fat": 9,
+        "carbs": 30
+      },
+      "perPortion": {
+        "weight": 170,
+        "kcal": 391,
+        "protein": 10.2,
+        "fat": 15.3,
+        "carbs": 51
+      }
+    }
   },
   {
     "id": "botishal",
@@ -310,7 +790,22 @@
     "name": "Ботишал",
     "price": 320,
     "weight": "170 г",
-    "description": ""
+    "description": "Знаменитое аварское чудо — нежнейший пирог с тягучим домашним сыром и творогом, тающий во рту.",
+    "nutrition": {
+      "per100": {
+        "kcal": 270,
+        "protein": 10,
+        "fat": 14,
+        "carbs": 26
+      },
+      "perPortion": {
+        "weight": 170,
+        "kcal": 459,
+        "protein": 17,
+        "fat": 23.8,
+        "carbs": 44.2
+      }
+    }
   },
   {
     "id": "chudu-myaso",
@@ -318,7 +813,22 @@
     "name": "Чуду тонкое с мясом",
     "price": 350,
     "weight": "170 г",
-    "description": ""
+    "description": "Популярный дагестанский чуду: фарш говяжий халяль, кинза, специи, бездрожжевое тесто.",
+    "nutrition": {
+      "per100": {
+        "kcal": 260,
+        "protein": 11,
+        "fat": 12,
+        "carbs": 27
+      },
+      "perPortion": {
+        "weight": 170,
+        "kcal": 442,
+        "protein": 18.7,
+        "fat": 20.4,
+        "carbs": 45.9
+      }
+    }
   },
   {
     "id": "chudu-syr-zelen",
@@ -326,7 +836,22 @@
     "name": "Чуду тонкое с сыром и зеленью",
     "price": 320,
     "weight": "170 г",
-    "description": ""
+    "description": "Нежный чуду с начинкой из фермерской брынзы, гауды, творога и зелени.",
+    "nutrition": {
+      "per100": {
+        "kcal": 250,
+        "protein": 9,
+        "fat": 11,
+        "carbs": 28
+      },
+      "perPortion": {
+        "weight": 170,
+        "kcal": 425,
+        "protein": 15.3,
+        "fat": 18.7,
+        "carbs": 47.6
+      }
+    }
   },
   {
     "id": "chudu-tykva",
@@ -334,7 +859,22 @@
     "name": "Чуду тонкое с тыквой",
     "price": 320,
     "weight": "170 г",
-    "description": ""
+    "description": "Чуду с начинкой из свежей тыквы.",
+    "nutrition": {
+      "per100": {
+        "kcal": 220,
+        "protein": 5,
+        "fat": 7,
+        "carbs": 33
+      },
+      "perPortion": {
+        "weight": 170,
+        "kcal": 374,
+        "protein": 8.5,
+        "fat": 11.9,
+        "carbs": 56.1
+      }
+    }
   },
   {
     "id": "kurze-govyadina",
@@ -342,7 +882,22 @@
     "name": "Курзе с говядиной",
     "price": 365,
     "weight": "200 г",
-    "description": ""
+    "description": "Дагестанские пельмени ручной лепки c пряной мясной начинкой, увенчанные филигранной косичкой. Особый аромат мясной начинке придаёт добавление зелени и томатов в собственном соку, фарш говяжий.",
+    "nutrition": {
+      "per100": {
+        "kcal": 220,
+        "protein": 12,
+        "fat": 9,
+        "carbs": 22
+      },
+      "perPortion": {
+        "weight": 200,
+        "kcal": 440,
+        "protein": 24,
+        "fat": 18,
+        "carbs": 44
+      }
+    }
   },
   {
     "id": "kurze-govyadina-baranina",
@@ -350,7 +905,22 @@
     "name": "Курзе с говядиной и бараниной",
     "price": 365,
     "weight": "200 г",
-    "description": ""
+    "description": "Дагестанские пельмени ручной лепки c пряной бараниной, говядиной, мятой и кинзой — для гурманов.",
+    "nutrition": {
+      "per100": {
+        "kcal": 230,
+        "protein": 12,
+        "fat": 11,
+        "carbs": 21
+      },
+      "perPortion": {
+        "weight": 200,
+        "kcal": 460,
+        "protein": 24,
+        "fat": 22,
+        "carbs": 42
+      }
+    }
   },
   {
     "id": "kurze-zelen-yaico",
@@ -358,7 +928,22 @@
     "name": "Курзе с зеленью и яйцом",
     "price": 345,
     "weight": "200 г",
-    "description": ""
+    "description": "Дагестанские пельмени ручной лепки, внутри ароматный микс из зелени, яйца и специй.",
+    "nutrition": {
+      "per100": {
+        "kcal": 200,
+        "protein": 7,
+        "fat": 8,
+        "carbs": 26
+      },
+      "perPortion": {
+        "weight": 200,
+        "kcal": 400,
+        "protein": 14,
+        "fat": 16,
+        "carbs": 52
+      }
+    }
   },
   {
     "id": "pelmeni-indeyka",
@@ -366,7 +951,22 @@
     "name": "Пельмени с индейкой",
     "price": 310,
     "weight": "200 г",
-    "description": ""
+    "description": "Пельмени ручной лепки с индейкой.",
+    "nutrition": {
+      "per100": {
+        "kcal": 200,
+        "protein": 11,
+        "fat": 7,
+        "carbs": 22
+      },
+      "perPortion": {
+        "weight": 200,
+        "kcal": 400,
+        "protein": 22,
+        "fat": 14,
+        "carbs": 44
+      }
+    }
   },
   {
     "id": "pelmeni-kuritsa",
@@ -374,7 +974,22 @@
     "name": "Пельмени с курицей",
     "price": 280,
     "weight": "200 г",
-    "description": ""
+    "description": "Пельмени ручной лепки с курицей.",
+    "nutrition": {
+      "per100": {
+        "kcal": 195,
+        "protein": 10,
+        "fat": 6,
+        "carbs": 23
+      },
+      "perPortion": {
+        "weight": 200,
+        "kcal": 390,
+        "protein": 20,
+        "fat": 12,
+        "carbs": 46
+      }
+    }
   },
   {
     "id": "manty-baranina-govyadina",
@@ -382,7 +997,22 @@
     "name": "Манты с бараниной и говядиной",
     "price": 390,
     "weight": "320 г",
-    "description": ""
+    "description": "Традиционные узбекские манты, приготовленные на пару из тонкого домашнего теста, рубленого мяса молодого барашка и телятины с луком и специями. Подаются со сметаной.",
+    "nutrition": {
+      "per100": {
+        "kcal": 230,
+        "protein": 11,
+        "fat": 12,
+        "carbs": 20
+      },
+      "perPortion": {
+        "weight": 320,
+        "kcal": 736,
+        "protein": 35.2,
+        "fat": 38.4,
+        "carbs": 64
+      }
+    }
   },
   {
     "id": "manty-govyadina",
@@ -390,111 +1020,91 @@
     "name": "Манты с говядиной",
     "price": 390,
     "weight": "320 г",
-    "description": ""
-  },
-  {
-    "id": "vareniki-kapusta",
-    "category": "Курзе",
-    "name": "Вареники с капустой",
-    "price": 340,
-    "weight": "",
-    "description": ""
-  },
-  {
-    "id": "vareniki-kartoshka",
-    "category": "Курзе",
-    "name": "Вареники с картошкой",
-    "price": 320,
-    "weight": "240 г",
-    "description": ""
-  },
-  {
-    "id": "vareniki-kartoshka-griby",
-    "category": "Курзе",
-    "name": "Вареники с картошкой и грибами",
-    "price": 350,
-    "weight": "240 г",
-    "description": ""
-  },
-  {
-    "id": "vareniki-syr-zelen",
-    "category": "Курзе",
-    "name": "Вареники с сыром и зеленью",
-    "price": 370,
-    "weight": "240 г",
-    "description": ""
-  },
-  {
-    "id": "vareniki-tvorog",
-    "category": "Курзе",
-    "name": "Вареники с домашним творогом",
-    "price": 340,
-    "weight": "240 г",
-    "description": ""
-  },
-  {
-    "id": "uzbek-placeholder",
-    "category": "Узбекская кухня",
-    "name": "[Впишите блюдо узбекской кухни]",
-    "price": 0,
-    "weight": "",
-    "description": "Временная позиция — пришлите список блюд, и я заменю"
-  },
-  {
-    "id": "golubtsy",
-    "category": "Горячие блюда",
-    "name": "Голубцы с мясом",
-    "price": 480,
-    "weight": "400 г",
-    "description": ""
-  },
-  {
-    "id": "zrazy-indeyka",
-    "category": "Горячие блюда",
-    "name": "Зразы Жюльен из индейки с грибами и сыром",
-    "price": 400,
-    "weight": "",
-    "description": ""
-  },
-  {
-    "id": "zrazy-chicken",
-    "category": "Горячие блюда",
-    "name": "Зразы из цыплёнка с грибами и яйцом",
-    "price": 350,
-    "weight": "350 г",
-    "description": ""
-  },
-  {
-    "id": "perec-farsh",
-    "category": "Горячие блюда",
-    "name": "Перец фаршированный",
-    "price": 480,
-    "weight": "400 г",
-    "description": ""
+    "description": "Традиционные узбекские манты, приготовленные на пару из тонкого домашнего теста и рубленого мяса молодого телёнка с луком и специями. Подаются со сметаной.",
+    "nutrition": {
+      "per100": {
+        "kcal": 220,
+        "protein": 11,
+        "fat": 10,
+        "carbs": 21
+      },
+      "perPortion": {
+        "weight": 320,
+        "kcal": 704,
+        "protein": 35.2,
+        "fat": 32,
+        "carbs": 67.2
+      }
+    }
   },
   {
     "id": "hachapuri-megrelsky",
-    "category": "Горячие блюда",
+    "category": "Выпечка",
     "name": "Хачапури по-мегрельски",
     "price": 730,
     "weight": "370 г",
-    "description": ""
+    "description": "Хачапури из бездрожжевого теста с аппетитной сырной корочкой и начинкой из сыров Сулугуни и Имеретинский.",
+    "nutrition": {
+      "per100": {
+        "kcal": 290,
+        "protein": 10,
+        "fat": 15,
+        "carbs": 28
+      },
+      "perPortion": {
+        "weight": 370,
+        "kcal": 1073,
+        "protein": 37,
+        "fat": 55.5,
+        "carbs": 103.6
+      }
+    }
   },
   {
     "id": "hachapuri-adjarsky",
-    "category": "Горячие блюда",
+    "category": "Выпечка",
     "name": "Хачапури по-аджарски",
     "price": 730,
     "weight": "360 г",
-    "description": ""
+    "description": "Знаменитая лодочка с яйцом. Открытый хачапури из пышного дрожжевого теста с нежным и тянущимся сыром Сулугуни и Имеретинский. Яйцо подаётся в отдельной ёмкости.",
+    "nutrition": {
+      "per100": {
+        "kcal": 300,
+        "protein": 11,
+        "fat": 17,
+        "carbs": 27
+      },
+      "perPortion": {
+        "weight": 360,
+        "kcal": 1080,
+        "protein": 39.6,
+        "fat": 61.2,
+        "carbs": 97.2
+      }
+    }
   },
   {
     "id": "hachapuri-imeretinsky",
-    "category": "Горячие блюда",
+    "category": "Выпечка",
     "name": "Хачапури по-имеретински",
     "price": 730,
     "weight": "370 г",
-    "description": ""
+    "description": "Знаменитый грузинский пирог из тонко раскатанного бездрожжевого теста с начинкой из сыров Сулугуни и Имеретинского.",
+    "nutrition": {
+      "per100": {
+        "kcal": 285,
+        "protein": 10,
+        "fat": 14,
+        "carbs": 28
+      },
+      "perPortion": {
+        "weight": 370,
+        "kcal": 1054.5,
+        "protein": 37,
+        "fat": 51.8,
+        "carbs": 103.6
+      }
+    }
   },
   {
     "id": "borsch",
@@ -502,15 +1112,45 @@
     "name": "Борщ",
     "price": 400,
     "weight": "400 г",
-    "description": ""
+    "description": "Традиционный суп из томлёной телятины, свёклы, молодой капусты, болгарского перца, картофеля, красной моркови, лука, сельдерея и зелени. Подаётся со сметаной.",
+    "nutrition": {
+      "per100": {
+        "kcal": 55,
+        "protein": 3,
+        "fat": 2,
+        "carbs": 6
+      },
+      "perPortion": {
+        "weight": 400,
+        "kcal": 220,
+        "protein": 12,
+        "fat": 8,
+        "carbs": 24
+      }
+    }
   },
   {
     "id": "sup-lapsha",
     "category": "Супы",
     "name": "Суп-лапша куриный",
-    "price": null,
+    "price": 300,
     "weight": "400 г",
-    "description": ""
+    "description": "Куриный бульон, нежная курица и тонкая яичная лапша ручной работы.",
+    "nutrition": {
+      "per100": {
+        "kcal": 50,
+        "protein": 4,
+        "fat": 2,
+        "carbs": 5
+      },
+      "perPortion": {
+        "weight": 400,
+        "kcal": 200,
+        "protein": 16,
+        "fat": 8,
+        "carbs": 20
+      }
+    }
   },
   {
     "id": "lagman-uigursky",
@@ -518,7 +1158,22 @@
     "name": "Лагман уйгурский жареный",
     "price": 450,
     "weight": "400 г",
-    "description": ""
+    "description": "Насыщенное и ароматное блюдо из обжаренной на сильном огне длинной домашней лапши, сочного мяса молодого бычка и ягнёнка, свежих овощей и пряных специй с лёгким ароматом дымка.",
+    "nutrition": {
+      "per100": {
+        "kcal": 140,
+        "protein": 7,
+        "fat": 7,
+        "carbs": 12
+      },
+      "perPortion": {
+        "weight": 400,
+        "kcal": 560,
+        "protein": 28,
+        "fat": 28,
+        "carbs": 48
+      }
+    }
   },
   {
     "id": "lagman-uzbeksky",
@@ -526,7 +1181,22 @@
     "name": "Лагман узбекистанский",
     "price": 450,
     "weight": "400 г",
-    "description": ""
+    "description": "Насыщенный, согревающий и ароматный суп на наваристом бульоне с мясом молодого бычка и ягнёнка, свежими овощами, зеленью, пряными специями и традиционной уйгурской лапшой.",
+    "nutrition": {
+      "per100": {
+        "kcal": 95,
+        "protein": 6,
+        "fat": 4,
+        "carbs": 9
+      },
+      "perPortion": {
+        "weight": 400,
+        "kcal": 380,
+        "protein": 24,
+        "fat": 16,
+        "carbs": 36
+      }
+    }
   },
   {
     "id": "salat-ovoshnoy",
@@ -534,7 +1204,22 @@
     "name": "Овощной",
     "price": 300,
     "weight": "250 г",
-    "description": ""
+    "description": "Лёгкий освежающий салат из спелых томатов, огурцов и свежей зелени.",
+    "nutrition": {
+      "per100": {
+        "kcal": 45,
+        "protein": 1,
+        "fat": 2,
+        "carbs": 5
+      },
+      "perPortion": {
+        "weight": 250,
+        "kcal": 112.5,
+        "protein": 2.5,
+        "fat": 5,
+        "carbs": 12.5
+      }
+    }
   },
   {
     "id": "salat-grechesky",
@@ -542,7 +1227,22 @@
     "name": "Греческий",
     "price": 350,
     "weight": "250 г",
-    "description": ""
+    "description": "Классический салат греческой кухни из сочных огурцов, помидоров, сладкого перца, листьев салата и сербской брынзы с добавлением таджасских оливок, красного лука под оригинальной заправкой на основе оливкового масла, бальзамика, мёда и орегано.",
+    "nutrition": {
+      "per100": {
+        "kcal": 110,
+        "protein": 3,
+        "fat": 9,
+        "carbs": 4
+      },
+      "perPortion": {
+        "weight": 250,
+        "kcal": 275,
+        "protein": 7.5,
+        "fat": 22.5,
+        "carbs": 10
+      }
+    }
   },
   {
     "id": "salat-cezar",
@@ -550,7 +1250,22 @@
     "name": "Цезарь с цыплёнком на гриле",
     "price": 400,
     "weight": "250 г",
-    "description": ""
+    "description": "Салат с хрустящими листьями романо в сочетании с розовыми помидорами, сыром пармезан и пшеничными гренками с обжаренным куриным филе на гриле. Заправляется фирменным соусом цезарь.",
+    "nutrition": {
+      "per100": {
+        "kcal": 140,
+        "protein": 10,
+        "fat": 9,
+        "carbs": 6
+      },
+      "perPortion": {
+        "weight": 250,
+        "kcal": 350,
+        "protein": 25,
+        "fat": 22.5,
+        "carbs": 15
+      }
+    }
   },
   {
     "id": "salat-baklazhany",
@@ -558,7 +1273,22 @@
     "name": "Хрустящие баклажаны",
     "price": 450,
     "weight": "250 г",
-    "description": ""
+    "description": "Баклажаны в идеальном хрустящем кляре с томатами в пикантном сладком чили.",
+    "nutrition": {
+      "per100": {
+        "kcal": 180,
+        "protein": 3,
+        "fat": 13,
+        "carbs": 13
+      },
+      "perPortion": {
+        "weight": 250,
+        "kcal": 450,
+        "protein": 7.5,
+        "fat": 32.5,
+        "carbs": 32.5
+      }
+    }
   },
   {
     "id": "salat-caprese",
@@ -566,7 +1296,22 @@
     "name": "Салат Капрезе с моцареллой",
     "price": 380,
     "weight": "250 г",
-    "description": ""
+    "description": "Лёгкая традиционная итальянская холодная закуска из спелых помидоров, моцареллы, оливкового масла и соуса песто в сочетании с рукколой, таджасскими оливками и кедровыми орешками.",
+    "nutrition": {
+      "per100": {
+        "kcal": 150,
+        "protein": 8,
+        "fat": 11,
+        "carbs": 4
+      },
+      "perPortion": {
+        "weight": 250,
+        "kcal": 375,
+        "protein": 20,
+        "fat": 27.5,
+        "carbs": 10
+      }
+    }
   },
   {
     "id": "salat-caprese-chicken",
@@ -574,63 +1319,137 @@
     "name": "Салат Капрезе с цыплёнком-гриль",
     "price": 480,
     "weight": "290 г",
-    "description": ""
+    "description": "Классический Капрезе в новой интерпретации с ароматной куриной грудкой, приготовленной на углях, и фирменным соусом.",
+    "nutrition": {
+      "per100": {
+        "kcal": 140,
+        "protein": 11,
+        "fat": 8,
+        "carbs": 4
+      },
+      "perPortion": {
+        "weight": 290,
+        "kcal": 406,
+        "protein": 31.9,
+        "fat": 23.2,
+        "carbs": 11.6
+      }
+    }
   },
   {
     "id": "pizza-3myasa",
-    "category": "Пицца",
-    "name": "Неаполитанская пицца 3 мяса",
+    "category": "Неаполитанская пицца",
+    "name": "Неаполитанская пицца Мясная",
     "price": 700,
     "weight": "450 г",
-    "description": "30 см"
+    "description": "30 см",
+    "nutrition": {
+      "per100": {
+        "kcal": 250,
+        "protein": 11,
+        "fat": 12,
+        "carbs": 24
+      },
+      "perPortion": {
+        "weight": 450,
+        "kcal": 1125,
+        "protein": 49.5,
+        "fat": 54,
+        "carbs": 108
+      }
+    }
   },
   {
     "id": "pizza-4cheese",
-    "category": "Пицца",
-    "name": "Неаполитанская пицца 4 сыра «Quattro formaggi»",
+    "category": "Неаполитанская пицца",
+    "name": "Неаполитанская пицца 4 сыра",
     "price": 700,
     "weight": "450 г",
-    "description": "30 см"
+    "description": "30 см",
+    "nutrition": {
+      "per100": {
+        "kcal": 260,
+        "protein": 12,
+        "fat": 13,
+        "carbs": 24
+      },
+      "perPortion": {
+        "weight": 450,
+        "kcal": 1170,
+        "protein": 54,
+        "fat": 58.5,
+        "carbs": 108
+      }
+    }
   },
   {
     "id": "pizza-baklazhan",
-    "category": "Пицца",
-    "name": "Неаполитанская пицца с баклажанами-гриль и кинзой",
+    "category": "Неаполитанская пицца",
+    "name": "Неаполитанская пицца с баклажанами-гриль",
     "price": 700,
     "weight": "450 г",
-    "description": "30 см"
+    "description": "30 см",
+    "nutrition": {
+      "per100": {
+        "kcal": 200,
+        "protein": 8,
+        "fat": 7,
+        "carbs": 26
+      },
+      "perPortion": {
+        "weight": 450,
+        "kcal": 900,
+        "protein": 36,
+        "fat": 31.5,
+        "carbs": 117
+      }
+    }
   },
   {
     "id": "pizza-chicken-griby",
-    "category": "Пицца",
-    "name": "Неаполитанская пицца с цыплёнком-гриль и грибочками",
+    "category": "Неаполитанская пицца",
+    "name": "Неаполитанская пицца с цыплёнком-гриль и грибами",
     "price": 700,
     "weight": "450 г",
-    "description": "30 см"
+    "description": "30 см",
+    "nutrition": {
+      "per100": {
+        "kcal": 220,
+        "protein": 10,
+        "fat": 8,
+        "carbs": 25
+      },
+      "perPortion": {
+        "weight": 450,
+        "kcal": 990,
+        "protein": 45,
+        "fat": 36,
+        "carbs": 112.5
+      }
+    }
   },
   {
     "id": "pizza-margarita",
-    "category": "Пицца",
+    "category": "Неаполитанская пицца",
     "name": "Неаполитанская пицца Маргарита",
     "price": 700,
     "weight": "450 г",
-    "description": "30 см"
-  },
-  {
-    "id": "blinchiki-tvorog",
-    "category": "Блинчики",
-    "name": "Блинчики с домашним творогом",
-    "price": 250,
-    "weight": "220 г",
-    "description": ""
-  },
-  {
-    "id": "blinchiki-myaso",
-    "category": "Блинчики",
-    "name": "Блинчики с мясом (говядина)",
-    "price": 350,
-    "weight": "200 г",
-    "description": ""
+    "description": "30 см",
+    "nutrition": {
+      "per100": {
+        "kcal": 230,
+        "protein": 9,
+        "fat": 8,
+        "carbs": 28
+      },
+      "perPortion": {
+        "weight": 450,
+        "kcal": 1035,
+        "protein": 40.5,
+        "fat": 36,
+        "carbs": 126
+      }
+    }
   },
   {
     "id": "tort-kapriz",
@@ -638,7 +1457,22 @@
     "name": "Торт «Дамский каприз»",
     "price": 350,
     "weight": "135 г",
-    "description": ""
+    "description": "Восхитительный, нежный и любимый всеми торт с заварным кремом.",
+    "nutrition": {
+      "per100": {
+        "kcal": 350,
+        "protein": 4,
+        "fat": 18,
+        "carbs": 42
+      },
+      "perPortion": {
+        "weight": 135,
+        "kcal": 472.5,
+        "protein": 5.4,
+        "fat": 24.3,
+        "carbs": 56.7
+      }
+    }
   },
   {
     "id": "cake-pops",
@@ -646,7 +1480,22 @@
     "name": "Набор кейк-попс",
     "price": 500,
     "weight": "170 г",
-    "description": ""
+    "description": "",
+    "nutrition": {
+      "per100": {
+        "kcal": 400,
+        "protein": 4,
+        "fat": 20,
+        "carbs": 48
+      },
+      "perPortion": {
+        "weight": 170,
+        "kcal": 680,
+        "protein": 6.8,
+        "fat": 34,
+        "carbs": 81.6
+      }
+    }
   },
   {
     "id": "cheesecake",
@@ -654,7 +1503,22 @@
     "name": "Чизкейк классический",
     "price": 520,
     "weight": "210 г",
-    "description": ""
+    "description": "Нежнейший творожно-сливочный десерт на тонкой песочной основе.",
+    "nutrition": {
+      "per100": {
+        "kcal": 330,
+        "protein": 6,
+        "fat": 22,
+        "carbs": 28
+      },
+      "perPortion": {
+        "weight": 210,
+        "kcal": 693,
+        "protein": 12.6,
+        "fat": 46.2,
+        "carbs": 58.8
+      }
+    }
   },
   {
     "id": "tort-merengue",
@@ -662,7 +1526,22 @@
     "name": "Меренговый торт с малиной",
     "price": 450,
     "weight": "225 г",
-    "description": ""
+    "description": "Воздушное безе с лёгким кремом и кислинкой спелой малины.",
+    "nutrition": {
+      "per100": {
+        "kcal": 300,
+        "protein": 3,
+        "fat": 12,
+        "carbs": 45
+      },
+      "perPortion": {
+        "weight": 225,
+        "kcal": 675,
+        "protein": 6.8,
+        "fat": 27,
+        "carbs": 101.2
+      }
+    }
   },
   {
     "id": "rulet-fistashka",
@@ -670,7 +1549,22 @@
     "name": "Фисташковый рулет с малиной",
     "price": 500,
     "weight": "160 г",
-    "description": ""
+    "description": "Хрустящая меренга с фисташковым кремом и ярким малиновым конфитюром.",
+    "nutrition": {
+      "per100": {
+        "kcal": 340,
+        "protein": 5,
+        "fat": 16,
+        "carbs": 42
+      },
+      "perPortion": {
+        "weight": 160,
+        "kcal": 544,
+        "protein": 8,
+        "fat": 25.6,
+        "carbs": 67.2
+      }
+    }
   },
   {
     "id": "tiramisu",
@@ -678,7 +1572,22 @@
     "name": "Тирамису",
     "price": 350,
     "weight": "170 г",
-    "description": ""
+    "description": "Кофейная пропитка, печенье Савоярди и нежный невесомый крем Маскарпоне.",
+    "nutrition": {
+      "per100": {
+        "kcal": 310,
+        "protein": 5,
+        "fat": 18,
+        "carbs": 30
+      },
+      "perPortion": {
+        "weight": 170,
+        "kcal": 527,
+        "protein": 8.5,
+        "fat": 30.6,
+        "carbs": 51
+      }
+    }
   },
   {
     "id": "sous-bbq",
@@ -686,7 +1595,22 @@
     "name": "Барбекю",
     "price": 70,
     "weight": "30 г",
-    "description": ""
+    "description": "Пикантный томатный соус с лёгкой сладостью и ароматом дымка.",
+    "nutrition": {
+      "per100": {
+        "kcal": 120,
+        "protein": 1,
+        "fat": 0,
+        "carbs": 28
+      },
+      "perPortion": {
+        "weight": 30,
+        "kcal": 36,
+        "protein": 0.3,
+        "fat": 0,
+        "carbs": 8.4
+      }
+    }
   },
   {
     "id": "sous-smetana",
@@ -694,7 +1618,22 @@
     "name": "Сметана",
     "price": 50,
     "weight": "30 г",
-    "description": ""
+    "description": "",
+    "nutrition": {
+      "per100": {
+        "kcal": 200,
+        "protein": 3,
+        "fat": 20,
+        "carbs": 3
+      },
+      "perPortion": {
+        "weight": 30,
+        "kcal": 60,
+        "protein": 0.9,
+        "fat": 6,
+        "carbs": 0.9
+      }
+    }
   },
   {
     "id": "sous-medovo-gorchichny",
@@ -702,7 +1641,22 @@
     "name": "Соус медово-горчичный",
     "price": 90,
     "weight": "30 г",
-    "description": ""
+    "description": "Пряный соус с мягкой горчинкой и приятным медовым послевкусием.",
+    "nutrition": {
+      "per100": {
+        "kcal": 250,
+        "protein": 2,
+        "fat": 15,
+        "carbs": 26
+      },
+      "perPortion": {
+        "weight": 30,
+        "kcal": 75,
+        "protein": 0.6,
+        "fat": 4.5,
+        "carbs": 7.8
+      }
+    }
   },
   {
     "id": "sous-slivochny-chesnok",
@@ -710,7 +1664,22 @@
     "name": "Соус сливочный с чесноком",
     "price": 80,
     "weight": "30 г",
-    "description": ""
+    "description": "Нежный соус на основе сливок со свежим чесноком и зеленью.",
+    "nutrition": {
+      "per100": {
+        "kcal": 300,
+        "protein": 2,
+        "fat": 30,
+        "carbs": 5
+      },
+      "perPortion": {
+        "weight": 30,
+        "kcal": 90,
+        "protein": 0.6,
+        "fat": 9,
+        "carbs": 1.5
+      }
+    }
   },
   {
     "id": "sous-adjika",
@@ -718,7 +1687,22 @@
     "name": "Аджика домашняя",
     "price": 80,
     "weight": "30 г",
-    "description": ""
+    "description": "Острая и очень ароматная кавказская аджика из томатов и пряных трав.",
+    "nutrition": {
+      "per100": {
+        "kcal": 60,
+        "protein": 2,
+        "fat": 1,
+        "carbs": 10
+      },
+      "perPortion": {
+        "weight": 30,
+        "kcal": 18,
+        "protein": 0.6,
+        "fat": 0.3,
+        "carbs": 3
+      }
+    }
   },
   {
     "id": "napitok-saperavi",
@@ -726,7 +1710,22 @@
     "name": "Натахтари Саперави",
     "price": 150,
     "weight": "500 мл",
-    "description": ""
+    "description": "",
+    "nutrition": {
+      "per100": {
+        "kcal": 45,
+        "protein": 0,
+        "fat": 0,
+        "carbs": 11
+      },
+      "perPortion": {
+        "weight": 500,
+        "kcal": 225,
+        "protein": 0,
+        "fat": 0,
+        "carbs": 55
+      }
+    }
   },
   {
     "id": "napitok-tarhun",
@@ -734,7 +1733,22 @@
     "name": "Натахтари Тархун",
     "price": 150,
     "weight": "500 мл",
-    "description": ""
+    "description": "",
+    "nutrition": {
+      "per100": {
+        "kcal": 45,
+        "protein": 0,
+        "fat": 0,
+        "carbs": 11
+      },
+      "perPortion": {
+        "weight": 500,
+        "kcal": 225,
+        "protein": 0,
+        "fat": 0,
+        "carbs": 55
+      }
+    }
   },
   {
     "id": "napitok-grusha",
@@ -742,7 +1756,22 @@
     "name": "Натахтари Груша",
     "price": 150,
     "weight": "500 мл",
-    "description": ""
+    "description": "",
+    "nutrition": {
+      "per100": {
+        "kcal": 45,
+        "protein": 0,
+        "fat": 0,
+        "carbs": 11
+      },
+      "perPortion": {
+        "weight": 500,
+        "kcal": 225,
+        "protein": 0,
+        "fat": 0,
+        "carbs": 55
+      }
+    }
   },
   {
     "id": "napitok-cola",
@@ -750,7 +1779,22 @@
     "name": "Coca-Cola",
     "price": 150,
     "weight": "330 мл",
-    "description": ""
+    "description": "",
+    "nutrition": {
+      "per100": {
+        "kcal": 42,
+        "protein": 0,
+        "fat": 0,
+        "carbs": 10.6
+      },
+      "perPortion": {
+        "weight": 330,
+        "kcal": 138.6,
+        "protein": 0,
+        "fat": 0,
+        "carbs": 35
+      }
+    }
   },
   {
     "id": "napitok-mors",
@@ -758,7 +1802,22 @@
     "name": "Морс Смородина",
     "price": 150,
     "weight": "330 мл",
-    "description": ""
+    "description": "",
+    "nutrition": {
+      "per100": {
+        "kcal": 45,
+        "protein": 0,
+        "fat": 0,
+        "carbs": 11
+      },
+      "perPortion": {
+        "weight": 330,
+        "kcal": 148.5,
+        "protein": 0,
+        "fat": 0,
+        "carbs": 36.3
+      }
+    }
   },
   {
     "id": "napitok-kompot",
@@ -766,6 +1825,21 @@
     "name": "Компот из сухофруктов",
     "price": 150,
     "weight": "330 мл",
-    "description": ""
+    "description": "",
+    "nutrition": {
+      "per100": {
+        "kcal": 60,
+        "protein": 0,
+        "fat": 0,
+        "carbs": 15
+      },
+      "perPortion": {
+        "weight": 330,
+        "kcal": 198,
+        "protein": 0,
+        "fat": 0,
+        "carbs": 49.5
+      }
+    }
   }
 ]
