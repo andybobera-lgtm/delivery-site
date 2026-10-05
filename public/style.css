@@ -1065,3 +1065,28 @@ button, .category-chip, .product-card { -webkit-user-select: none; user-select: 
     margin: 12px 12px -46px 0;
   }
 }
+
+/* ---------- Квадратики выбора поменьше ---------- */
+.choice-box { width: 30px; height: 30px; border-width: 2px; border-radius: 8px; }
+.choice-stepper { border-radius: 10px; }
+.choice-stepper button { width: 36px; height: 34px; font-size: 20px; }
+.choice-stepper span { min-width: 22px; font-size: 15px; }
+.combo-option-row { padding: 10px 0; min-height: 46px; }
+
+/* ---------- Корзина на телефоне / низком экране: прокручивается целиком, товары всегда видны ---------- */
+@media (max-width: 720px), (max-height: 820px) {
+  .cart-drawer {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+  }
+  .cart-drawer-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--surface);
+  }
+  .cart-items { overflow: visible; flex-grow: 0; }
+  .cart-line { min-height: 64px; }
+}
