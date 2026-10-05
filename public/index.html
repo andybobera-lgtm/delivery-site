@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="images/logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
 <script src="https://api-maps.yandex.ru/2.1/?apikey=f9e25577-c9c0-49ce-b057-04356e083b98&lang=ru_RU" defer></script>
 </head>
@@ -113,9 +113,9 @@
       <label class="agree">
         <input type="checkbox" id="agree" required />
         <span>Согласен с
-          <a href="/legal/offer.html" target="_blank">договором оферты</a>
+          <a href="/legal/offer.html">договором оферты</a>
           и
-          <a href="/legal/privacy-policy.html" target="_blank">политикой обработки персональных данных</a>
+          <a href="/legal/privacy-policy.html">политикой обработки персональных данных</a>
         </span>
       </label>
 
@@ -152,6 +152,13 @@
   <div class="address-map-col">
     <div id="delivery-map"></div>
   </div>
+</div>
+
+<!-- Окно с документами (оферта / политика) -->
+<div id="legal-overlay" class="cart-overlay"></div>
+<div id="legal-modal" class="legal-modal">
+  <div class="legal-modal-bar"><button class="cart-close" id="legal-close" aria-label="Закрыть">✕</button></div>
+  <iframe id="legal-frame" title="Документ"></iframe>
 </div>
 
 <script src="script.js"></script>
