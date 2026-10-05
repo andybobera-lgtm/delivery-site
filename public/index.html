@@ -76,50 +76,54 @@
     <button id="cart-close" class="cart-close" aria-label="Закрыть">✕</button>
   </div>
 
-  <div id="cart-items" class="cart-items">
-    <div id="cart-lines">Корзина пуста</div>
-    <div id="cart-upsell" class="cart-upsell"></div>
-  </div>
-
-  <div class="cart-drawer-footer">
-    <div class="cutlery-row">
-      <span>🍴 Приборы</span>
-      <div class="cutlery-stepper">
-        <button id="cutlery-minus">−</button>
-        <span id="cutlery-count">0</span>
-        <button id="cutlery-plus">+</button>
-      </div>
+  <div class="cart-scroll">
+    <div id="cart-items" class="cart-items">
+      <div id="cart-lines">Корзина пуста</div>
+      <div id="cart-upsell" class="cart-upsell"></div>
     </div>
 
+    <div class="cart-drawer-footer">
+      <div class="cutlery-row">
+        <span>🍴 Приборы</span>
+        <div class="cutlery-stepper">
+          <button type="button" id="cutlery-minus">−</button>
+          <span id="cutlery-count">0</span>
+          <button type="button" id="cutlery-plus">+</button>
+        </div>
+      </div>
+
+      <form id="checkout-form">
+        <input type="text" id="name" placeholder="Ваше имя" required />
+        <input type="tel" id="phone" placeholder="Телефон (+7...)" required />
+
+        <button type="button" id="open-address-btn" class="address-btn">
+          <span id="address-summary">Указать адрес доставки</span>
+          <span>›</span>
+        </button>
+        <input type="hidden" id="address" required />
+
+        <textarea id="comment" placeholder="Комментарий к заказу (необязательно)"></textarea>
+
+        <label class="agree">
+          <input type="checkbox" id="agree" required />
+          <span>Согласен с
+            <a href="/legal/offer.html">договором оферты</a>
+            и
+            <a href="/legal/privacy-policy.html">политикой обработки персональных данных</a>
+          </span>
+        </label>
+      </form>
+    </div>
+  </div>
+
+  <!-- Нижняя панель: итог и кнопка заказа всегда на виду -->
+  <div class="cart-bottom">
+    <div id="form-error" class="form-error"></div>
     <div class="cart-total-row">
       <span>Итого</span>
       <span id="cart-total">0 ₽</span>
     </div>
-
-    <form id="checkout-form">
-      <input type="text" id="name" placeholder="Ваше имя" required />
-      <input type="tel" id="phone" placeholder="Телефон (+7...)" required />
-
-      <button type="button" id="open-address-btn" class="address-btn">
-        <span id="address-summary">Указать адрес доставки</span>
-        <span>›</span>
-      </button>
-      <input type="hidden" id="address" required />
-
-      <textarea id="comment" placeholder="Комментарий к заказу (необязательно)"></textarea>
-
-      <label class="agree">
-        <input type="checkbox" id="agree" required />
-        <span>Согласен с
-          <a href="/legal/offer.html">договором оферты</a>
-          и
-          <a href="/legal/privacy-policy.html">политикой обработки персональных данных</a>
-        </span>
-      </label>
-
-      <button type="submit" class="checkout-btn">Оформить и оплатить</button>
-      <div id="form-error" class="form-error"></div>
-    </form>
+    <button type="submit" form="checkout-form" class="checkout-btn">Оформить и оплатить</button>
   </div>
 </aside>
 
