@@ -42,6 +42,8 @@ body {
 }
 
 h1, h2, h3 { font-family: 'Coolvetica', 'Manrope', sans-serif; margin: 0; font-weight: 600; color: var(--ink); }
+button, input, textarea, select { font-family: inherit; }
+.mobile-menu-list a { font-family: 'Coolvetica', 'Manrope', sans-serif; }
 
 /* ---------- Header ---------- */
 .site-header {
@@ -142,7 +144,7 @@ input, textarea {
   padding: 8px 12px;
   font-size: 14px;
   font-weight: 600;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Soyuz Grotesk', 'Manrope', sans-serif;
   cursor: pointer;
   margin-right: 8px;
   color: var(--ink);
@@ -329,7 +331,7 @@ input, textarea {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Soyuz Grotesk', 'Manrope', sans-serif;
   font-weight: 700;
   font-size: 15px;
   cursor: pointer;
@@ -531,7 +533,7 @@ input, textarea {
   font-weight: 600;
   color: var(--muted);
   cursor: pointer;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Soyuz Grotesk', 'Manrope', sans-serif;
   white-space: nowrap;
 }
 .nutrition-tab.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
@@ -728,7 +730,7 @@ input, textarea {
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Soyuz Grotesk', 'Manrope', sans-serif;
 }
 .checkout-btn:hover { background: var(--accent-dark); }
 .agree { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: flex-start; }
@@ -748,7 +750,7 @@ input, textarea {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Soyuz Grotesk', 'Manrope', sans-serif;
 }
 .buy-btn:hover { background: var(--accent-dark); }
 .view-btn {
@@ -763,7 +765,7 @@ input, textarea {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Soyuz Grotesk', 'Manrope', sans-serif;
 }
 .view-btn:hover { background: var(--accent-dark); }
 .view-btn .btn-arrow { font-size: 15px; line-height: 1; }
