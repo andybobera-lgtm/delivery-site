@@ -937,4 +937,24 @@ function setupNavAppearOnScroll() {
 }
 setupNavAppearOnScroll();
 
+/* ================= Оферта и политика: открываются поверх страницы ================= */
+function openLegal(url) {
+  document.getElementById('legal-frame').src = url;
+  document.getElementById('legal-overlay').classList.add('open');
+  document.getElementById('legal-modal').classList.add('open');
+}
+function closeLegal() {
+  document.getElementById('legal-overlay').classList.remove('open');
+  document.getElementById('legal-modal').classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[href^="/legal/"]');
+  if (!a) return;
+  e.preventDefault();
+  openLegal(a.getAttribute('href'));
+});
+document.getElementById('legal-close').addEventListener('click', closeLegal);
+document.getElementById('legal-overlay').addEventListener('click', closeLegal);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLegal(); });
+
 loadProducts();
