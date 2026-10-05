@@ -26,11 +26,60 @@ function thumbStyleAndText(product) {
   };
 }
 
+/* ================= СОХРАНЕНИЕ КОРЗИНЫ (не пропадает при обновлении страницы) ================= */
+const CART_KEY = 'dachnaya_cart_v1';
+const CUSTOMER_KEY = 'dachnaya_customer_v1';
+let cartRestored = false;
+
+function saveCart() {
+  if (!cartRestored) return;
+  try { localStorage.setItem(CART_KEY, JSON.stringify({ cart, cutleryCount })); } catch (e) {}
+}
+function saveCustomer() {
+  try {
+    localStorage.setItem(CUSTOMER_KEY, JSON.stringify({
+      name: document.getElementById('name').value,
+      phone: document.getElementById('phone').value,
+    }));
+  } catch (e) {}
+}
+function restoreCart() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CART_KEY) || 'null');
+    if (saved && saved.cart) {
+      Object.keys(saved.cart).forEach((key) => {
+        const line = saved.cart[key];
+        const product = products.find((p) => p.id === line.productId);
+        if (!product || !line.qty || line.qty < 1) return; // блюда больше нет в меню — пропускаем
+        if (line.type === 'variant') {
+          const v = (product.variants || []).find((x) => x.id === line.variantId);
+          if (!v) return;
+          line.price = v.price; // цену берём актуальную
+        } else if (typeof product.price === 'number') {
+          line.price = product.price;
+        } else return;
+        cart[key] = line;
+      });
+      if (Number.isFinite(saved.cutleryCount)) cutleryCount = Math.max(0, saved.cutleryCount);
+    }
+    const cust = JSON.parse(localStorage.getItem(CUSTOMER_KEY) || 'null');
+    if (cust) {
+      if (cust.name) document.getElementById('name').value = cust.name;
+      if (cust.phone) document.getElementById('phone').value = cust.phone;
+    }
+  } catch (e) {}
+  cartRestored = true;
+  renderCutlery();
+  renderCartWidgets();
+}
+['name', 'phone'].forEach((id) => document.getElementById(id).addEventListener('input', saveCustomer));
+
 async function loadProducts() {
   const res = await fetch('/api/products');
   products = await res.json();
   renderCategoryNav();
   renderMenu();
+  restoreCart();
 }
 
 function renderCategoryNav() {
@@ -43,7 +92,6 @@ function renderCategoryNav() {
     a.className = 'category-chip' + (index === 0 ? ' active' : '');
     a.href = '#cat-' + slug(cat);
     a.textContent = cat;
-    a.addEventListener('click', () => setActiveCategoryChip(slug(cat)));
     nav.appendChild(a);
   });
 
@@ -53,41 +101,55 @@ function renderCategoryNav() {
     const a = document.createElement('a');
     a.href = '#cat-' + slug(cat);
     a.textContent = cat;
-    a.addEventListener('click', () => {
-      setActiveCategoryChip(slug(cat));
-      closeMobileMenu();
-    });
+    a.addEventListener('click', () => { closeMobileMenu(); });
     mobileList.appendChild(a);
   });
 
   setupCategoryScrollSpy();
 }
 
+let lastActiveCat = null;
 function setActiveCategoryChip(catSlug) {
+  if (catSlug === lastActiveCat) return;
+  lastActiveCat = catSlug;
+  const nav = document.getElementById('category-nav');
   document.querySelectorAll('.category-chip').forEach((chip) => {
     const isActive = chip.getAttribute('href') === '#cat-' + catSlug;
     chip.classList.toggle('active', isActive);
-    if (isActive) chip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    if (isActive && nav) {
+      // прокручиваем только саму полосу категорий (не всю страницу), чтобы активная была по центру
+      const c = chip.getBoundingClientRect();
+      const n = nav.getBoundingClientRect();
+      nav.scrollBy({ left: c.left - n.left - (n.width - c.width) / 2, behavior: 'smooth' });
+    }
   });
 }
 
-// Подсвечиваем категорию автоматически, когда её раздел появляется в зоне видимости при прокрутке
+// Подсвечиваем категорию, в разделе которой сейчас находимся при прокрутке
+let categorySpyBound = false;
 function setupCategoryScrollSpy() {
-  const sections = document.querySelectorAll('.menu-section');
-  if (!sections.length) return;
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveCategoryChip(entry.target.id.replace('cat-', ''));
-        }
-      });
-    },
-    { rootMargin: '-140px 0px -70% 0px', threshold: 0 }
-  );
-
-  sections.forEach((section) => observer.observe(section));
+  if (categorySpyBound) return;
+  categorySpyBound = true;
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    const sections = [...document.querySelectorAll('.menu-section')];
+    if (!sections.length) return;
+    const line = 160; // линия чуть ниже шапки и панели категорий
+    let current = sections[0];
+    for (const sec of sections) {
+      if (sec.getBoundingClientRect().top <= line) current = sec;
+      else break;
+    }
+    const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+    if (atBottom) current = sections[sections.length - 1];
+    setActiveCategoryChip(current.id.replace('cat-', ''));
+  };
+  window.addEventListener('scroll', () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(update); }
+  }, { passive: true });
+  window.addEventListener('resize', update);
+  update();
 }
 
 function openMobileMenu() {
@@ -249,13 +311,20 @@ function changeSimpleQty(product, delta) {
 }
 
 /* ================= ОБЩЕЕ: показать/скрыть окно с анимацией ================= */
+function updateScrollLock() {
+  const anyOpen = document.querySelector('.picker-modal.open, .cart-drawer.open, .address-modal.open, .legal-modal.open, .mobile-menu-drawer.open');
+  document.body.classList.toggle('no-scroll', !!anyOpen);
+}
 function showPicker() {
   document.getElementById('picker-overlay').classList.add('open');
   document.getElementById('picker-modal').classList.add('open');
+  updateScrollLock();
 }
 function closePicker() {
   document.getElementById('picker-overlay').classList.remove('open');
   document.getElementById('picker-modal').classList.remove('open');
+  document.getElementById('picker-modal').dataset.pid = '';
+  updateScrollLock();
   refreshAllCards();
 }
 document.getElementById('picker-overlay').addEventListener('click', closePicker);
@@ -317,17 +386,26 @@ function attachNutritionBlock(nutrition) {
 function pickerShell(product, bodyHtml, footerHtml) {
   const modal = document.getElementById('picker-modal');
   const thumbData = thumbStyleAndText(product);
+  // при перерисовке (нажали + или −) сохраняем положение прокрутки, чтобы окно не прыгало вверх
+  const same = modal.classList.contains('open') && modal.dataset.pid === product.id;
+  const prevModalScroll = same ? modal.scrollTop : 0;
+  const prevBody = modal.querySelector('.picker-body');
+  const prevBodyScroll = same && prevBody ? prevBody.scrollTop : 0;
+  modal.dataset.pid = product.id;
   modal.innerHTML = `
+    <button class="cart-close" id="picker-close" aria-label="Закрыть">✕</button>
     <div class="picker-photo" style="${thumbData.style}">${thumbData.text}</div>
     <div class="picker-panel">
       <div class="picker-header">
         <h3>${product.name}</h3>
-        <button class="cart-close" id="picker-close">✕</button>
       </div>
       <div class="picker-body">${bodyHtml}</div>
       <div class="picker-footer">${footerHtml}</div>
     </div>
   `;
+  modal.scrollTop = prevModalScroll;
+  const newBody = modal.querySelector('.picker-body');
+  if (newBody) newBody.scrollTop = prevBodyScroll;
   document.getElementById('picker-close').addEventListener('click', closePicker);
 }
 
@@ -371,6 +449,19 @@ function openSimpleDetail(product) {
   render();
 }
 
+/* Пустой квадратик → после нажатия счётчик «− 1 +» (для вариантов и наборов) */
+function choiceControl(count, optId, plusDisabled) {
+  const dis = plusDisabled ? 'disabled' : '';
+  if (count === 0) {
+    return `<button type="button" class="choice-box" data-opt="${optId}" data-action="plus" ${dis} aria-label="Выбрать"></button>`;
+  }
+  return `<div class="choice-stepper">
+    <button type="button" data-opt="${optId}" data-action="minus" aria-label="Меньше">−</button>
+    <span>${count}</span>
+    <button type="button" data-opt="${optId}" data-action="plus" ${dis} aria-label="Больше">+</button>
+  </div>`;
+}
+
 /* ================= ХИНКАЛ (ВАРИАНТЫ) ================= */
 function openVariantPicker(product) {
   function render() {
@@ -383,13 +474,9 @@ function openVariantPicker(product) {
             <div>${v.label}</div>
             <div class="product-meta">${v.weight}</div>
           </div>
-          <div style="display:flex;align-items:center;gap:10px;">
+          <div style="display:flex;align-items:center;gap:12px;">
             <span class="variant-option-price">${v.price} ₽</span>
-            <div class="qty-stepper" style="background:${qty > 0 ? 'var(--accent)' : 'var(--soft-bg)'};">
-              <button data-action="minus" style="color:${qty > 0 ? 'white' : 'var(--accent)'}">−</button>
-              <span style="color:${qty > 0 ? 'white' : 'var(--ink)'}">${qty}</span>
-              <button data-action="plus" style="color:${qty > 0 ? 'white' : 'var(--accent)'}">+</button>
-            </div>
+            ${choiceControl(qty, v.id, false)}
           </div>
         </div>
       `;
@@ -404,14 +491,16 @@ function openVariantPicker(product) {
       const variant = product.variants.find((v) => v.id === variantId);
       const key = product.id + '::' + variantId;
 
-      row.querySelector('[data-action="plus"]').addEventListener('click', (e) => {
-        e.stopPropagation();
+      const addOne = (e) => {
+        if (e) e.stopPropagation();
         if (!cart[key]) cart[key] = { productId: product.id, type: 'variant', variantId, name: product.name + ' (' + variant.label + ')', price: variant.price, qty: 0 };
         cart[key].qty += 1;
         renderCartWidgets();
         render();
-      });
-      row.querySelector('[data-action="minus"]').addEventListener('click', (e) => {
+      };
+      row.querySelector('[data-action="plus"]').addEventListener('click', addOne);
+      if (!cart[key]) row.addEventListener('click', (e) => { if (!e.target.closest('button')) addOne(); });
+      row.querySelector('[data-action="minus"]')?.addEventListener('click', (e) => {
         e.stopPropagation();
         if (!cart[key]) return;
         cart[key].qty -= 1;
@@ -442,13 +531,9 @@ function openComboPicker(product) {
       const atTotalLimit = totalCount() >= product.totalSlots;
       const plusDisabled = atTotalLimit || atMeatLimit;
       return `
-        <div class="combo-option-row">
+        <div class="combo-option-row" data-opt-row="${o.id}">
           <span class="combo-option-name">${o.name}</span>
-          <div class="qty-stepper mini-stepper" style="background:${count > 0 ? 'var(--accent)' : 'var(--soft-bg)'};">
-            <button data-opt="${o.id}" data-action="minus" style="color:${count > 0 ? 'white' : 'var(--accent)'}">−</button>
-            <span style="color:${count > 0 ? 'white' : 'var(--ink)'}">${count}</span>
-            <button data-opt="${o.id}" data-action="plus" ${plusDisabled ? 'disabled style="opacity:0.3"' : `style="color:${count > 0 ? 'white' : 'var(--accent)'}"`}>+</button>
-          </div>
+          ${choiceControl(count, o.id, plusDisabled)}
         </div>
       `;
     }).join('');
@@ -481,6 +566,19 @@ function openComboPicker(product) {
       btn.addEventListener('click', () => {
         const id = btn.dataset.opt;
         if (selection[id] > 0) selection[id] -= 1;
+        render();
+      });
+    });
+
+    // нажатие на всю строку (не только на квадратик) тоже выбирает позицию
+    document.querySelectorAll('[data-opt-row]').forEach((row) => {
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('button')) return;
+        const id = row.dataset.optRow;
+        const opt = product.options.find((o) => o.id === id);
+        if (selection[id] > 0 || totalCount() >= product.totalSlots) return;
+        if (opt.isMeat && meatCount() >= product.meatMax) return;
+        selection[id] += 1;
         render();
       });
     });
@@ -529,6 +627,7 @@ function renderCartWidgets() {
   renderCartLines();
   renderUpsell();
   refreshAllCards();
+  saveCart();
 }
 
 function renderCartLines() {
@@ -658,6 +757,7 @@ function renderUpsell() {
 /* ================= ПРИБОРЫ ================= */
 function renderCutlery() {
   document.getElementById('cutlery-count').textContent = cutleryCount;
+  saveCart();
 }
 document.getElementById('cutlery-plus').addEventListener('click', () => {
   cutleryCount += 1;
@@ -672,11 +772,13 @@ document.getElementById('cutlery-minus').addEventListener('click', () => {
 function openCart() {
   document.getElementById('cart-drawer').classList.add('open');
   document.getElementById('cart-overlay').classList.add('open');
+  updateScrollLock();
 }
 function closeCart() {
   document.getElementById('cart-drawer').classList.remove('open');
   document.getElementById('cart-overlay').classList.remove('open');
   closeAddressModal();
+  updateScrollLock();
 }
 document.getElementById('cart-fab').addEventListener('click', openCart);
 document.getElementById('cart-close').addEventListener('click', closeCart);
@@ -792,10 +894,12 @@ function openAddressModal() {
   // Карта иногда рисуется криво, если контейнер был скрыт в момент инициализации —
   // на всякий случай пересчитываем размер после появления окна
   setTimeout(() => { if (deliveryMap) deliveryMap.container.fitToViewport(); }, 250);
+  updateScrollLock();
 }
 function closeAddressModal() {
   document.getElementById('address-overlay').classList.remove('open');
   document.getElementById('address-modal').classList.remove('open');
+  updateScrollLock();
 }
 document.getElementById('open-address-btn').addEventListener('click', openAddressModal);
 document.getElementById('address-close').addEventListener('click', closeAddressModal);
@@ -942,10 +1046,12 @@ function openLegal(url) {
   document.getElementById('legal-frame').src = url;
   document.getElementById('legal-overlay').classList.add('open');
   document.getElementById('legal-modal').classList.add('open');
+  updateScrollLock();
 }
 function closeLegal() {
   document.getElementById('legal-overlay').classList.remove('open');
   document.getElementById('legal-modal').classList.remove('open');
+  updateScrollLock();
 }
 document.addEventListener('click', (e) => {
   const a = e.target.closest('a[href^="/legal/"]');
@@ -956,5 +1062,17 @@ document.addEventListener('click', (e) => {
 document.getElementById('legal-close').addEventListener('click', closeLegal);
 document.getElementById('legal-overlay').addEventListener('click', closeLegal);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLegal(); });
+
+/* ================= Плашка про cookies ================= */
+(function () {
+  const banner = document.getElementById('cookie-banner');
+  let accepted = false;
+  try { accepted = localStorage.getItem('cookie_ok') === '1'; } catch (e) {}
+  if (!accepted) banner.hidden = false;
+  document.getElementById('cookie-accept').addEventListener('click', () => {
+    try { localStorage.setItem('cookie_ok', '1'); } catch (e) {}
+    banner.hidden = true;
+  });
+})();
 
 loadProducts();
