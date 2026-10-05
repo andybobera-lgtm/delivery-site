@@ -313,27 +313,11 @@ function changeSimpleQty(product, delta) {
 }
 
 /* ================= ОБЩЕЕ: показать/скрыть окно с анимацией ================= */
-let lockedScrollY = null;
 function updateScrollLock() {
   const anyOpen = !!document.querySelector('.picker-modal.open, .cart-drawer.open, .address-modal.open, .legal-modal.open, .mobile-menu-drawer.open');
-  const b = document.body;
-  if (anyOpen && lockedScrollY === null) {
-    // Жёстко фиксируем страницу под окном (работает и на iPhone): листается только само окно
-    lockedScrollY = window.scrollY;
-    b.style.position = 'fixed';
-    b.style.top = -lockedScrollY + 'px';
-    b.style.left = '0';
-    b.style.right = '0';
-    b.style.width = '100%';
-  } else if (!anyOpen && lockedScrollY !== null) {
-    b.style.position = '';
-    b.style.top = '';
-    b.style.left = '';
-    b.style.right = '';
-    b.style.width = '';
-    window.scrollTo(0, lockedScrollY);
-    lockedScrollY = null;
-  }
+  // пока открыто окно — страница под ним не прокручивается (листается только само окно)
+  document.documentElement.classList.toggle('no-scroll', anyOpen);
+  document.body.classList.toggle('no-scroll', anyOpen);
 }
 function showPicker() {
   document.getElementById('picker-overlay').classList.add('open');
