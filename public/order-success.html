@@ -3,38 +3,98 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Спасибо за заказ</title>
+<title>Ваш заказ — Дачная Беседка</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
+<style>
+  .wrap { max-width: 520px; margin: 48px auto; padding: 0 20px; }
+  .wrap h1 { font-size: 28px; margin-bottom: 6px; text-align: center; }
+  .num { text-align: center; color: var(--muted); margin-bottom: 24px; }
+  .steps { list-style: none; padding: 0; margin: 0 0 20px; }
+  .steps li { display: flex; gap: 14px; align-items: flex-start; padding: 12px 0; color: #aaa; position: relative; }
+  .steps li::before { content: ''; flex: none; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #ddd; box-sizing: border-box; background: #fff; }
+  .steps li:not(:last-child)::after { content: ''; position: absolute; left: 10px; top: 36px; bottom: -12px; width: 2px; background: #e5e5e5; }
+  .steps li.done { color: var(--ink); }
+  .steps li.done::before { background: var(--accent); border-color: var(--accent); }
+  .steps li.now { color: var(--ink); font-weight: 600; }
+  .steps li.now::before { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(72,118,72,.2); }
+  .steps small { display: block; font-weight: 400; color: var(--muted); margin-top: 2px; }
+  .note { text-align: center; color: var(--muted); font-size: 14px; }
+  .alert { text-align: center; color: #c0392b; font-weight: 600; margin: 20px 0; }
+</style>
 </head>
 <body>
-  <main style="max-width:520px;margin:80px auto;text-align:center;padding:0 20px;">
-    <h1 style="font-size:32px;margin-bottom:12px;">Спасибо за заказ!</h1>
-    <p id="status" style="font-size:16px;color:var(--muted);">Проверяем статус оплаты...</p>
-    <p style="color:var(--muted);">Мы свяжемся с вами по указанному телефону, чтобы уточнить детали доставки.</p>
-    <a href="/" style="color:var(--accent);font-weight:600;">Вернуться на главную</a>
+  <main class="wrap">
+    <h1 id="title">Спасибо за заказ!</h1>
+    <div class="num" id="num"></div>
+    <div id="msg" class="note">Проверяем статус оплаты...</div>
+    <ul class="steps" id="steps" hidden></ul>
+    <p class="note">Если что-то пойдёт не так, мы позвоним вам по указанному телефону.</p>
+    <p class="note"><a href="/" style="color:var(--accent);font-weight:600;">Вернуться на главную</a></p>
   </main>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const orderId = params.get('orderId');
-    const statusEl = document.getElementById('status');
+    const orderId = new URLSearchParams(location.search).get('orderId');
+    const msgEl = document.getElementById('msg');
+    const stepsEl = document.getElementById('steps');
+    const ORDER = ['оплачен', 'принят', 'готов', 'передан курьеру', 'доставлен'];
+    const TITLES = [
+      'Заказ оплачен — ждём подтверждения кафе',
+      'Заказ принят, готовим',
+      'Заказ готов, ищем курьера',
+      'Заказ передан курьеру',
+      'Заказ доставлен. Приятного аппетита!',
+    ];
 
-    if (orderId) {
-      fetch('/api/orders/' + orderId)
-        .then((r) => r.json())
-        .then((data) => {
-          if (data.status === 'оплачен') {
-            statusEl.textContent = 'Оплата подтверждена. Заказ №' + orderId.slice(0, 8);
-          } else {
-            statusEl.textContent = 'Статус заказа: ' + (data.status || 'обрабатывается');
-          }
-        })
-        .catch(() => {
-          statusEl.textContent = 'Не удалось проверить статус, но заказ сохранён.';
-        });
+    function hhmm(iso) {
+      return new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
     }
+
+    function render(d) {
+      if (d.status === 'ожидает оплаты') {
+        msgEl.className = 'note';
+        msgEl.textContent = 'Ждём подтверждения оплаты от банка…';
+        stepsEl.hidden = true;
+        return;
+      }
+      if (d.status === 'отменён') {
+        msgEl.className = 'alert';
+        msgEl.textContent = 'Оплата не прошла или была отменена. Заказ не оформлен.';
+        stepsEl.hidden = true;
+        return;
+      }
+      const idx = ORDER.indexOf(d.status);
+      if (idx < 0) { msgEl.textContent = 'Статус заказа: ' + d.status; return; }
+      msgEl.textContent = '';
+      try { localStorage.removeItem('dachnaya_cart_v1'); } catch (e) {} // заказ оплачен — корзину очищаем
+      stepsEl.hidden = false;
+      stepsEl.innerHTML = TITLES.map((t, i) => {
+        let cls = i < idx ? 'done' : i === idx ? 'now' : '';
+        if (idx === 4) cls = 'done';
+        let extra = '';
+        if (i === 1 && d.readyEta && idx >= 1 && idx < 2) extra = `<small>Будет готов примерно к ${hhmm(d.readyEta)}</small>`;
+        if (i === 3 && d.courierEta && idx === 3) extra = `<small>≈ через ${d.deliveryMinutes || 20} минут (около ${hhmm(d.courierEta)})</small>`;
+        return `<li class="${cls}">${t}${extra}</li>`;
+      }).join('');
+    }
+
+    async function poll() {
+      try {
+        const r = await fetch('/api/orders/' + orderId);
+        if (!r.ok) throw new Error();
+        const d = await r.json();
+        document.getElementById('num').textContent = 'Заказ №' + orderId.slice(0, 8);
+        render(d);
+        if (d.status === 'доставлен' || d.status === 'отменён') return;
+      } catch (e) {
+        msgEl.textContent = 'Не удалось обновить статус, пробуем ещё раз…';
+      }
+      setTimeout(poll, 10000);
+    }
+
+    if (orderId) poll();
+    else msgEl.textContent = 'Заказ не найден.';
   </script>
 </body>
 </html>
