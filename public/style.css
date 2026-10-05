@@ -377,17 +377,20 @@ input, textarea {
   transform: translate(-50%, -50%) scale(1);
 }
 
-/* Окно с фото слева (хинкал, наборы, обычные блюда) */
+/* Окно товара. Компьютер: фото слева, справа заголовок / текст (прокручивается) / кнопка */
 .picker-modal {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: min(450px, 50%) 1fr;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   width: min(900px, 95vw);
   height: min(600px, 88vh);
 }
+.picker-scroll { display: contents; }
 .picker-photo {
+  grid-column: 1;
+  grid-row: 1 / span 3;
+  width: 100%;
   height: 100%;
-  aspect-ratio: 1 / 1;
-  flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -395,15 +398,10 @@ input, textarea {
   font-weight: 700;
   color: rgba(255,255,255,0.9);
 }
-.picker-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-  height: 100%;
-}
-.picker-body { flex: 1; min-height: 0; }
+.picker-header { grid-column: 2; grid-row: 1; }
+.picker-body { grid-column: 2; grid-row: 2; min-height: 0; overflow-y: auto; }
+.picker-footer { grid-column: 2; grid-row: 3; }
+
 /* Окно адреса: форма слева, карта справа и покрупнее */
 .address-modal {
   display: flex;
@@ -1023,48 +1021,9 @@ input, textarea {
 
 /* ---------- Прокрутка фона под открытым окном; запрет увеличения двойным тапом ---------- */
 body.no-scroll { overflow: hidden; }
-* { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+* { -webkit-tap-highlight-color: transparent; }
+html, body, button, a, label, .product-card, .picker-scroll *, .picker-footer, .cart-drawer-footer, .cart-line { touch-action: manipulation; }
 button, .category-chip, .product-card { -webkit-user-select: none; user-select: none; }
-
-@media (max-width: 640px) {
-  /* Шторка снизу: фото и описание прокручиваются, кнопка внизу всегда на виду */
-  .picker-modal {
-    flex-direction: column;
-    width: 100%;
-    height: auto;
-    max-height: 92vh;
-    max-height: 92dvh;
-    top: auto;
-    bottom: 0;
-    left: 0;
-    opacity: 1;
-    transform: translateY(105%);
-    border-radius: 22px 22px 0 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-    transition: transform 0.3s ease;
-  }
-  .picker-modal.open { transform: translateY(0); }
-  .picker-modal > * { flex: none; }
-  .picker-photo { width: 100%; height: auto; aspect-ratio: 4 / 3; }
-  .picker-panel { display: block; height: auto; min-height: 0; }
-  .picker-header { border-bottom: none; padding-bottom: 4px; }
-  .picker-body { overflow: visible; padding-top: 8px; }
-  .picker-footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 5;
-    background: var(--surface);
-    padding-bottom: calc(14px + env(safe-area-inset-bottom));
-  }
-  .picker-modal .cart-close {
-    position: sticky;
-    top: 12px;
-    align-self: flex-end;
-    margin: 12px 12px -46px 0;
-  }
-}
 
 /* ---------- Квадратики выбора поменьше ---------- */
 .choice-box { width: 30px; height: 30px; border-width: 2px; border-radius: 8px; }
@@ -1089,4 +1048,41 @@ button, .category-chip, .product-card { -webkit-user-select: none; user-select: 
   }
   .cart-items { overflow: visible; flex-grow: 0; }
   .cart-line { min-height: 64px; }
+}
+
+/* Телефон: шторка снизу. Прокручивается один блок (.picker-scroll), кнопка внизу закреплена */
+@media (max-width: 640px) {
+  .picker-modal {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    max-height: 92vh;
+    max-height: 92dvh;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    opacity: 1;
+    transform: translateY(105%);
+    border-radius: 22px 22px 0 0;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+  }
+  .picker-modal.open { transform: translateY(0); }
+  .picker-scroll {
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .picker-photo { width: 100%; height: auto; aspect-ratio: 4 / 3; }
+  .picker-header { border-bottom: none; padding-bottom: 4px; }
+  .picker-body { overflow: visible; padding-top: 8px; }
+  .picker-footer {
+    flex: none;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    background: var(--surface);
+  }
 }
