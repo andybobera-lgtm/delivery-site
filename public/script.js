@@ -408,24 +408,27 @@ function pickerShell(product, bodyHtml, footerHtml) {
   const thumbData = thumbStyleAndText(product);
   // при перерисовке (нажали + или −) сохраняем положение прокрутки, чтобы окно не прыгало вверх
   const same = modal.classList.contains('open') && modal.dataset.pid === product.id;
-  const prevModalScroll = same ? modal.scrollTop : 0;
+  const prevScroller = modal.querySelector('.picker-scroll');
   const prevBody = modal.querySelector('.picker-body');
-  const prevBodyScroll = same && prevBody ? prevBody.scrollTop : 0;
+  const prevScrollTop = same && prevScroller ? prevScroller.scrollTop : 0;
+  const prevBodyTop = same && prevBody ? prevBody.scrollTop : 0;
   modal.dataset.pid = product.id;
   modal.innerHTML = `
     <button class="cart-close" id="picker-close" aria-label="Закрыть">✕</button>
-    <div class="picker-photo" style="${thumbData.style}">${thumbData.text}</div>
-    <div class="picker-panel">
+    <div class="picker-scroll">
+      <div class="picker-photo" style="${thumbData.style}">${thumbData.text}</div>
       <div class="picker-header">
         <h3>${product.name}</h3>
       </div>
       <div class="picker-body">${bodyHtml}</div>
-      <div class="picker-footer">${footerHtml}</div>
     </div>
+    <div class="picker-footer">${footerHtml}</div>
   `;
-  modal.scrollTop = prevModalScroll;
+  // при перерисовке (нажали + или −) возвращаем прокрутку на прежнее место, чтобы окно не прыгало вверх
+  const newScroller = modal.querySelector('.picker-scroll');
+  if (newScroller) newScroller.scrollTop = prevScrollTop;
   const newBody = modal.querySelector('.picker-body');
-  if (newBody) newBody.scrollTop = prevBodyScroll;
+  if (newBody) newBody.scrollTop = prevBodyTop;
   document.getElementById('picker-close').addEventListener('click', closePicker);
 }
 
