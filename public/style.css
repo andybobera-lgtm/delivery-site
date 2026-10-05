@@ -1032,23 +1032,6 @@ button, .category-chip, .product-card { -webkit-user-select: none; user-select: 
 .choice-stepper span { min-width: 22px; font-size: 15px; }
 .combo-option-row { padding: 10px 0; min-height: 46px; }
 
-/* ---------- Корзина на телефоне / низком экране: прокручивается целиком, товары всегда видны ---------- */
-@media (max-width: 720px), (max-height: 820px) {
-  .cart-drawer {
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-    display: block;
-  }
-  .cart-drawer-header {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    background: var(--surface);
-  }
-  .cart-items { overflow: visible; flex-grow: 0; }
-  .cart-line { min-height: 64px; }
-}
 
 /* Телефон: шторка снизу. Прокручивается один блок (.picker-scroll), кнопка внизу закреплена */
 @media (max-width: 640px) {
@@ -1086,3 +1069,38 @@ button, .category-chip, .product-card { -webkit-user-select: none; user-select: 
     background: var(--surface);
   }
 }
+
+/* ---------- Корзина: прокручивается середина, итог и кнопка заказа закреплены внизу ---------- */
+.cart-drawer { display: flex; flex-direction: column; overflow: hidden; }
+.cart-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.cart-items { flex: none; overflow: visible; }
+.cart-drawer-footer { border-top: none; padding-top: 8px; }
+.cart-bottom {
+  flex: none;
+  padding: 12px 20px calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 -6px 16px rgba(0,0,0,0.06);
+}
+.cart-bottom .cart-total-row { margin-bottom: 10px; }
+.cart-bottom .form-error { margin-bottom: 6px; }
+.cart-bottom .checkout-btn { width: 100%; min-height: 48px; }
+
+/* «Добавить ещё»: листается пальцем вбок */
+.cart-upsell-row {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
+  scroll-snap-type: x proximity;
+}
+.upsell-card { scroll-snap-align: start; touch-action: pan-x pan-y; }
+.upsell-thumb, .upsell-card img { -webkit-user-drag: none; pointer-events: none; }
