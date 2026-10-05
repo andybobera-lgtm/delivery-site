@@ -936,12 +936,15 @@ input, textarea {
   overflow: hidden;
   opacity: 0;
   pointer-events: none;
+  visibility: hidden;
   transform: translateX(-50%) scale(0.98);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;
 }
 .legal-modal.open {
   opacity: 1;
   pointer-events: auto;
+  visibility: visible;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s;
   transform: translateX(-50%) scale(1);
 }
 .legal-modal-bar {
@@ -1020,9 +1023,9 @@ input, textarea {
 }
 
 /* ---------- Прокрутка фона под открытым окном; запрет увеличения двойным тапом ---------- */
-body.no-scroll { overflow: hidden; }
+html.no-scroll, body.no-scroll { overflow: hidden; height: 100%; }
 * { -webkit-tap-highlight-color: transparent; }
-html, body, button, a, label, .product-card, .picker-scroll *, .picker-footer, .cart-drawer-footer, .cart-line { touch-action: manipulation; }
+button, a, label, .product-card { touch-action: manipulation; }
 button, .category-chip, .product-card { -webkit-user-select: none; user-select: none; }
 
 /* ---------- Квадратики выбора поменьше ---------- */
@@ -1057,7 +1060,6 @@ button, .category-chip, .product-card { -webkit-user-select: none; user-select: 
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
-    overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
   .picker-photo { width: 100%; height: auto; aspect-ratio: 4 / 3; }
@@ -1076,7 +1078,6 @@ button, .category-chip, .product-card { -webkit-user-select: none; user-select: 
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
 .cart-items { flex: none; overflow: visible; }
@@ -1098,9 +1099,7 @@ button, .category-chip, .product-card { -webkit-user-select: none; user-select: 
   overflow-y: hidden;
   scroll-behavior: auto;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior-x: contain;
-  touch-action: pan-x pan-y;
   scroll-snap-type: x proximity;
 }
-.upsell-card { scroll-snap-align: start; touch-action: pan-x pan-y; }
+.upsell-card { scroll-snap-align: start; }
 .upsell-thumb, .upsell-card img { -webkit-user-drag: none; pointer-events: none; }
