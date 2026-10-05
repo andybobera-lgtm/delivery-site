@@ -90,22 +90,26 @@ async function listOrders() {
   return fileRead().slice().reverse();
 }
 
-// Меняет статус заказа и возвращает обновлённый заказ (или null, если такого нет)
-async function setStatus(id, status) {
+// Обновляет поля заказа (patch — объект с новыми значениями) и возвращает заказ (или null)
+async function updateOrder(id, patch) {
   if (mode === 'postgres') {
     const r = await pool.query(
-      `UPDATE orders SET data = jsonb_set(data, '{status}', to_jsonb($2::text))
-       WHERE id = $1 RETURNING data`,
-      [id, status]
+      `UPDATE orders SET data = data || $2::jsonb WHERE id = $1 RETURNING data`,
+      [id, JSON.stringify(patch)]
     );
     return r.rows[0] ? r.rows[0].data : null;
   }
   const orders = fileRead();
   const order = orders.find((o) => o.id === id);
   if (!order) return null;
-  order.status = status;
+  Object.assign(order, patch);
   fileWrite(orders);
   return order;
 }
 
-module.exports = { init, getMode, addOrder, getOrder, listOrders, setStatus };
+// Меняет статус заказа и возвращает обновлённый заказ (или null, если такого нет)
+function setStatus(id, status) {
+  return updateOrder(id, { status });
+}
+
+module.exports = { init, getMode, addOrder, getOrder, listOrders, setStatus, updateOrder };
