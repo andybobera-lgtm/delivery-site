@@ -194,7 +194,16 @@ app.get('/api/orders/:id', async (req, res) => {
   try {
     const order = await db.getOrder(req.params.id);
     if (!order) return res.status(404).json({ error: 'Заказ не найден' });
-    res.json({ id: order.id, status: order.status, total: order.total });
+    res.json({
+      id: order.id,
+      status: order.status,
+      total: order.total,
+      createdAt: order.createdAt,
+      prepMinutes: order.prepMinutes || null,
+      readyEta: order.readyEta || null,
+      courierEta: order.courierEta || null,
+      deliveryMinutes: order.deliveryMinutes || null,
+    });
   } catch (err) {
     console.error('Ошибка чтения заказа:', err);
     res.status(500).json({ error: 'Внутренняя ошибка сервера' });
@@ -216,6 +225,49 @@ app.get('/api/admin/orders', async (req, res) => {
   }
 });
 
+// --- Смена статуса заказа из админ-страницы (кафе) ---
+// Цепочка: оплачен → принят (готовится) → готов → передан курьеру → доставлен
+const STATUS_FLOW = {
+  'оплачен': ['принят'],
+  'принят': ['готов'],
+  'готов': ['передан курьеру'],
+  'передан курьеру': ['доставлен'],
+};
+app.post('/api/admin/orders/:id/status', async (req, res) => {
+  const key = req.query.key || req.body?.key;
+  if (!key || key !== process.env.ADMIN_KEY) {
+    return res.status(401).json({ error: 'Неверный пароль' });
+  }
+  try {
+    const next = req.body?.status;
+    const order = await db.getOrder(req.params.id);
+    if (!order) return res.status(404).json({ error: 'Заказ не найден' });
+    if (!(STATUS_FLOW[order.status] || []).includes(next)) {
+      return res.status(400).json({ error: `Нельзя перевести заказ из «${order.status}» в «${next}»` });
+    }
+    const patch = { status: next };
+    const now = new Date();
+    if (next === 'принят') {
+      const mins = Math.min(180, Math.max(5, parseInt(req.body?.prepMinutes, 10) || 30));
+      patch.prepMinutes = mins;
+      patch.acceptedAt = now.toISOString();
+      patch.readyEta = new Date(now.getTime() + mins * 60000).toISOString();
+    }
+    if (next === 'готов') patch.readyAt = now.toISOString();
+    if (next === 'передан курьеру') {
+      const dm = Math.min(120, Math.max(5, parseInt(req.body?.deliveryMinutes, 10) || 20));
+      patch.deliveryMinutes = dm;
+      patch.handedToCourierAt = now.toISOString();
+      patch.courierEta = new Date(now.getTime() + dm * 60000).toISOString();
+    }
+    if (next === 'доставлен') patch.deliveredAt = now.toISOString();
+    res.json(await db.updateOrder(order.id, patch));
+  } catch (err) {
+    console.error('Ошибка смены статуса:', err);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
 // --- Вебхук от ЮKassa: сюда ЮKassa сама присылает уведомления об оплате ---
 // Статус платежа мы НЕ берём из присланного сообщения (его мог подделать кто угодно),
 // а сами спрашиваем у ЮKassa, что на самом деле с этим платежом.
@@ -233,12 +285,13 @@ app.post('/api/yookassa-webhook', async (req, res) => {
           if (payment.status === 'succeeded') {
             // ЮKassa может прислать одно уведомление несколько раз — сообщаем о заказе только один раз
             const before = await db.getOrder(orderId);
-            if (before && before.status !== 'оплачен') {
+            if (before && before.status === 'ожидает оплаты') {
               const paid = await db.setStatus(orderId, 'оплачен');
               if (paid) await notifyPaidOrder(paid);
             }
           } else if (payment.status === 'canceled') {
-            await db.setStatus(orderId, 'отменён');
+            const before = await db.getOrder(orderId);
+            if (before && before.status === 'ожидает оплаты') await db.setStatus(orderId, 'отменён');
           }
         }
       } else {
