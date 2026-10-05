@@ -14,6 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const db = require('./db');
+const { notifyPaidOrder } = require('./notify');
 
 const app = express();
 app.use(cors());
@@ -67,6 +68,10 @@ app.post('/api/orders', async (req, res) => {
     }
     if (cleanPhone.length === 10) {
       cleanPhone = '7' + cleanPhone;
+    }
+    // Телефон нужен ЮKassa для электронного чека — проверяем, что он полный (11 цифр, начинается с 7)
+    if (!/^7\d{10}$/.test(cleanPhone)) {
+      return res.status(400).json({ error: 'Введите номер телефона полностью, например +7 900 123-45-67' });
     }
     customer.phone = cleanPhone;
 
@@ -226,7 +231,12 @@ app.post('/api/yookassa-webhook', async (req, res) => {
         const orderId = payment?.metadata?.orderId;
         if (orderId) {
           if (payment.status === 'succeeded') {
-            await db.setStatus(orderId, 'оплачен');
+            // ЮKassa может прислать одно уведомление несколько раз — сообщаем о заказе только один раз
+            const before = await db.getOrder(orderId);
+            if (before && before.status !== 'оплачен') {
+              const paid = await db.setStatus(orderId, 'оплачен');
+              if (paid) await notifyPaidOrder(paid);
+            }
           } else if (payment.status === 'canceled') {
             await db.setStatus(orderId, 'отменён');
           }
