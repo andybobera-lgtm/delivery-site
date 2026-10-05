@@ -287,20 +287,27 @@ input, textarea {
 .qty-stepper {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 0;
   background: var(--accent);
   border-radius: 999px;
-  padding: 6px 14px;
+  padding: 2px;
 }
 .qty-stepper button {
   background: none;
   border: none;
   color: white;
-  font-size: 19px;
-  width: 20px;
+  font-size: 22px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
-.qty-stepper span { color: white; font-weight: 700; min-width: 14px; text-align: center; font-size: 15px; }
+.qty-stepper span { color: white; font-weight: 700; min-width: 26px; text-align: center; font-size: 16px; }
+.qty-stepper > span:only-child { padding: 11px 20px; }
 
 /* ---------- Floating cart button ---------- */
 .cart-fab {
@@ -397,27 +404,6 @@ input, textarea {
   height: 100%;
 }
 .picker-body { flex: 1; min-height: 0; }
-@media (max-width: 640px) {
-  .picker-modal {
-    flex-direction: column;
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
-    max-height: none;
-    top: 0;
-    left: 0;
-    transform: none !important;
-    border-radius: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .picker-modal.open { transform: none; }
-  .picker-photo { width: 100%; height: auto; aspect-ratio: 1 / 1; flex: none; }
-  .picker-panel { height: auto; min-height: 0; }
-  .picker-body { flex: none; overflow-y: visible; }
-  .picker-modal .cart-close { position: fixed; }
-}
-
 /* Окно адреса: форма слева, карта справа и покрупнее */
 .address-modal {
   display: flex;
@@ -742,9 +728,10 @@ input, textarea {
   background: var(--accent);
   color: white;
   border: none;
-  border-radius: 10px;
-  padding: 8px 12px;
-  font-size: 14px;
+  border-radius: 12px;
+  padding: 11px 16px;
+  min-height: 42px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -966,3 +953,115 @@ input, textarea {
   border-bottom: 1px solid var(--border);
 }
 .legal-modal iframe { flex: 1; width: 100%; border: 0; }
+
+
+/* ---------- Выбор в вариантах и наборах: пустой квадратик → счётчик − 1 + ---------- */
+.choice-box {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border: 2px solid #cfcfcf;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  padding: 0;
+}
+.choice-box:disabled { opacity: 0.35; cursor: default; }
+.choice-stepper {
+  display: flex;
+  align-items: center;
+  flex: none;
+  background: var(--accent);
+  border-radius: 12px;
+  color: #fff;
+}
+.choice-stepper button {
+  width: 42px;
+  height: 42px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+}
+.choice-stepper button:disabled { opacity: 0.35; cursor: default; }
+.choice-stepper span { min-width: 26px; text-align: center; font-weight: 700; font-size: 16px; }
+.combo-option-row { padding: 8px 0; }
+.variant-option { cursor: default; }
+
+/* ---------- Плашка cookies ---------- */
+.cookie-banner {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 35;
+  width: 300px;
+  background: #111;
+  color: #fff;
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+}
+.cookie-banner[hidden] { display: none; }
+.cookie-banner p { margin: 0 0 12px; font-size: 14px; line-height: 1.45; }
+.cookie-banner button {
+  width: 100%;
+  min-height: 42px;
+  border: none;
+  border-radius: 10px;
+  background: #fff;
+  color: #111;
+  font-family: 'Onest', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+@media (max-width: 480px) {
+  .cookie-banner { left: 12px; right: 12px; bottom: 12px; width: auto; }
+}
+
+/* ---------- Прокрутка фона под открытым окном; запрет увеличения двойным тапом ---------- */
+body.no-scroll { overflow: hidden; }
+* { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+button, .category-chip, .product-card { -webkit-user-select: none; user-select: none; }
+
+@media (max-width: 640px) {
+  /* Шторка снизу: фото и описание прокручиваются, кнопка внизу всегда на виду */
+  .picker-modal {
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    max-height: 92vh;
+    max-height: 92dvh;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    opacity: 1;
+    transform: translateY(105%);
+    border-radius: 22px 22px 0 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    transition: transform 0.3s ease;
+  }
+  .picker-modal.open { transform: translateY(0); }
+  .picker-modal > * { flex: none; }
+  .picker-photo { width: 100%; height: auto; aspect-ratio: 4 / 3; }
+  .picker-panel { display: block; height: auto; min-height: 0; }
+  .picker-header { border-bottom: none; padding-bottom: 4px; }
+  .picker-body { overflow: visible; padding-top: 8px; }
+  .picker-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    background: var(--surface);
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+  .picker-modal .cart-close {
+    position: sticky;
+    top: 12px;
+    align-self: flex-end;
+    margin: 12px 12px -46px 0;
+  }
+}
