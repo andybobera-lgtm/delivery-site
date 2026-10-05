@@ -13,6 +13,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const db = require('./db');
 
 const app = express();
 app.use(cors());
@@ -21,23 +22,24 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/legal', express.static(path.join(__dirname, 'legal')));
 
 const PRODUCTS_FILE = path.join(__dirname, 'products.json');
-const ORDERS_FILE = '/tmp/orders.json';
 
 const YOOKASSA_SHOP_ID = process.env.YOOKASSA_SHOP_ID;
 const YOOKASSA_SECRET_KEY = process.env.YOOKASSA_SECRET_KEY;
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 
-// Создаём файл заказов, если его ещё нет
-if (!fs.existsSync(ORDERS_FILE)) {
-  fs.writeFileSync(ORDERS_FILE, '[]', 'utf-8');
-}
-
 function readJSON(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 }
-function writeJSON(filePath, data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+
+// Данные для входа в ЮKassa
+function yookassaAuth() {
+  return 'Basic ' + Buffer.from(`${YOOKASSA_SHOP_ID}:${YOOKASSA_SECRET_KEY}`).toString('base64');
 }
+
+// --- Проверка: где хранятся заказы (откройте адрес-сайта/api/health) ---
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true, ordersStorage: db.getMode() });
+});
 
 // --- Отдаём каталог товаров ---
 app.get('/api/products', (req, res) => {
@@ -136,8 +138,7 @@ app.post('/api/orders', async (req, res) => {
       headers: {
         'Content-Type': 'application/json',
         'Idempotence-Key': orderId,
-        Authorization:
-          'Basic ' + Buffer.from(`${YOOKASSA_SHOP_ID}:${YOOKASSA_SECRET_KEY}`).toString('base64'),
+        Authorization: yookassaAuth(),
       },
       body: JSON.stringify({
         amount: { value: total.toFixed(2), currency: 'RUB' },
@@ -171,9 +172,7 @@ app.post('/api/orders', async (req, res) => {
 
     order.paymentId = payment.id;
 
-    const orders = readJSON(ORDERS_FILE);
-    orders.push(order);
-    writeJSON(ORDERS_FILE, orders);
+    await db.addOrder(order);
 
     res.json({
       orderId,
@@ -186,51 +185,69 @@ app.post('/api/orders', async (req, res) => {
 });
 
 // --- Проверка статуса заказа (например, для страницы "Спасибо за заказ") ---
-app.get('/api/orders/:id', (req, res) => {
-  const orders = readJSON(ORDERS_FILE);
-  const order = orders.find((o) => o.id === req.params.id);
-  if (!order) return res.status(404).json({ error: 'Заказ не найден' });
-  res.json({ id: order.id, status: order.status, total: order.total });
+app.get('/api/orders/:id', async (req, res) => {
+  try {
+    const order = await db.getOrder(req.params.id);
+    if (!order) return res.status(404).json({ error: 'Заказ не найден' });
+    res.json({ id: order.id, status: order.status, total: order.total });
+  } catch (err) {
+    console.error('Ошибка чтения заказа:', err);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
 });
 
 // --- Список всех заказов для админ-страницы (защищено паролем) ---
-app.get('/api/admin/orders', (req, res) => {
+app.get('/api/admin/orders', async (req, res) => {
   const key = req.query.key;
   if (!key || key !== process.env.ADMIN_KEY) {
     return res.status(401).json({ error: 'Неверный пароль' });
   }
-  const orders = readJSON(ORDERS_FILE);
-  // Показываем сначала новые заказы
-  res.json(orders.slice().reverse());
+  try {
+    // Сначала новые заказы
+    res.json(await db.listOrders());
+  } catch (err) {
+    console.error('Ошибка чтения заказов:', err);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
 });
 
 // --- Вебхук от ЮKassa: сюда ЮKassa сама присылает уведомления об оплате ---
-app.post('/api/yookassa-webhook', (req, res) => {
+// Статус платежа мы НЕ берём из присланного сообщения (его мог подделать кто угодно),
+// а сами спрашиваем у ЮKassa, что на самом деле с этим платежом.
+app.post('/api/yookassa-webhook', async (req, res) => {
   try {
-    const event = req.body;
-    const orderId = event?.object?.metadata?.orderId;
-
-    if (orderId) {
-      const orders = readJSON(ORDERS_FILE);
-      const order = orders.find((o) => o.id === orderId);
-      if (order) {
-        if (event.event === 'payment.succeeded') {
-          order.status = 'оплачен';
-        } else if (event.event === 'payment.canceled') {
-          order.status = 'отменён';
+    const paymentId = req.body?.object?.id;
+    if (paymentId) {
+      const r = await fetch(`https://api.yookassa.ru/v3/payments/${encodeURIComponent(paymentId)}`, {
+        headers: { Authorization: yookassaAuth() },
+      });
+      if (r.ok) {
+        const payment = await r.json();
+        const orderId = payment?.metadata?.orderId;
+        if (orderId) {
+          if (payment.status === 'succeeded') {
+            await db.setStatus(orderId, 'оплачен');
+          } else if (payment.status === 'canceled') {
+            await db.setStatus(orderId, 'отменён');
+          }
         }
-        writeJSON(ORDERS_FILE, orders);
+      } else {
+        console.error('Не удалось проверить платёж в ЮKassa:', r.status);
+        // Отвечаем ошибкой — ЮKassa повторит уведомление позже
+        return res.sendStatus(500);
       }
     }
     // ЮKassa ждёт ответ 200 OK, иначе будет повторять уведомление
     res.sendStatus(200);
   } catch (err) {
     console.error('Ошибка вебхука:', err);
-    res.sendStatus(200); // всё равно отвечаем 200, чтобы ЮKassa не спамила повторами
+    res.sendStatus(500);
   }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Сайт запущен: http://localhost:${PORT}`);
+db.init().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Сайт запущен: http://localhost:${PORT}`);
+  });
 });
