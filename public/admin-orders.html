@@ -4,35 +4,58 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Заказы — Дачная Беседка</title>
+<link rel="icon" type="image/png" href="images/logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  body { font-family: sans-serif; background: #faf7f2; margin: 0; padding: 20px; }
-  h1 { margin: 0; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Onest', sans-serif; background: #faf7f2; margin: 0; padding: 16px 20px 40px; color: #1e1e1e; }
+  h1 { margin: 0; font-size: 28px; }
+  button { padding: 10px 16px; background: #d84315; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-family: inherit; font-weight: 600; }
   #login { max-width: 320px; margin: 80px auto; text-align: center; }
-  #login input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
-  button { padding: 10px 16px; background: #d84315; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; }
+  #login input { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; }
+
+  #top-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand img { width: 52px; height: 52px; object-fit: contain; }
+  .brand .sub { font-size: 13px; color: #777; margin-top: 2px; }
+  #sound-state { font-size: 14px; color: #555; margin-right: 8px; }
+  #sound-btn.on { background: #2e7d32; }
+
+  #alert { display: none; background: #d84315; color: #fff; padding: 16px 20px; border-radius: 10px; margin-bottom: 14px; font-size: 20px; font-weight: 700; align-items: center; justify-content: space-between; gap: 12px; animation: blink 1s infinite; }
+  #alert button { background: #fff; color: #d84315; }
+  @keyframes blink { 50% { opacity: .78; } }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .tab { background: #fff; color: #444; border: 1px solid #e7e0d6; padding: 10px 18px; border-radius: 10px; }
+  .tab.active { background: #1e1e1e; color: #fff; border-color: #1e1e1e; }
+  .tab .cnt { display: inline-block; min-width: 22px; padding: 0 6px; margin-left: 6px; border-radius: 11px; background: #eee; color: #333; font-size: 13px; text-align: center; }
+  .tab.active .cnt { background: #fff; color: #1e1e1e; }
+  .tab.hot .cnt { background: #d84315; color: #fff; }
+
   table { width: 100%; border-collapse: collapse; background: white; }
   th, td { border: 1px solid #e7e0d6; padding: 10px; text-align: left; font-size: 14px; vertical-align: top; }
   th { background: #f2ece2; }
-  tr.new-order td { background: #fff3cd; }
+  tr.waiting td { background: #fff3cd; }
+  .empty { background: #fff; border: 1px solid #e7e0d6; padding: 30px; text-align: center; color: #888; border-radius: 10px; }
   .status-paid { color: #2e7d32; font-weight: bold; }
   .status-pending { color: #a05a00; }
   .status-canceled { color: #c0392b; }
-  #top-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-  .act select { padding: 8px; font-size: 14px; margin-bottom: 6px; width: 100%; box-sizing: border-box; }
+  .status-work { color: #1565c0; font-weight: bold; }
+  .wait { font-size: 12px; color: #c0392b; font-weight: 600; margin-top: 4px; }
+  .act { min-width: 190px; }
+  .act select { padding: 8px; font-size: 14px; margin-bottom: 6px; width: 100%; }
   .act button { width: 100%; white-space: nowrap; }
   .act button.green { background: #2e7d32; }
   .act .eta { font-size: 12px; color: #555; margin-bottom: 4px; }
-  .status-work { color: #1565c0; font-weight: bold; }
-  #sound-state { font-size: 14px; color: #555; }
-  #sound-btn.on { background: #2e7d32; }
-  #alert { display: none; background: #d84315; color: #fff; padding: 18px 20px; border-radius: 8px; margin-bottom: 16px; font-size: 20px; font-weight: bold; align-items: center; justify-content: space-between; gap: 12px; animation: blink 1s infinite; }
-  #alert button { background: #fff; color: #d84315; font-weight: bold; }
-  @keyframes blink { 50% { opacity: .75; } }
+  .table-wrap { overflow-x: auto; }
 </style>
 </head>
 <body>
 
 <div id="login">
+  <img src="images/logo.png" alt="" style="width:80px;height:80px;object-fit:contain;" />
   <h1>Заказы — вход</h1>
   <input type="password" id="key" placeholder="Пароль (ADMIN_KEY)" />
   <button onclick="login()">Войти</button>
@@ -41,52 +64,55 @@
 
 <div id="content" style="display:none;">
   <div id="top-bar">
-    <h1>Заказы</h1>
+    <div class="brand">
+      <img src="images/logo.png" alt="Логотип" />
+      <div><h1>Заказы</h1><div class="sub">Дачная Беседка</div></div>
+    </div>
     <div>
       <span id="sound-state">🔇 Звук выключен</span>
       <button id="sound-btn" onclick="toggleSound()">Включить звук</button>
     </div>
   </div>
+
   <div id="alert">
-    <span id="alert-text">🔔 Новый оплаченный заказ!</span>
-    <button onclick="ackAlert()">Принято</button>
+    <span id="alert-text">🔔 Новый заказ — примите его!</span>
+    <button id="alert-sound" onclick="toggleSound()" style="display:none;">Включить звук</button>
   </div>
-  <table>
-    <thead>
-      <tr>
-        <th>№</th><th>Дата</th><th>Статус</th><th>Сумма</th><th>Покупатель</th>
-        <th>Телефон</th><th>Адрес</th><th>Состав заказа</th><th>Приборы</th><th>Действие</th>
-      </tr>
-    </thead>
-    <tbody id="orders-body"></tbody>
-  </table>
+
+  <div class="tabs" id="tabs"></div>
+  <div id="list"></div>
 </div>
 
 <script>
-  const REFRESH_MS = 10000;   // как часто проверять новые заказы
-  const REPEAT_MS = 6000;     // как часто повторять сигнал, пока не нажата «Принято»
+  const REFRESH_MS = 5000;   // как часто проверять новые заказы
+  const RING_EVERY_MS = 4000; // звонок повторяется, пока есть непринятые заказы
 
+  const TABS = [
+    { id: 'new',  title: 'Новые',        hint: 'ждут принятия',   match: (o) => o.status === 'оплачен' },
+    { id: 'work', title: 'В работе',     hint: '',                match: (o) => ['принят', 'готов', 'передан курьеру'].includes(o.status) },
+    { id: 'done', title: 'Завершённые',  hint: '',                match: (o) => ['доставлен', 'отменён'].includes(o.status) },
+    { id: 'all',  title: 'Все заказы',   hint: '',                match: () => true },
+  ];
+
+  let orders = [];
+  let currentTab = 'new';
   let soundOn = false;
-  let audioCtx = null;
-  let seenPaid = null;        // id оплаченных заказов, о которых уже знаем
-  let pendingNew = 0;         // сколько новых оплаченных ждут нажатия «Принято»
-  let repeatTimer = null;
+  let audioCtx = null, master = null;
+  let ringTimer = null;
+  let waitingCount = 0;
   let wakeLock = null;
 
   function getKey() { return localStorage.getItem('adminKey'); }
-
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, (c) =>
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
-
   function login() {
     const key = document.getElementById('key').value.trim();
     if (!key) return;
     localStorage.setItem('adminKey', key);
     checkAndLoad();
   }
-
   function statusClass(status) {
     if (status === 'оплачен') return 'status-paid';
     if (status === 'отменён') return 'status-canceled';
@@ -95,24 +121,39 @@
     return 'status-pending';
   }
 
-  // ---------- Звук ----------
-  function beep(freq, start, dur) {
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = 'sine';
-    o.frequency.value = freq;
-    g.gain.setValueAtTime(0.0001, audioCtx.currentTime + start);
-    g.gain.exponentialRampToValueAtTime(0.8, audioCtx.currentTime + start + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + start + dur);
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start(audioCtx.currentTime + start);
-    o.stop(audioCtx.currentTime + start + dur + 0.05);
+  // ---------- Звук: звонкий колокольчик, повторяется пока заказ не принят ----------
+  function bell(freq, t0, dur, vol) {
+    // у колокольчика кроме основного тона есть мягкие «обертоны» — поэтому звук звонкий, но не резкий
+    [[1, 1], [2.01, 0.32], [3.0, 0.14], [4.17, 0.06]].forEach(([mult, amp]) => {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'sine';
+      o.frequency.value = freq * mult;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(vol * amp, t0 + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g); g.connect(master);
+      o.start(t0);
+      o.stop(t0 + dur + 0.05);
+    });
   }
-  function playSignal() {
+  function ring() {
     if (!soundOn || !audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    // «Дин-дон-дин-дон» — громкая мелодия звонка
-    [[880, 0], [660, 0.35], [880, 0.7], [660, 1.05]].forEach(([f, t]) => beep(f, t, 0.3));
+    const t = audioCtx.currentTime + 0.05;
+    // «динь-дан-динь»: три ноты, приятная восходяще-нисходящая мелодия
+    bell(1318.5, t,        1.5, 0.95); // ми
+    bell(1046.5, t + 0.42, 1.5, 0.95); // до
+    bell(1568.0, t + 0.84, 1.9, 0.95); // соль
+  }
+  function updateRinging() {
+    const need = soundOn && waitingCount > 0;
+    if (need && !ringTimer) {
+      ring();
+      ringTimer = setInterval(() => { if (soundOn && waitingCount > 0) ring(); }, RING_EVERY_MS);
+    } else if (!need && ringTimer) {
+      clearInterval(ringTimer); ringTimer = null;
+    }
   }
 
   async function keepAwake() {
@@ -124,39 +165,36 @@
 
   function toggleSound() {
     if (!soundOn) {
-      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const comp = audioCtx.createDynamicsCompressor();
+        master = audioCtx.createGain();
+        master.gain.value = 1.0;
+        master.connect(comp); comp.connect(audioCtx.destination);
+      }
       audioCtx.resume();
       soundOn = true;
       keepAwake();
-      playSignal(); // пробный сигнал — чтобы проверить громкость
+      // пробный сигнал, если непринятых заказов нет (чтобы проверить громкость)
+      if (waitingCount === 0) ring();
     } else {
       soundOn = false;
     }
-    renderSoundState();
+    renderTop();
+    updateRinging();
   }
-  function renderSoundState() {
-    document.getElementById('sound-state').textContent = soundOn ? '🔊 Звук включён' : '🔇 Звук выключен — нажмите кнопку';
+  function renderTop() {
+    document.getElementById('sound-state').textContent = soundOn ? '🔊 Звук включён' : '🔇 Звук выключен';
     const b = document.getElementById('sound-btn');
     b.textContent = soundOn ? 'Выключить звук' : 'Включить звук';
     b.className = soundOn ? 'on' : '';
-  }
 
-  function showAlert() {
-    const el = document.getElementById('alert');
+    const al = document.getElementById('alert');
+    al.style.display = waitingCount > 0 ? 'flex' : 'none';
     document.getElementById('alert-text').textContent =
-      pendingNew > 1 ? `🔔 Новых оплаченных заказов: ${pendingNew}` : '🔔 Новый оплаченный заказ!';
-    el.style.display = pendingNew > 0 ? 'flex' : 'none';
-    document.title = pendingNew > 0 ? `(${pendingNew}) НОВЫЙ ЗАКАЗ!` : 'Заказы — Дачная Беседка';
-  }
-  function ackAlert() {
-    pendingNew = 0;
-    clearInterval(repeatTimer); repeatTimer = null;
-    showAlert();
-    document.querySelectorAll('tr.new-order').forEach((r) => r.classList.remove('new-order'));
-  }
-  function startRepeat() {
-    if (repeatTimer) return;
-    repeatTimer = setInterval(() => { if (pendingNew > 0) playSignal(); }, REPEAT_MS);
+      waitingCount > 1 ? `🔔 Новых заказов: ${waitingCount} — примите их!` : '🔔 Новый заказ — примите его!';
+    document.getElementById('alert-sound').style.display = soundOn ? 'none' : 'inline-block';
+    document.title = waitingCount > 0 ? `(${waitingCount}) НОВЫЙ ЗАКАЗ — Дачная Беседка` : 'Заказы — Дачная Беседка';
   }
 
   // ---------- Кнопки смены статуса ----------
@@ -206,15 +244,70 @@
       const d = await res.json().catch(() => ({}));
       alert(d.error || 'Не удалось сменить статус');
     }
-    if (status === 'принят') ackAlert();
-    loadOrders();
+    await loadOrders();
   }
 
-  // ---------- Заказы ----------
+  // ---------- Вкладки и таблица ----------
+  function renderTabs() {
+    const box = document.getElementById('tabs');
+    box.innerHTML = TABS.map((t) => {
+      const n = orders.filter(t.match).length;
+      const hot = t.id === 'new' && n > 0 ? ' hot' : '';
+      return `<button class="tab${currentTab === t.id ? ' active' : ''}${hot}" onclick="selectTab('${t.id}')">${t.title}<span class="cnt">${n}</span></button>`;
+    }).join('');
+  }
+  function selectTab(id) { currentTab = id; renderAll(); }
+
+  function waitText(o) {
+    const mins = Math.max(0, Math.round((Date.now() - new Date(o.paidAt || o.createdAt).getTime()) / 60000));
+    return `ждёт принятия ${mins} мин`;
+  }
+
+  function renderList() {
+    const tab = TABS.find((t) => t.id === currentTab);
+    const rows = orders.filter(tab.match);
+    const box = document.getElementById('list');
+    if (!rows.length) {
+      box.innerHTML = `<div class="empty">${currentTab === 'new' ? 'Новых заказов нет' : 'Здесь пока пусто'}</div>`;
+      return;
+    }
+    // чтобы не сбрасывались выбранные «минуты» при автообновлении
+    const prevSel = {};
+    document.querySelectorAll('select[id^="prep-"], select[id^="deliv-"]').forEach((x) => { prevSel[x.id] = x.value; });
+
+    box.innerHTML = `<div class="table-wrap"><table>
+      <thead><tr><th>№</th><th>Дата</th><th>Статус</th><th>Сумма</th><th>Покупатель</th><th>Телефон</th><th>Адрес</th><th>Состав заказа</th><th>Приборы</th><th>Действие</th></tr></thead>
+      <tbody>${rows.map((o) => {
+        const c = o.customer || {};
+        const itemsText = (o.items || []).map((it) => `${esc(it.name)} × ${esc(it.qty)}`).join(', ');
+        const date = new Date(o.createdAt).toLocaleString('ru-RU');
+        return `<tr class="${o.status === 'оплачен' ? 'waiting' : ''}">
+          <td>${esc(String(o.id).slice(0, 8))}</td>
+          <td>${date}</td>
+          <td class="${statusClass(o.status)}">${esc(o.status)}${o.status === 'оплачен' ? `<div class="wait">${waitText(o)}</div>` : ''}</td>
+          <td>${esc(o.total)} ₽</td>
+          <td>${esc(c.name)}</td>
+          <td>${esc(c.phone)}</td>
+          <td>${esc(c.address)}${c.comment ? '<br><em>' + esc(c.comment) + '</em>' : ''}</td>
+          <td>${itemsText}</td>
+          <td>${esc(o.cutleryCount || 0)}</td>
+          <td class="act">${actionHtml(o)}</td>
+        </tr>`;
+      }).join('')}</tbody></table></div>`;
+    Object.keys(prevSel).forEach((id) => { const x = document.getElementById(id); if (x) x.value = prevSel[id]; });
+  }
+
+  function renderAll() {
+    waitingCount = orders.filter((o) => o.status === 'оплачен').length;
+    renderTop();
+    renderTabs();
+    renderList();
+    updateRinging();
+  }
+
   async function loadOrders() {
-    const key = getKey();
     let res;
-    try { res = await fetch('/api/admin/orders?key=' + encodeURIComponent(key)); }
+    try { res = await fetch('/api/admin/orders?key=' + encodeURIComponent(getKey()), { cache: 'no-store' }); }
     catch (e) { return; } // нет интернета — попробуем в следующий раз
     if (res.status === 401) {
       localStorage.removeItem('adminKey');
@@ -224,56 +317,19 @@
       return;
     }
     if (!res.ok) return;
-    const orders = await res.json();
-
-    // Новые оплаченные заказы (при первой загрузке страницы всё старое считаем «уже виденным»)
-    const paidIds = orders.filter((o) => o.status === 'оплачен').map((o) => o.id);
-    const freshIds = new Set();
-    if (seenPaid === null) {
-      seenPaid = new Set(paidIds);
-    } else {
-      paidIds.forEach((id) => { if (!seenPaid.has(id)) { seenPaid.add(id); freshIds.add(id); } });
-      if (freshIds.size) {
-        pendingNew += freshIds.size;
-        showAlert();
-        playSignal();
-        startRepeat();
-      }
-    }
-
-    const prevSel = {};
-    document.querySelectorAll('select[id^="prep-"], select[id^="deliv-"]').forEach((x) => { prevSel[x.id] = x.value; });
-    const tbody = document.getElementById('orders-body');
-    tbody.innerHTML = '';
-    orders.forEach((o) => {
-      const itemsText = (o.items || []).map((it) => `${esc(it.name)} × ${esc(it.qty)}`).join(', ');
-      const date = new Date(o.createdAt).toLocaleString('ru-RU');
-      const c = o.customer || {};
-      const tr = document.createElement('tr');
-      if (freshIds.has(o.id)) tr.classList.add('new-order');
-      tr.dataset.id = o.id;
-      tr.innerHTML = `
-        <td>${esc(String(o.id).slice(0, 8))}</td>
-        <td>${date}</td>
-        <td class="${statusClass(o.status)}">${esc(o.status)}</td>
-        <td>${esc(o.total)} ₽</td>
-        <td>${esc(c.name)}</td>
-        <td>${esc(c.phone)}</td>
-        <td>${esc(c.address)}${c.comment ? '<br><em>' + esc(c.comment) + '</em>' : ''}</td>
-        <td>${itemsText}</td>
-        <td>${esc(o.cutleryCount || 0)}</td>
-        <td class="act">${actionHtml(o)}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-    Object.keys(prevSel).forEach((id) => { const x = document.getElementById(id); if (x) x.value = prevSel[id]; });
+    const fresh = await res.json();
+    // если появился новый заказ, а открыта другая вкладка — переключаемся на «Новые»
+    const hadWaiting = orders.some((o) => o.status === 'оплачен');
+    orders = fresh;
+    if (!hadWaiting && orders.some((o) => o.status === 'оплачен')) currentTab = 'new';
+    renderAll();
   }
 
   function checkAndLoad() {
     if (getKey()) {
       document.getElementById('login').style.display = 'none';
       document.getElementById('content').style.display = 'block';
-      renderSoundState();
+      renderTop();
       loadOrders();
       setInterval(loadOrders, REFRESH_MS);
     }
