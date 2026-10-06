@@ -202,6 +202,11 @@ app.get('/api/orders/:id', async (req, res) => {
       prepMinutes: order.prepMinutes || null,
       readyEta: order.readyEta || null,
       courierEta: order.courierEta || null,
+      paidAt: order.paidAt || null,
+      acceptedAt: order.acceptedAt || null,
+      readyAt: order.readyAt || null,
+      handedToCourierAt: order.handedToCourierAt || null,
+      deliveredAt: order.deliveredAt || null,
       deliveryMinutes: order.deliveryMinutes || null,
     });
   } catch (err) {
@@ -286,7 +291,7 @@ app.post('/api/yookassa-webhook', async (req, res) => {
             // ЮKassa может прислать одно уведомление несколько раз — сообщаем о заказе только один раз
             const before = await db.getOrder(orderId);
             if (before && before.status === 'ожидает оплаты') {
-              const paid = await db.setStatus(orderId, 'оплачен');
+              const paid = await db.updateOrder(orderId, { status: 'оплачен', paidAt: new Date().toISOString() });
               if (paid) await notifyPaidOrder(paid);
             }
           } else if (payment.status === 'canceled') {
