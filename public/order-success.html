@@ -4,40 +4,84 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Ваш заказ — Дачная Беседка</title>
+<link rel="icon" type="image/png" href="images/logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  .wrap { max-width: 520px; margin: 48px auto; padding: 0 20px; }
-  .wrap h1 { font-size: 28px; margin-bottom: 6px; text-align: center; }
-  .num { text-align: center; color: var(--muted); margin-bottom: 24px; }
-  .steps { list-style: none; padding: 0; margin: 0 0 20px; }
-  .steps li { display: flex; gap: 14px; align-items: flex-start; padding: 12px 0; color: #aaa; position: relative; }
-  .steps li::before { content: ''; flex: none; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #ddd; box-sizing: border-box; background: #fff; }
-  .steps li:not(:last-child)::after { content: ''; position: absolute; left: 10px; top: 36px; bottom: -12px; width: 2px; background: #e5e5e5; }
+  :root { --green: #487648; --green-dark: #395f39; --ink: #152f24; --muted: #8a8f86; --card: #f1efe9; --line: #cfd2c4; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Onest', -apple-system, sans-serif; background: #fbfaf7; color: var(--ink); }
+  .top { padding: 14px 20px; display: flex; align-items: center; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .brand img { width: 44px; height: 44px; object-fit: contain; }
+  .brand span { font-weight: 700; font-size: 18px; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 8px 20px 60px; text-align: center; }
+
+  .badge { width: 128px; height: 128px; margin: 12px auto 18px; position: relative; }
+  .badge svg { width: 100%; height: 100%; overflow: visible; }
+  h1 { font-size: 34px; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.5px; }
+  .num { color: var(--muted); font-size: 19px; margin-bottom: 26px; }
+
+  .card { background: var(--card); border: 1px solid #e6e3da; border-radius: 22px; padding: 22px 22px 8px; text-align: left; }
+  .steps { list-style: none; margin: 0; padding: 0; }
+  .steps li { position: relative; display: flex; gap: 16px; padding: 0 0 26px; color: #9a9d95; font-size: 18px; line-height: 1.3; }
+  .steps li:last-child { padding-bottom: 14px; }
+  .steps li .dot { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--line); background: #f6f5f0; display: flex; align-items: center; justify-content: center; z-index: 1; }
+  .steps li .dot svg { width: 18px; height: 18px; display: none; }
+  .steps li:not(:last-child)::before { content: ''; position: absolute; left: 16.5px; top: 36px; bottom: -2px; width: 3px; background: var(--line); }
+  .steps li.done:not(:last-child)::before { background: var(--green); }
   .steps li.done { color: var(--ink); }
-  .steps li.done::before { background: var(--accent); border-color: var(--accent); }
-  .steps li.now { color: var(--ink); font-weight: 600; }
-  .steps li.now::before { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(72,118,72,.2); }
-  .steps small { display: block; font-weight: 400; color: var(--muted); margin-top: 2px; }
-  .note { text-align: center; color: var(--muted); font-size: 14px; }
-  .alert { text-align: center; color: #c0392b; font-weight: 600; margin: 20px 0; }
+  .steps li.done .dot { background: var(--green); border-color: var(--green); }
+  .steps li.done .dot svg { display: block; }
+  .steps li.next .dot { border-color: var(--green); animation: pulse 1.8s infinite; }
+  .steps li.next { color: #6c7268; }
+  .steps .txt { padding-top: 5px; }
+  .steps small { display: block; margin-top: 4px; font-size: 15px; color: var(--muted); font-weight: 400; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(72,118,72,.45); } 70% { box-shadow: 0 0 0 10px rgba(72,118,72,0); } 100% { box-shadow: 0 0 0 0 rgba(72,118,72,0); } }
+
+  .info { color: var(--muted); font-size: 15px; margin: 18px 0 0; }
+  .alert { color: #c0392b; font-weight: 600; margin: 8px 0 20px; font-size: 18px; }
+  .home { display: inline-block; margin-top: 16px; color: var(--green); font-weight: 600; text-decoration: none; }
+  .upd { font-size: 13px; color: var(--muted); margin-top: 10px; }
+  @media (max-width: 480px) { h1 { font-size: 28px; } .steps li { font-size: 16px; } .brand span { font-size: 16px; } }
 </style>
 </head>
 <body>
+  <div class="top">
+    <a class="brand" href="/"><img src="images/logo.png" alt="Логотип" /><span>Дачная Беседка</span></a>
+  </div>
+
   <main class="wrap">
+    <div class="badge">
+      <svg viewBox="0 0 128 128" aria-hidden="true">
+        <g stroke="#cfd2c4" stroke-width="3" stroke-linecap="round">
+          <line x1="12" y1="46" x2="26" y2="50"/><line x1="10" y1="62" x2="26" y2="62"/><line x1="18" y1="86" x2="30" y2="78"/>
+          <line x1="116" y1="46" x2="102" y2="50"/><line x1="118" y1="62" x2="102" y2="62"/><line x1="110" y1="86" x2="98" y2="78"/>
+          <line x1="86" y1="6" x2="80" y2="18"/><line x1="46" y1="8" x2="50" y2="20"/>
+        </g>
+        <circle cx="64" cy="64" r="40" fill="#e3e6da"/>
+        <path d="M46 65 l13 13 l24 -26" fill="none" stroke="#2f5a2f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
     <h1 id="title">Спасибо за заказ!</h1>
     <div class="num" id="num"></div>
-    <div id="msg" class="note">Проверяем статус оплаты...</div>
-    <ul class="steps" id="steps" hidden></ul>
-    <p class="note">Если что-то пойдёт не так, мы позвоним вам по указанному телефону.</p>
-    <p class="note"><a href="/" style="color:var(--accent);font-weight:600;">Вернуться на главную</a></p>
+
+    <div id="msg" class="info">Проверяем статус оплаты…</div>
+    <div class="card" id="card" hidden><ul class="steps" id="steps"></ul></div>
+
+    <p class="info">Если что-то пойдёт не так, мы позвоним вам по указанному телефону.</p>
+    <div class="upd" id="upd"></div>
+    <a class="home" href="/">Вернуться на главную</a>
   </main>
 
   <script>
     const orderId = new URLSearchParams(location.search).get('orderId');
     const msgEl = document.getElementById('msg');
+    const cardEl = document.getElementById('card');
     const stepsEl = document.getElementById('steps');
+    const REFRESH_MS = 10000; // страница сама обновляется каждые 10 секунд
+
     const ORDER = ['оплачен', 'принят', 'готов', 'передан курьеру', 'доставлен'];
     const TITLES = [
       'Заказ оплачен — ждём подтверждения кафе',
@@ -46,52 +90,58 @@
       'Заказ передан курьеру',
       'Заказ доставлен. Приятного аппетита!',
     ];
+    const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
     function hhmm(iso) {
-      return new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      return iso ? new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '';
     }
 
     function render(d) {
+      document.getElementById('num').textContent = 'Заказ №' + orderId.slice(0, 8);
       if (d.status === 'ожидает оплаты') {
-        msgEl.className = 'note';
-        msgEl.textContent = 'Ждём подтверждения оплаты от банка…';
-        stepsEl.hidden = true;
-        return;
+        msgEl.className = 'info'; msgEl.textContent = 'Ждём подтверждения оплаты от банка…';
+        cardEl.hidden = true; return;
       }
       if (d.status === 'отменён') {
-        msgEl.className = 'alert';
-        msgEl.textContent = 'Оплата не прошла или была отменена. Заказ не оформлен.';
-        stepsEl.hidden = true;
-        return;
+        msgEl.className = 'alert'; msgEl.textContent = 'Оплата не прошла или была отменена. Заказ не оформлен.';
+        cardEl.hidden = true; return;
       }
       const idx = ORDER.indexOf(d.status);
       if (idx < 0) { msgEl.textContent = 'Статус заказа: ' + d.status; return; }
+
       msgEl.textContent = '';
       try { localStorage.removeItem('dachnaya_cart_v1'); } catch (e) {} // заказ оплачен — корзину очищаем
-      stepsEl.hidden = false;
+      cardEl.hidden = false;
+
+      const times = [d.paidAt || d.createdAt, d.acceptedAt, d.readyAt, d.handedToCourierAt, d.deliveredAt];
       stepsEl.innerHTML = TITLES.map((t, i) => {
-        let cls = i < idx ? 'done' : i === idx ? 'now' : '';
-        if (idx === 4) cls = 'done';
-        let extra = '';
-        if (i === 1 && d.readyEta && idx >= 1 && idx < 2) extra = `<small>Будет готов примерно к ${hhmm(d.readyEta)}</small>`;
-        if (i === 3 && d.courierEta && idx === 3) extra = `<small>≈ через ${d.deliveryMinutes || 20} минут (около ${hhmm(d.courierEta)})</small>`;
-        return `<li class="${cls}">${t}${extra}</li>`;
+        const done = i <= idx;
+        const next = i === idx + 1;
+        let extra = done && times[i] ? hhmm(times[i]) : '';
+        if (i === 1 && done && d.readyEta && idx === 1) extra += ` · будет готов примерно к ${hhmm(d.readyEta)}`;
+        if (i === 3 && done && d.courierEta && idx === 3) extra += ` · ≈ через ${d.deliveryMinutes || 20} минут (около ${hhmm(d.courierEta)})`;
+        return `<li class="${done ? 'done' : next ? 'next' : ''}"><span class="dot">${CHECK}</span><span class="txt">${t}${extra ? `<small>${extra}</small>` : ''}</span></li>`;
       }).join('');
     }
 
     async function poll() {
       try {
-        const r = await fetch('/api/orders/' + orderId);
+        const r = await fetch('/api/orders/' + orderId, { cache: 'no-store' });
         if (!r.ok) throw new Error();
         const d = await r.json();
-        document.getElementById('num').textContent = 'Заказ №' + orderId.slice(0, 8);
         render(d);
+        document.getElementById('upd').textContent = 'Обновлено в ' + new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' · страница обновляется сама';
         if (d.status === 'доставлен' || d.status === 'отменён') return;
       } catch (e) {
-        msgEl.textContent = 'Не удалось обновить статус, пробуем ещё раз…';
+        document.getElementById('upd').textContent = 'Не удалось обновить, пробуем ещё раз…';
       }
-      setTimeout(poll, 10000);
+      timer = setTimeout(poll, REFRESH_MS);
     }
+    let timer = null;
+    // вернулись на вкладку — сразу обновляем
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && orderId) { clearTimeout(timer); poll(); }
+    });
 
     if (orderId) poll();
     else msgEl.textContent = 'Заказ не найден.';
