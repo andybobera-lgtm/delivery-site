@@ -1115,3 +1115,25 @@ button, a, label, .product-card { touch-action: manipulation; }
 .picker-modal #picker-done { box-shadow: 0 8px 20px rgba(241, 90, 36, 0.35); }
 .picker-modal .variant-option-price { color: var(--accent-orange); }
 .picker-modal .nutrition-tab.active { color: var(--ink); }
+
+
+/* ---------- Доставка в корзине: прогресс до бесплатной доставки ---------- */
+.delivery-bar {
+  background: #f6f5f2;
+  border-radius: 18px;
+  padding: 14px 16px 12px;
+  margin: 4px 0 12px;
+}
+.db-title { font-size: 17px; font-weight: 700; color: var(--ink); }
+.db-sub { font-size: 13px; color: #8a8a8a; margin-top: 2px; line-height: 1.35; }
+.db-sub.warn { color: #d84315; font-weight: 600; }
+.db-track { position: relative; height: 6px; background: #e0dfdb; border-radius: 3px; margin: 12px 0 8px; }
+.db-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.35s ease; min-width: 4px; }
+.db-fill.full { background: #2e9e4f; }
+.db-mark { position: absolute; top: -3px; width: 2px; height: 12px; background: #b9b7b0; border-radius: 1px; transform: translateX(-1px); }
+.db-labels { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; color: var(--accent); }
+.db-labels span:last-child { color: var(--ink); }
+.db-rules { margin-top: 8px; font-size: 12px; color: #9a9893; line-height: 1.35; }
+.cart-sub { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: #8a8a8a; margin-bottom: 4px; flex-wrap: wrap; }
+.cart-sub:empty { display: none; }
+.checkout-btn:disabled { background: #c9c7c0; color: #fff; cursor: default; }
