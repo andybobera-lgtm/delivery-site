@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -92,7 +93,6 @@
 
 <script>
   const REFRESH_MS = 5000;   // как часто проверять новые заказы
-  const RING_EVERY_MS = 7000; // звонок повторяется, пока есть непринятые заказы
 
   const TABS = [
     { id: 'new',  title: 'Новые',        hint: 'ждут принятия',   match: (o) => o.status === 'оплачен' },
@@ -105,8 +105,7 @@
   let currentTab = 'new';
   let soundOn = false;
   let audioCtx = null, master = null;
-  let ringTimer = null;
-  let waitingCount = 0;
+    let waitingCount = 0;
   let wakeLock = null;
 
   function getKey() { return localStorage.getItem('adminKey'); }
@@ -128,48 +127,38 @@
     return 'status-pending';
   }
 
-  // ---------- Звук: кассовый аппарат «Ча-чинг!» + голос «Пришёл заказ», пока заказ не принят ----------
-  function noiseClick(t0, dur, vol, freq) {
-    // короткий механический «клац» кассы
-    const len = Math.floor(audioCtx.sampleRate * dur);
-    const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
-    const src = audioCtx.createBufferSource();
-    src.buffer = buf;
-    const bp = audioCtx.createBiquadFilter();
-    bp.type = 'bandpass'; bp.frequency.value = freq; bp.Q.value = 1.1;
-    const g = audioCtx.createGain();
-    g.gain.value = vol;
-    src.connect(bp); bp.connect(g); g.connect(master);
-    src.start(t0);
-  }
-  function ping(freq, t0, dur, vol) {
-    // металлический «дзинь» — основной тон и обертоны, как у монеты и звонка кассы
-    [[1, 1], [2.76, 0.5], [5.4, 0.25], [8.9, 0.1]].forEach(([mult, amp]) => {
+  // ---------- Звук: весёлая мелодия → сразу голос «Пришёл заказ» → 5 секунд тишины → снова ----------
+  const SILENCE_MS = 5000;   // пауза между повторами
+  let cycleActive = false, cycleTimer = null;
+
+  function pluck(freq, t0, dur, vol) {
+    // мягкий «маримба»-звук: тёплый основной тон + лёгкий обертон, быстро затухает
+    [[1, 1, 'sine'], [4, 0.22, 'sine'], [0.5, 0.25, 'triangle']].forEach(([mult, amp, type]) => {
       const o = audioCtx.createOscillator();
       const g = audioCtx.createGain();
-      o.type = 'sine';
+      o.type = type;
       o.frequency.value = freq * mult;
       g.gain.setValueAtTime(0.0001, t0);
-      g.gain.exponentialRampToValueAtTime(vol * amp, t0 + 0.004);
+      g.gain.exponentialRampToValueAtTime(vol * amp, t0 + 0.006);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
       o.connect(g); g.connect(master);
       o.start(t0);
       o.stop(t0 + dur + 0.05);
     });
   }
-  function chaChing() {
+  function jingle() {
+    // короткая бодрая мелодия вверх: «та-да-да-да-даа!» (длится примерно 1,2 секунды)
     const t = audioCtx.currentTime + 0.05;
-    noiseClick(t, 0.07, 0.9, 1800);          // «ча»
-    noiseClick(t + 0.1, 0.05, 0.6, 3200);
-    ping(2093, t + 0.14, 1.5, 0.7);          // «чинг!» — звонок кассы
-    ping(3136, t + 0.30, 0.6, 0.45);         // двойной звон монет
-    ping(3951, t + 0.40, 0.6, 0.4);
-    ping(3136, t + 0.52, 0.7, 0.35);
+    [[784, 0], [1046.5, 0.11], [1318.5, 0.22], [1568, 0.33]].forEach(([f, dt]) => pluck(f, t + dt, 0.35, 0.95));
+    pluck(1568, t + 0.50, 0.9, 0.95);   // финальный аккорд
+    pluck(2093, t + 0.50, 0.9, 0.8);
+    pluck(1318.5, t + 0.50, 0.9, 0.7);
   }
-  function speakOrder() {
-    if (!('speechSynthesis' in window)) return;
+  function speakOrder(done) {
+    // говорит «Пришёл заказ» и по окончании вызывает done
+    let finished = false;
+    const fin = () => { if (!finished) { finished = true; done && done(); } };
+    if (!('speechSynthesis' in window)) { setTimeout(fin, 1200); return; }
     try {
       const u = new SpeechSynthesisUtterance('Пришёл заказ');
       u.lang = 'ru-RU';
@@ -177,25 +166,40 @@
       u.rate = 0.95;
       const v = speechSynthesis.getVoices().find((x) => /^ru/i.test(x.lang));
       if (v) u.voice = v;
+      u.onend = fin;
+      u.onerror = fin;
       speechSynthesis.cancel();
       speechSynthesis.speak(u);
-    } catch (e) {}
+      setTimeout(fin, 4000); // страховка, если браузер не сообщил об окончании речи
+    } catch (e) { setTimeout(fin, 1200); }
   }
-  function ring() {
-    if (!soundOn || !audioCtx) return;
+  function runCycle() {
+    if (!cycleActive) return;
+    if (!soundOn || waitingCount === 0) { stopCycle(); return; }
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    chaChing();
-    setTimeout(() => { if (soundOn) speakOrder(); }, 1500);
+    jingle();
+    // голос идёт сразу после мелодии, затем 5 секунд тишины и всё сначала
+    cycleTimer = setTimeout(() => {
+      speakOrder(() => { cycleTimer = setTimeout(runCycle, SILENCE_MS); });
+    }, 1250);
+  }
+  function startCycle() {
+    if (cycleActive) return;
+    cycleActive = true;
+    runCycle();
+  }
+  function stopCycle() {
+    cycleActive = false;
+    clearTimeout(cycleTimer); cycleTimer = null;
+    try { speechSynthesis.cancel(); } catch (e) {}
+  }
+  function testSound() {
+    jingle();
+    setTimeout(() => speakOrder(), 1250);
   }
   function updateRinging() {
-    const need = soundOn && waitingCount > 0;
-    if (need && !ringTimer) {
-      ring();
-      ringTimer = setInterval(() => { if (soundOn && waitingCount > 0) ring(); }, RING_EVERY_MS);
-    } else if (!need && ringTimer) {
-      clearInterval(ringTimer); ringTimer = null;
-      try { speechSynthesis.cancel(); } catch (e) {}
-    }
+    if (soundOn && waitingCount > 0) startCycle();
+    else if (cycleActive) stopCycle();
   }
 
   async function keepAwake() {
@@ -220,7 +224,7 @@
     keepAwake();
     try { speechSynthesis.getVoices(); } catch (e) {}
     document.getElementById('start').style.display = 'none';
-    if (withTest && waitingCount === 0) { chaChing(); setTimeout(speakOrder, 1500); } // пробный сигнал — проверить громкость
+    if (withTest && waitingCount === 0) testSound(); // пробный сигнал — проверить громкость
     renderTop();
     updateRinging();
   }
