@@ -78,6 +78,7 @@
 
   <div class="cart-scroll">
     <div id="cart-items" class="cart-items">
+      <div id="delivery-bar" class="delivery-bar"></div>
       <div id="cart-lines">Корзина пуста</div>
       <div id="cart-upsell" class="cart-upsell"></div>
     </div>
@@ -119,11 +120,12 @@
   <!-- Нижняя панель: итог и кнопка заказа всегда на виду -->
   <div class="cart-bottom">
     <div id="form-error" class="form-error"></div>
+    <div class="cart-sub" id="cart-sub"></div>
     <div class="cart-total-row">
       <span>Итого</span>
       <span id="cart-total">0 ₽</span>
     </div>
-    <button type="submit" form="checkout-form" class="checkout-btn">Оформить и оплатить</button>
+    <button type="submit" form="checkout-form" class="checkout-btn" id="checkout-submit">Оформить и оплатить</button>
   </div>
 </aside>
 
