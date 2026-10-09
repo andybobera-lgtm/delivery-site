@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -127,8 +126,8 @@
     return 'status-pending';
   }
 
-  // ---------- Звук: весёлая мелодия → сразу голос «Пришёл заказ» → 5 секунд тишины → снова ----------
-  const SILENCE_MS = 5000;   // пауза между повторами
+  // ---------- Звук: весёлая мелодия → сразу голос «Пришёл заказ» → сразу снова, без перерыва ----------
+  const SILENCE_MS = 300;    // почти без паузы: мелодия → голос → сразу снова
   let cycleActive = false, cycleTimer = null;
 
   function pluck(freq, t0, dur, vol) {
@@ -178,7 +177,7 @@
     if (!soundOn || waitingCount === 0) { stopCycle(); return; }
     if (audioCtx.state === 'suspended') audioCtx.resume();
     jingle();
-    // голос идёт сразу после мелодии, затем 5 секунд тишины и всё сначала
+    // голос идёт сразу после мелодии, затем почти сразу всё сначала
     cycleTimer = setTimeout(() => {
       speakOrder(() => { cycleTimer = setTimeout(runCycle, SILENCE_MS); });
     }, 1250);
