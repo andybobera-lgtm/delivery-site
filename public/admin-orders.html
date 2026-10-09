@@ -338,7 +338,7 @@
           <td>${esc(String(o.id).slice(0, 8))}</td>
           <td>${date}</td>
           <td class="${statusClass(o.status)}">${esc(o.status)}${o.status === 'оплачен' ? `<div class="wait">${waitText(o)}</div>` : ''}</td>
-          <td>${esc(o.total)} ₽</td>
+          <td>${esc(o.total)} ₽${o.deliveryFee ? `<div style="font-size:12px;color:#888">вкл. доставка ${esc(o.deliveryFee)} ₽</div>` : (o.subtotal ? '<div style="font-size:12px;color:#2e7d32">доставка бесплатно</div>' : '')}</td>
           <td>${esc(c.name)}</td>
           <td>${esc(c.phone)}</td>
           <td>${esc(c.address)}${c.comment ? '<br><em>' + esc(c.comment) + '</em>' : ''}</td>
@@ -358,10 +358,21 @@
     updateRinging();
   }
 
+  let loadedOnce = false;
+  function showLoadError() {
+    if (loadedOnce) return; // уже показывали заказы — не затираем их
+    const onFile = location.protocol === 'file:';
+    document.getElementById('list').innerHTML = `<div class="empty" style="color:#c0392b;font-weight:600;">${
+      onFile
+        ? 'Страница открыта как файл с компьютера, поэтому заказы не загружаются. Откройте её по адресу сайта: https://ВАШ-САЙТ/admin-orders.html'
+        : 'Не удалось загрузить заказы. Проверьте интернет — страница попробует снова сама.'
+    }</div>`;
+  }
+
   async function loadOrders() {
     let res;
     try { res = await fetch('/api/admin/orders?key=' + encodeURIComponent(getKey()), { cache: 'no-store' }); }
-    catch (e) { return; } // нет интернета — попробуем в следующий раз
+    catch (e) { showLoadError(); return; } // нет связи с сайтом — попробуем в следующий раз
     if (res.status === 401) {
       localStorage.removeItem('adminKey');
       document.getElementById('login').style.display = 'block';
@@ -369,8 +380,9 @@
       document.getElementById('login-error').textContent = 'Неверный пароль';
       return;
     }
-    if (!res.ok) return;
+    if (!res.ok) { showLoadError(); return; }
     const fresh = await res.json();
+    loadedOnce = true;
     // если появился новый заказ, а открыта другая вкладка — переключаемся на «Новые»
     const hadWaiting = orders.some((o) => o.status === 'оплачен');
     orders = fresh;
