@@ -28,6 +28,11 @@ const YOOKASSA_SHOP_ID = process.env.YOOKASSA_SHOP_ID;
 const YOOKASSA_SECRET_KEY = process.env.YOOKASSA_SECRET_KEY;
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 
+// Условия доставки (можно поменять здесь или через переменные окружения)
+const MIN_ORDER = Number(process.env.MIN_ORDER) || 1000;            // минимальная сумма заказа, ₽
+const DELIVERY_FEE = Number(process.env.DELIVERY_FEE) || 250;       // стоимость доставки, ₽
+const FREE_DELIVERY_FROM = Number(process.env.FREE_DELIVERY_FROM) || 3000; // от этой суммы доставка бесплатная, ₽
+
 function readJSON(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 }
@@ -40,6 +45,11 @@ function yookassaAuth() {
 // --- Проверка: где хранятся заказы (откройте адрес-сайта/api/health) ---
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, ordersStorage: db.getMode() });
+});
+
+// --- Условия доставки для сайта (корзина берёт отсюда цифры) ---
+app.get('/api/config', (req, res) => {
+  res.json({ minOrder: MIN_ORDER, deliveryFee: DELIVERY_FEE, freeDeliveryFrom: FREE_DELIVERY_FROM });
 });
 
 // --- Отдаём каталог товаров ---
@@ -125,10 +135,20 @@ app.post('/api/orders', async (req, res) => {
       return res.status(400).json({ error: 'Не удалось рассчитать сумму заказа' });
     }
 
+    // Минимальный заказ и доставка считаются здесь, на сервере — подменить их на сайте нельзя
+    const subtotal = total;
+    if (subtotal < MIN_ORDER) {
+      return res.status(400).json({ error: `Минимальный заказ — ${MIN_ORDER} ₽. Добавьте товары ещё на ${MIN_ORDER - subtotal} ₽` });
+    }
+    const deliveryFee = subtotal >= FREE_DELIVERY_FROM ? 0 : DELIVERY_FEE;
+    total = subtotal + deliveryFee;
+
     const orderId = uuidv4();
     const order = {
       id: orderId,
       items: orderItems,
+      subtotal,
+      deliveryFee,
       total,
       customer,
       cutleryCount: Number.isFinite(parseInt(cutleryCount, 10)) ? parseInt(cutleryCount, 10) : 0,
@@ -163,7 +183,14 @@ app.post('/api/orders', async (req, res) => {
             vat_code: 1,
             payment_subject: 'commodity',
             payment_mode: 'full_payment',
-          })),
+          })).concat(deliveryFee > 0 ? [{
+            description: 'Доставка',
+            quantity: '1.00',
+            amount: { value: deliveryFee.toFixed(2), currency: 'RUB' },
+            vat_code: 1,
+            payment_subject: 'service',
+            payment_mode: 'full_payment',
+          }] : []),
         },
       }),
     });
