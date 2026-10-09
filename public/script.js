@@ -619,6 +619,77 @@ function cartCount() {
   return Object.values(cart).reduce((sum, line) => sum + line.qty, 0);
 }
 
+/* ================= ДОСТАВКА: минимальный заказ, стоимость, бесплатно от суммы ================= */
+let deliveryCfg = { minOrder: 1000, deliveryFee: 250, freeDeliveryFrom: 3000 };
+fetch('/api/config').then((r) => r.json()).then((c) => {
+  if (c && c.minOrder) { deliveryCfg = c; renderCartWidgets(); }
+}).catch(() => {});
+
+function money(n) {
+  return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0') + '\u00a0₽';
+}
+function deliveryCost() {
+  const sub = cartTotal();
+  if (sub === 0) return 0;
+  return sub >= deliveryCfg.freeDeliveryFrom ? 0 : deliveryCfg.deliveryFee;
+}
+
+function renderDeliveryBar() {
+  const box = document.getElementById('delivery-bar');
+  if (!box) return;
+  const { minOrder, deliveryFee, freeDeliveryFrom } = deliveryCfg;
+  const sub = cartTotal();
+  const pct = Math.min(100, Math.round((sub / freeDeliveryFrom) * 100));
+  const minPct = Math.round((minOrder / freeDeliveryFrom) * 100);
+  const isFree = sub >= freeDeliveryFrom;
+  const belowMin = sub < minOrder;
+
+  let title, subtitle, warn = false;
+  if (isFree) {
+    title = 'Доставка бесплатная 🎉';
+    subtitle = 'Вы получили бесплатную доставку!';
+  } else if (belowMin) {
+    title = `Доставка ${money(deliveryFee)}`;
+    subtitle = sub === 0
+      ? `Минимальный заказ от ${money(minOrder)}`
+      : `Минимальный заказ от ${money(minOrder)} — добавьте товары ещё на ${money(minOrder - sub)}`;
+    warn = sub > 0;
+  } else {
+    title = `Доставка ${money(deliveryFee)}`;
+    subtitle = `Добавьте товары ещё на ${money(freeDeliveryFrom - sub)}, чтобы получить бесплатную доставку!`;
+  }
+
+  box.innerHTML = `
+    <div class="db-title">${title}</div>
+    <div class="db-sub${warn ? ' warn' : ''}">${subtitle}</div>
+    <div class="db-track">
+      <div class="db-fill${isFree ? ' full' : ''}" style="width:${pct}%"></div>
+      ${isFree ? '' : `<span class="db-mark" style="left:${minPct}%"></span>`}
+    </div>
+    <div class="db-labels"><span>🛵 ${isFree ? 'Бесплатно' : money(deliveryFee)}</span><span>${money(0)}</span></div>
+    <div class="db-rules">Минимальный заказ от ${money(minOrder)} · Доставка ${money(deliveryFee)} · Бесплатно от ${money(freeDeliveryFrom)}</div>
+  `;
+}
+
+function renderTotals() {
+  const sub = cartTotal();
+  const fee = deliveryCost();
+  const subEl = document.getElementById('cart-sub');
+  if (subEl) {
+    subEl.innerHTML = sub === 0 ? '' :
+      `<span>Товары ${money(sub)}</span><span>Доставка ${fee === 0 ? 'бесплатно' : money(fee)}</span>`;
+  }
+  document.getElementById('cart-total').textContent = money(sub + fee);
+  const btn = document.getElementById('checkout-submit');
+  if (btn) {
+    const belowMin = sub < deliveryCfg.minOrder;
+    btn.disabled = belowMin;
+    btn.textContent = belowMin
+      ? (sub === 0 ? 'Корзина пуста' : `Добавьте ещё на ${money(deliveryCfg.minOrder - sub)}`)
+      : 'Оформить и оплатить';
+  }
+}
+
 function renderCartWidgets() {
   const fab = document.getElementById('cart-fab');
   const count = cartCount();
@@ -632,6 +703,8 @@ function renderCartWidgets() {
   }
 
   renderCartLines();
+  renderDeliveryBar();
+  renderTotals();
   renderUpsell();
   refreshAllCards();
   saveCart();
@@ -976,6 +1049,11 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
   const keys = Object.keys(cart);
   if (keys.length === 0) {
     errorEl.textContent = 'Добавьте хотя бы одно блюдо в корзину';
+    return;
+  }
+
+  if (cartTotal() < deliveryCfg.minOrder) {
+    errorEl.textContent = `Минимальный заказ — ${money(deliveryCfg.minOrder)}`;
     return;
   }
 
