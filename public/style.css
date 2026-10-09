@@ -17,9 +17,9 @@
 
 body {
   margin: 0;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
   cursor: default;
   font-family: 'Onest', -apple-system, sans-serif;
   background: var(--page-bg);
@@ -1023,10 +1023,9 @@ input, textarea {
 }
 
 /* ---------- Прокрутка фона под открытым окном; запрет увеличения двойным тапом ---------- */
-html.no-scroll, body.no-scroll { overflow: hidden; height: 100%; }
+html.no-scroll, body.no-scroll { overflow: hidden; }
 * { -webkit-tap-highlight-color: transparent; }
 button, a, label, .product-card { touch-action: manipulation; }
-button, .category-chip, .product-card { -webkit-user-select: none; user-select: none; }
 
 /* ---------- Квадратики выбора поменьше ---------- */
 .choice-box { width: 30px; height: 30px; border-width: 2px; border-radius: 8px; }
@@ -1103,3 +1102,16 @@ button, .category-chip, .product-card { -webkit-user-select: none; user-select: 
 }
 .upsell-card { scroll-snap-align: start; }
 .upsell-thumb, .upsell-card img { -webkit-user-drag: none; pointer-events: none; }
+
+
+/* ---------- В окне блюда кнопки и счётчики — оранжевые, как корзина ---------- */
+.picker-modal .buy-btn,
+.picker-modal .checkout-btn,
+.picker-modal .choice-stepper,
+.picker-modal .qty-stepper { background: var(--accent-orange) !important; }
+.picker-modal .buy-btn:hover,
+.picker-modal .checkout-btn:hover { background: #e84300 !important; }
+.picker-modal .buy-btn:disabled { opacity: 0.5; }
+.picker-modal #picker-done { box-shadow: 0 8px 20px rgba(241, 90, 36, 0.35); }
+.picker-modal .variant-option-price { color: var(--accent-orange); }
+.picker-modal .nutrition-tab.active { color: var(--ink); }
