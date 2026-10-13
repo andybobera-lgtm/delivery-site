@@ -1175,20 +1175,26 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLegal
     return x.link ? `<a class="promo-slide" href="${x.link}">${img}</a>` : `<div class="promo-slide">${img}</div>`;
   }).join('');
   box.hidden = false;
-  if (slides.length < 2) return; // одна картинка — просто показываем без точек и листания
 
-  const dots = document.getElementById('promo-dots');
-  dots.innerHTML = slides.map((_, i) => `<span class="${i === 0 ? 'on' : ''}"></span>`).join('');
-  let idx = 0, paused = false;
-  const go = (i) => { idx = (i + slides.length) % slides.length; track.scrollTo({ left: idx * track.clientWidth, behavior: 'smooth' }); };
-  track.addEventListener('scroll', () => {
-    const i = Math.round(track.scrollLeft / track.clientWidth);
-    idx = i;
-    [...dots.children].forEach((d, k) => d.classList.toggle('on', k === i));
-  }, { passive: true });
-  ['pointerenter', 'touchstart'].forEach((ev) => track.addEventListener(ev, () => { paused = true; }, { passive: true }));
-  ['pointerleave', 'touchend'].forEach((ev) => track.addEventListener(ev, () => { paused = false; }, { passive: true }));
-  setInterval(() => { if (!paused) go(idx + 1); }, 5000);
+  // Стрелка «вперёд» для компьютера, если картинки не помещаются
+  const arrow = document.createElement('button');
+  arrow.type = 'button';
+  arrow.className = 'promo-arrow';
+  arrow.setAttribute('aria-label', 'Дальше');
+  arrow.textContent = '›';
+  box.appendChild(arrow);
+  const update = () => {
+    const more = track.scrollWidth - track.clientWidth - track.scrollLeft > 4;
+    arrow.classList.toggle('show', more);
+  };
+  arrow.addEventListener('click', () => {
+    const atEnd = track.scrollWidth - track.clientWidth - track.scrollLeft <= 4;
+    track.scrollBy({ left: atEnd ? -track.scrollWidth : 290, behavior: 'smooth' });
+  });
+  track.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  window.addEventListener('load', update);
+  update();
 })();
 
 loadProducts();
