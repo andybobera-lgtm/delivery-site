@@ -178,6 +178,7 @@
   },
   {
     "id": "shashlyk-chicken",
+    "image": "images/shashlyk-chicken.jpg",
     "category": "Шашлык",
     "name": "Шашлык из цыплёнка",
     "price": 480,
@@ -201,6 +202,7 @@
   },
   {
     "id": "shashlyk-lamb",
+    "image": "images/shashlyk-lamb.jpg",
     "category": "Шашлык",
     "name": "Шашлык из баранины мякоть",
     "price": 980,
@@ -224,6 +226,7 @@
   },
   {
     "id": "lyulya-lamb-turkey",
+    "image": "images/lyulya-lamb-turkey.jpg",
     "category": "Шашлык",
     "name": "Люля баранина/индейка",
     "price": 530,
@@ -247,6 +250,7 @@
   },
   {
     "id": "lyulya-chicken",
+    "image": "images/lyulya-chicken.jpg",
     "category": "Шашлык",
     "name": "Люля из цыплёнка",
     "price": 480,
@@ -293,6 +297,7 @@
   },
   {
     "id": "pleskavica",
+    "image": "images/pleskavica.jpg",
     "category": "Шашлык",
     "name": "Плескавица с сыром",
     "price": 530,
@@ -316,6 +321,7 @@
   },
   {
     "id": "koreika-lamb",
+    "image": "images/koreika-lamb.jpg",
     "category": "Шашлык",
     "name": "Корейка ягнёнка с овощами гриль",
     "price": 1200,
@@ -1338,6 +1344,7 @@
   },
   {
     "id": "pizza-3myasa",
+    "image": "images/pizza-3myasa.jpg",
     "category": "Неаполитанская пицца",
     "name": "Неаполитанская пицца Мясная",
     "price": 700,
@@ -1361,6 +1368,7 @@
   },
   {
     "id": "pizza-4cheese",
+    "image": "images/pizza-4cheese.jpg",
     "category": "Неаполитанская пицца",
     "name": "Неаполитанская пицца 4 сыра",
     "price": 700,
@@ -1384,6 +1392,7 @@
   },
   {
     "id": "pizza-baklazhan",
+    "image": "images/pizza-baklazhan.jpg",
     "category": "Неаполитанская пицца",
     "name": "Неаполитанская пицца с баклажанами-гриль",
     "price": 700,
@@ -1407,6 +1416,7 @@
   },
   {
     "id": "pizza-chicken-griby",
+    "image": "images/pizza-chicken-griby.jpg",
     "category": "Неаполитанская пицца",
     "name": "Неаполитанская пицца с цыплёнком-гриль и грибами",
     "price": 700,
@@ -1430,6 +1440,7 @@
   },
   {
     "id": "pizza-margarita",
+    "image": "images/pizza-margarita.jpg",
     "category": "Неаполитанская пицца",
     "name": "Неаполитанская пицца Маргарита",
     "price": 700,
