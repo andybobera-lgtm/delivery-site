@@ -1,6 +1,7 @@
 [
   {
     "id": "combo-chudu-big",
+    "image": "images/combo-chudu-big.jpg",
     "category": "Акции и Наборы",
     "name": "Большой набор Чуду",
     "price": 2500,
@@ -55,6 +56,7 @@
   },
   {
     "id": "combo-chudu-two",
+    "image": "images/combo-chudu-two.jpg",
     "category": "Акции и Наборы",
     "name": "Набор чуду для двоих",
     "price": 1250,
@@ -345,6 +347,7 @@
   },
   {
     "id": "hinkal-avar",
+    "image": "images/hinkal-avar.jpg",
     "category": "Хинкал",
     "name": "Аварский хинкал",
     "price": 700,
@@ -434,6 +437,7 @@
   },
   {
     "id": "hinkal-dargin",
+    "image": "images/hinkal-dargin.jpg",
     "category": "Хинкал",
     "name": "Даргинский хинкал",
     "price": 700,
@@ -523,6 +527,7 @@
   },
   {
     "id": "hinkal-laksky",
+    "image": "images/hinkal-laksky.jpg",
     "category": "Хинкал",
     "name": "Лакский хинкал",
     "price": 700,
@@ -612,6 +617,7 @@
   },
   {
     "id": "hinkal-thin",
+    "image": "images/hinkal-thin.jpg",
     "category": "Хинкал",
     "name": "Тонкий хинкал",
     "price": 700,
@@ -701,6 +707,7 @@
   },
   {
     "id": "hinkal-corn",
+    "image": "images/hinkal-corn.jpg",
     "category": "Хинкал",
     "name": "Хинкал кукурузный",
     "price": 700,
@@ -769,6 +776,7 @@
   },
   {
     "id": "chudu-zelen",
+    "image": "images/chudu-zelen.jpg",
     "category": "Чуду",
     "name": "Чуду тонкое с зеленью",
     "price": 320,
@@ -792,6 +800,7 @@
   },
   {
     "id": "botishal",
+    "image": "images/chudu-syr-zelen.jpg",
     "category": "Чуду",
     "name": "Ботишал",
     "price": 320,
@@ -815,6 +824,7 @@
   },
   {
     "id": "chudu-myaso",
+    "image": "images/chudu-myaso.jpg",
     "category": "Чуду",
     "name": "Чуду тонкое с мясом",
     "price": 350,
@@ -838,6 +848,7 @@
   },
   {
     "id": "chudu-syr-zelen",
+    "image": "images/chudu-syr-zelen.jpg",
     "category": "Чуду",
     "name": "Чуду тонкое с сыром и зеленью",
     "price": 320,
@@ -861,6 +872,7 @@
   },
   {
     "id": "chudu-tykva",
+    "image": "images/chudu-tykva.jpg",
     "category": "Чуду",
     "name": "Чуду тонкое с тыквой",
     "price": 320,
