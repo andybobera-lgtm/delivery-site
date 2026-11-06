@@ -52,10 +52,25 @@ app.get('/api/config', (req, res) => {
   res.json({ minOrder: MIN_ORDER, deliveryFee: DELIVERY_FEE, freeDeliveryFrom: FREE_DELIVERY_FROM });
 });
 
-// --- Отдаём каталог товаров ---
-app.get('/api/products', (req, res) => {
+// --- Каталог с учётом стоп-листа ---
+// Стоп можно задать двумя способами: переключателем в админ-панели (хранится в базе)
+// или строкой "stop": true в products.json. Переключатель в админке главнее.
+async function loadCatalog() {
   const products = readJSON(PRODUCTS_FILE);
-  res.json(products);
+  let overrides = {};
+  try { overrides = await db.getStopOverrides(); } catch (e) { console.error('Стоп-лист не прочитан:', e.message); }
+  return products.map((p) => ({ ...p, stop: Object.prototype.hasOwnProperty.call(overrides, p.id) ? !!overrides[p.id] : !!p.stop }));
+}
+
+// --- Отдаём каталог товаров (блюда на стопе не показываем) ---
+app.get('/api/products', async (req, res) => {
+  try {
+    const catalog = await loadCatalog();
+    res.json(catalog.filter((p) => !p.stop).map(({ stop, ...rest }) => rest));
+  } catch (err) {
+    console.error('Ошибка каталога:', err);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
 });
 
 // --- Приём нового заказа ---
@@ -87,12 +102,12 @@ app.post('/api/orders', async (req, res) => {
 
     // ВАЖНО: цену пересчитываем на сервере по своему каталогу,
     // а не берём из браузера — иначе покупатель мог бы подделать сумму заказа.
-    const products = readJSON(PRODUCTS_FILE);
+    const products = await loadCatalog();
     let total = 0;
     const orderItems = [];
 
     for (const item of items) {
-      const product = products.find((p) => p.id === item.id);
+      const product = products.find((p) => p.id === item.id && !p.stop);
       if (!product) continue;
 
       if (product.type === 'variant') {
@@ -253,6 +268,38 @@ app.get('/api/admin/orders', async (req, res) => {
     res.json(await db.listOrders());
   } catch (err) {
     console.error('Ошибка чтения заказов:', err);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+// --- Стоп-лист: список всех блюд для админ-страницы ---
+app.get('/api/admin/products', async (req, res) => {
+  const key = req.query.key;
+  if (!key || key !== process.env.ADMIN_KEY) {
+    return res.status(401).json({ error: 'Неверный пароль' });
+  }
+  try {
+    const catalog = await loadCatalog();
+    res.json(catalog.map((p) => ({ id: p.id, name: p.name, category: p.category || 'Меню', price: p.price, stop: !!p.stop })));
+  } catch (err) {
+    console.error('Ошибка чтения меню:', err);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+// --- Стоп-лист: включить/выключить блюдо ---
+app.post('/api/admin/products/:id/stop', async (req, res) => {
+  const key = req.query.key || req.body?.key;
+  if (!key || key !== process.env.ADMIN_KEY) {
+    return res.status(401).json({ error: 'Неверный пароль' });
+  }
+  try {
+    const exists = readJSON(PRODUCTS_FILE).some((p) => p.id === req.params.id);
+    if (!exists) return res.status(404).json({ error: 'Такого блюда нет' });
+    await db.setProductStop(req.params.id, !!req.body?.stop);
+    res.json({ ok: true, id: req.params.id, stop: !!req.body?.stop });
+  } catch (err) {
+    console.error('Ошибка стоп-листа:', err);
     res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
