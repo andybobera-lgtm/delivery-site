@@ -8,6 +8,7 @@
 const fs = require('fs');
 
 const FILE_PATH = process.env.ORDERS_FILE || '/tmp/orders.json';
+const STOP_FILE_PATH = process.env.STOPLIST_FILE || '/tmp/stoplist.json';
 
 let pool = null;
 let mode = 'file'; // 'postgres' или 'file'
@@ -46,6 +47,12 @@ async function init() {
         id         TEXT PRIMARY KEY,
         data       JSONB NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS product_stop (
+        id   TEXT PRIMARY KEY,
+        stop BOOLEAN NOT NULL
       )
     `);
     mode = 'postgres';
@@ -112,4 +119,34 @@ function setStatus(id, status) {
   return updateOrder(id, { status });
 }
 
-module.exports = { init, getMode, addOrder, getOrder, listOrders, setStatus, updateOrder };
+// ---------- Стоп-лист блюд ----------
+// Возвращает объект { id блюда: true/false } — то, что повар выставил в админ-панели.
+async function getStopOverrides() {
+  if (mode === 'postgres') {
+    const r = await pool.query('SELECT id, stop FROM product_stop');
+    const out = {};
+    r.rows.forEach((row) => { out[row.id] = row.stop; });
+    return out;
+  }
+  try {
+    return JSON.parse(fs.readFileSync(STOP_FILE_PATH, 'utf-8'));
+  } catch (e) {
+    return {};
+  }
+}
+
+async function setProductStop(id, stop) {
+  if (mode === 'postgres') {
+    await pool.query(
+      `INSERT INTO product_stop (id, stop) VALUES ($1, $2)
+       ON CONFLICT (id) DO UPDATE SET stop = EXCLUDED.stop`,
+      [id, !!stop]
+    );
+    return;
+  }
+  const data = await getStopOverrides();
+  data[id] = !!stop;
+  fs.writeFileSync(STOP_FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+module.exports = { init, getMode, addOrder, getOrder, listOrders, setStatus, updateOrder, getStopOverrides, setProductStop };
