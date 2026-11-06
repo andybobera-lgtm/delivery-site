@@ -50,6 +50,25 @@
   .act button.green { background: #2e7d32; }
   .act .eta { font-size: 12px; color: #555; margin-bottom: 4px; }
   .table-wrap { overflow-x: auto; }
+
+  /* Стоп-лист */
+  #menu-view { display: none; }
+  #menu-search { width: 100%; max-width: 420px; padding: 12px; font-size: 16px; border: 1px solid #d9d2c6; border-radius: 10px; margin-bottom: 12px; box-sizing: border-box; }
+  .menu-hint { color: #666; font-size: 14px; margin-bottom: 12px; }
+  .menu-cat { font-size: 17px; font-weight: 700; margin: 18px 0 8px; }
+  .menu-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #fff; border: 1px solid #e7e0d6; border-radius: 10px; padding: 10px 14px; margin-bottom: 6px; }
+  .menu-row.off { background: #fdecea; border-color: #f2b8b0; }
+  .menu-row .nm { font-size: 15px; font-weight: 600; }
+  .menu-row .pr { font-size: 13px; color: #777; }
+  .menu-row.off .nm { color: #b3261e; }
+  .sw { display: flex; align-items: center; gap: 10px; cursor: pointer; flex-shrink: 0; user-select: none; }
+  .sw input { display: none; }
+  .sw .track { width: 54px; height: 30px; border-radius: 15px; background: #2e7d32; position: relative; transition: background .2s; }
+  .sw .track::after { content: ''; position: absolute; top: 3px; left: 27px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+  .sw input:not(:checked) + .track { background: #c9c3b8; }
+  .sw input:not(:checked) + .track::after { left: 3px; }
+  .sw .lbl { font-size: 13px; font-weight: 600; min-width: 74px; color: #2e7d32; }
+  .sw input:not(:checked) ~ .lbl { color: #b3261e; }
 </style>
 </head>
 <body>
@@ -88,6 +107,11 @@
 
   <div class="tabs" id="tabs"></div>
   <div id="list"></div>
+  <div id="menu-view">
+    <div class="menu-hint">Переключатель выключен — блюда нет на сайте, его нельзя заказать. Включите обратно, когда блюдо снова есть.</div>
+    <input type="search" id="menu-search" placeholder="Найти блюдо…" oninput="renderMenu()" />
+    <div id="menu-list"></div>
+  </div>
 </div>
 
 <script>
@@ -98,7 +122,9 @@
     { id: 'work', title: 'В работе',     hint: '',                match: (o) => ['принят', 'готов', 'передан курьеру'].includes(o.status) },
     { id: 'done', title: 'Завершённые',  hint: '',                match: (o) => ['доставлен', 'отменён'].includes(o.status) },
     { id: 'all',  title: 'Все заказы',   hint: '',                match: () => true },
+    { id: 'menu', title: 'Стоп-лист',    hint: '',                match: () => false, menu: true },
   ];
+  let menuItems = [];
 
   let orders = [];
   let currentTab = 'new';
@@ -307,20 +333,74 @@
   function renderTabs() {
     const box = document.getElementById('tabs');
     box.innerHTML = TABS.map((t) => {
-      const n = orders.filter(t.match).length;
+      const n = t.menu ? menuItems.filter((m) => m.stop).length : orders.filter(t.match).length;
       const hot = t.id === 'new' && n > 0 ? ' hot' : '';
       return `<button class="tab${currentTab === t.id ? ' active' : ''}${hot}" onclick="selectTab('${t.id}')">${t.title}<span class="cnt">${n}</span></button>`;
     }).join('');
   }
-  function selectTab(id) { currentTab = id; renderAll(); }
+  function selectTab(id) { currentTab = id; if (id === 'menu') { renderMenu(); loadMenu(); } renderAll(); }
 
   function waitText(o) {
     const mins = Math.max(0, Math.round((Date.now() - new Date(o.paidAt || o.createdAt).getTime()) / 60000));
     return `ждёт принятия ${mins} мин`;
   }
 
+  // ---------- Стоп-лист ----------
+  async function loadMenu() {
+    try {
+      const res = await fetch('/api/admin/products?key=' + encodeURIComponent(getKey()), { cache: 'no-store' });
+      if (!res.ok) return;
+      menuItems = await res.json();
+      renderTabs();
+      if (currentTab === 'menu') renderMenu();
+    } catch (e) { /* нет связи — попробуем позже */ }
+  }
+
+  function renderMenu() {
+    const q = (document.getElementById('menu-search').value || '').trim().toLowerCase();
+    const items = menuItems.filter((m) => !q || m.name.toLowerCase().includes(q));
+    const box = document.getElementById('menu-list');
+    if (!items.length) { box.innerHTML = '<div class="empty">Ничего не найдено</div>'; return; }
+    const cats = [...new Set(items.map((m) => m.category))];
+    box.innerHTML = cats.map((c) => `<div class="menu-cat">${esc(c)}</div>` +
+      items.filter((m) => m.category === c).map((m) => `
+        <div class="menu-row${m.stop ? ' off' : ''}">
+          <div><div class="nm">${esc(m.name)}</div><div class="pr">${esc(m.price)} ₽</div></div>
+          <label class="sw">
+            <input type="checkbox" ${m.stop ? '' : 'checked'} onchange="toggleStop('${esc(m.id)}', !this.checked)" />
+            <span class="track"></span>
+            <span class="lbl">${m.stop ? 'На стопе' : 'В продаже'}</span>
+          </label>
+        </div>`).join('')
+    ).join('');
+  }
+
+  async function toggleStop(id, stop) {
+    const item = menuItems.find((m) => m.id === id);
+    if (!item) return;
+    const before = item.stop;
+    item.stop = stop;          // сразу показываем результат
+    renderTabs(); renderMenu();
+    try {
+      const res = await fetch('/api/admin/products/' + encodeURIComponent(id) + '/stop?key=' + encodeURIComponent(getKey()), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stop }),
+      });
+      if (!res.ok) throw new Error('bad');
+    } catch (e) {
+      item.stop = before;      // не получилось — возвращаем как было
+      renderTabs(); renderMenu();
+      alert('Не удалось изменить. Проверьте интернет и попробуйте ещё раз.');
+    }
+  }
+
   function renderList() {
     const tab = TABS.find((t) => t.id === currentTab);
+    const isMenu = !!tab.menu;
+    document.getElementById('list').style.display = isMenu ? 'none' : '';
+    document.getElementById('menu-view').style.display = isMenu ? 'block' : 'none';
+    if (isMenu) return; // список стоп-листа обновляется только при действиях, чтобы не прыгал
     const rows = orders.filter(tab.match);
     const box = document.getElementById('list');
     if (!rows.length) {
@@ -400,7 +480,9 @@
       if (!soundOn) document.getElementById('start').style.display = 'flex';
       renderTop();
       loadOrders();
+      loadMenu();
       setInterval(loadOrders, REFRESH_MS);
+      setInterval(() => { if (currentTab === 'menu') loadMenu(); }, 15000);
     }
   }
 
