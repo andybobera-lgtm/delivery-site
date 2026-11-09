@@ -1158,12 +1158,37 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLegal
 
 /* ================= Плашка про cookies ================= */
 (function () {
+  const METRIKA_ID = 114152765;
+  const KEY = 'cookie_consent_v2'; // '1' — согласен, '0' — отказался
   const banner = document.getElementById('cookie-banner');
-  let accepted = false;
-  try { accepted = localStorage.getItem('cookie_ok') === '1'; } catch (e) {}
-  if (!accepted) banner.hidden = false;
+
+  // Яндекс Метрика запускается только после согласия. Вебвизор и карта кликов выключены.
+  function loadMetrika() {
+    if (window.__ymLoaded) return;
+    window.__ymLoaded = true;
+    (function (m, e, t, r, i, k, a) {
+      m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments); };
+      m[i].l = 1 * new Date();
+      k = e.createElement(t); a = e.getElementsByTagName(t)[0];
+      k.async = 1; k.src = r; a.parentNode.insertBefore(k, a);
+    })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js?id=' + METRIKA_ID, 'ym');
+    window.ym(METRIKA_ID, 'init', {
+      webvisor: false, clickmap: false, trackLinks: true, accurateTrackBounce: true
+    });
+  }
+
+  let choice = null;
+  try { choice = localStorage.getItem(KEY); } catch (e) {}
+  if (choice === '1') loadMetrika();
+  if (choice === null) banner.hidden = false;
+
   document.getElementById('cookie-accept').addEventListener('click', () => {
-    try { localStorage.setItem('cookie_ok', '1'); } catch (e) {}
+    try { localStorage.setItem(KEY, '1'); } catch (e) {}
+    banner.hidden = true;
+    loadMetrika();
+  });
+  document.getElementById('cookie-decline').addEventListener('click', () => {
+    try { localStorage.setItem(KEY, '0'); } catch (e) {}
     banner.hidden = true;
   });
 })();
