@@ -1202,6 +1202,14 @@ button, a, label, .product-card { touch-action: manipulation; }
   transform: translate(-50%, -50%) scale(1);
   transition: opacity 0.16s ease-out, transform 0.22s var(--ease-out);
 }
+/* Карточка блюда: открывается плавно и неспешно, как в Лавке */
+.picker-modal {
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+.picker-modal.open {
+  transition: opacity 0.35s ease-out, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cart-overlay { transition: opacity 0.3s ease-out; }
 .legal-modal {
   transform: translateX(-50%) scale(0.95);
   transform-origin: center center;
@@ -1220,11 +1228,11 @@ button, a, label, .product-card { touch-action: manipulation; }
 @media (max-width: 640px) {
   .picker-modal {
     transform: translateY(105%);
-    transition: transform 0.2s ease-out;
+    transition: transform 0.32s ease-out;
   }
   .picker-modal.open {
     transform: translateY(0);
-    transition: transform 0.25s var(--ease-out);
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .picker-modal.dragging { transition: none !important; }
 }
@@ -1258,3 +1266,9 @@ button:disabled:active { transform: none; }
 }
 
 .cookie-banner a { color: #fff; text-decoration: underline; }
+.cookie-actions { display: flex; gap: 8px; }
+.cookie-banner .cookie-decline {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.4);
+}
