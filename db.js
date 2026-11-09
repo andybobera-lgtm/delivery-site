@@ -9,6 +9,7 @@ const fs = require('fs');
 
 const FILE_PATH = process.env.ORDERS_FILE || '/tmp/orders.json';
 const STOP_FILE_PATH = process.env.STOPLIST_FILE || '/tmp/stoplist.json';
+const NUTRITION_FILE_PATH = process.env.NUTRITION_FILE || '/tmp/nutrition.json';
 
 let pool = null;
 let mode = 'file'; // 'postgres' или 'file'
@@ -53,6 +54,14 @@ async function init() {
       CREATE TABLE IF NOT EXISTS product_stop (
         id   TEXT PRIMARY KEY,
         stop BOOLEAN NOT NULL
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS product_nutrition (
+        id      TEXT NOT NULL,
+        variant TEXT NOT NULL DEFAULT '',
+        per100  JSONB NOT NULL,
+        PRIMARY KEY (id, variant)
       )
     `);
     mode = 'postgres';
@@ -149,4 +158,34 @@ async function setProductStop(id, stop) {
   fs.writeFileSync(STOP_FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-module.exports = { init, getMode, addOrder, getOrder, listOrders, setStatus, updateOrder, getStopOverrides, setProductStop };
+// ---------- КБЖУ, исправленное в админ-панели ----------
+// Возвращает объект { "id блюда|id варианта": { kcal, protein, fat, carbs } } (на 100 г)
+async function getNutritionOverrides() {
+  if (mode === 'postgres') {
+    const r = await pool.query('SELECT id, variant, per100 FROM product_nutrition');
+    const out = {};
+    r.rows.forEach((row) => { out[row.id + '|' + row.variant] = row.per100; });
+    return out;
+  }
+  try {
+    return JSON.parse(fs.readFileSync(NUTRITION_FILE_PATH, 'utf-8'));
+  } catch (e) {
+    return {};
+  }
+}
+
+async function setNutrition(id, variant, per100) {
+  if (mode === 'postgres') {
+    await pool.query(
+      `INSERT INTO product_nutrition (id, variant, per100) VALUES ($1, $2, $3::jsonb)
+       ON CONFLICT (id, variant) DO UPDATE SET per100 = EXCLUDED.per100`,
+      [id, variant || '', JSON.stringify(per100)]
+    );
+    return;
+  }
+  const data = await getNutritionOverrides();
+  data[id + '|' + (variant || '')] = per100;
+  fs.writeFileSync(NUTRITION_FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+module.exports = { init, getMode, addOrder, getOrder, listOrders, setStatus, updateOrder, getStopOverrides, setProductStop, getNutritionOverrides, setNutrition };
