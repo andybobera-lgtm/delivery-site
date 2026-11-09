@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
+<meta name="robots" content="noindex, nofollow" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Заказы — Дачная Беседка</title>
 <link rel="icon" type="image/png" href="images/logo.png" />
@@ -67,6 +68,17 @@
   .sw .track::after { content: ''; position: absolute; top: 3px; left: 27px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
   .sw input:not(:checked) + .track { background: #c9c3b8; }
   .sw input:not(:checked) + .track::after { left: 3px; }
+  .menu-actions { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+  .nut-btn { background: #f2ece2; color: #333; padding: 8px 12px; font-size: 13px; border-radius: 8px; border: 0; cursor: pointer; }
+  .nut-btn.open { background: #1e1e1e; color: #fff; }
+  .nut-panel { background: #fff; border: 1px solid #e7e0d6; border-top: 0; border-radius: 0 0 10px 10px; padding: 12px 14px; margin: -8px 0 8px; }
+  .nut-panel .nut-note { font-size: 12px; color: #777; margin-bottom: 8px; }
+  .nut-row { display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .nut-row .vl { flex: 1 1 100%; font-size: 13px; font-weight: 600; }
+  .nut-field { display: flex; flex-direction: column; font-size: 12px; color: #666; gap: 3px; }
+  .nut-field input { width: 78px; padding: 9px 8px; font-size: 16px; border: 1px solid #d9d2c6; border-radius: 8px; }
+  .nut-save { padding: 10px 16px; font-size: 14px; }
+  .nut-msg { font-size: 13px; color: #2e7d32; align-self: center; }
   .sw .lbl { font-size: 13px; font-weight: 600; min-width: 74px; color: #2e7d32; }
   .sw input:not(:checked) ~ .lbl { color: #b3261e; }
 </style>
@@ -108,7 +120,7 @@
   <div class="tabs" id="tabs"></div>
   <div id="list"></div>
   <div id="menu-view">
-    <div class="menu-hint">Переключатель выключен — блюда нет на сайте, его нельзя заказать. Включите обратно, когда блюдо снова есть.</div>
+    <div class="menu-hint">Переключатель выключен — блюда нет на сайте, его нельзя заказать. Включите обратно, когда блюдо снова есть. Кнопка «КБЖУ» — поменять калории, белки, жиры и углеводы блюда.</div>
     <input type="search" id="menu-search" placeholder="Найти блюдо…" oninput="renderMenu()" />
     <div id="menu-list"></div>
   </div>
@@ -134,6 +146,8 @@
   let wakeLock = null;
 
   function getKey() { return localStorage.getItem('adminKey'); }
+  // Пароль отправляем в заголовке (а не в адресе страницы), чтобы он не оседал в журналах
+  function authHeaders(extra) { return Object.assign({ 'X-Admin-Key': getKey() || '' }, extra || {}); }
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, (c) =>
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -317,9 +331,9 @@
     if (sel) body.prepMinutes = Number(sel.value);
     const dsel = document.getElementById('deliv-' + id);
     if (dsel) body.deliveryMinutes = Number(dsel.value);
-    const res = await fetch('/api/admin/orders/' + encodeURIComponent(id) + '/status?key=' + encodeURIComponent(getKey()), {
+    const res = await fetch('/api/admin/orders/' + encodeURIComponent(id) + '/status', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(body),
     });
     if (!res.ok) {
@@ -348,12 +362,66 @@
   // ---------- Стоп-лист ----------
   async function loadMenu() {
     try {
-      const res = await fetch('/api/admin/products?key=' + encodeURIComponent(getKey()), { cache: 'no-store' });
+      const res = await fetch('/api/admin/products', { cache: 'no-store', headers: authHeaders() });
       if (!res.ok) return;
       menuItems = await res.json();
       renderTabs();
-      if (currentTab === 'menu') renderMenu();
+      if (currentTab === 'menu' && !editingId) renderMenu();
     } catch (e) { /* нет связи — попробуем позже */ }
+  }
+
+  let editingId = null;      // блюдо, у которого открыта правка КБЖУ
+  const nutDraft = {};       // то, что набрано, но ещё не сохранено
+  const nutMsg = {};
+
+  function nutTargets(m) {
+    return m.variants && m.variants.length
+      ? m.variants.map((v) => ({ vid: v.id, label: v.label, per100: v.per100 }))
+      : [{ vid: '', label: '', per100: m.per100 }];
+  }
+  function nutPanel(m) {
+    return `<div class="nut-panel"><div class="nut-note">Значения на 100 г. На порцию пересчитается само по весу блюда.</div>` +
+      nutTargets(m).map((t) => {
+        const k = m.id + '|' + t.vid;
+        const d = nutDraft[k] || t.per100 || { kcal: '', protein: '', fat: '', carbs: '' };
+        const f = (name, label) => `<label class="nut-field">${label}<input type="number" inputmode="decimal" step="0.1" min="0" value="${esc(d[name])}" oninput="nutInput('${esc(m.id)}','${esc(t.vid)}','${name}',this.value)" /></label>`;
+        return `<div class="nut-row">${t.label ? `<div class="vl">${esc(t.label)}</div>` : ''}
+          ${f('kcal', 'Ккал')}${f('protein', 'Белки')}${f('fat', 'Жиры')}${f('carbs', 'Углеводы')}
+          <button class="nut-save" onclick="saveNut('${esc(m.id)}','${esc(t.vid)}')">Сохранить</button>
+          <span class="nut-msg" id="nm-${esc(k)}">${esc(nutMsg[k] || '')}</span></div>`;
+      }).join('') + `</div>`;
+  }
+  function nutInput(id, vid, name, value) {
+    const m = menuItems.find((x) => x.id === id);
+    if (!m) return;
+    const t = nutTargets(m).find((x) => x.vid === vid);
+    const k = id + '|' + vid;
+    nutDraft[k] = Object.assign({}, nutDraft[k] || t.per100 || {}, { [name]: value });
+    nutMsg[k] = '';
+    const el = document.getElementById('nm-' + k); if (el) el.textContent = '';
+  }
+  function toggleNut(id) { editingId = editingId === id ? null : id; renderMenu(); }
+  async function saveNut(id, vid) {
+    const m = menuItems.find((x) => x.id === id);
+    const t = nutTargets(m).find((x) => x.vid === vid);
+    const k = id + '|' + vid;
+    const d = nutDraft[k] || t.per100 || {};
+    try {
+      const res = await fetch('/api/admin/products/' + encodeURIComponent(id) + '/nutrition', {
+        method: 'POST',
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ variantId: vid, kcal: d.kcal, protein: d.protein, fat: d.fat, carbs: d.carbs }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { alert(data.error || 'Не удалось сохранить'); return; }
+      const saved = { kcal: Number(d.kcal), protein: Number(d.protein), fat: Number(d.fat), carbs: Number(d.carbs) };
+      if (vid) m.variants.find((v) => v.id === vid).per100 = saved; else m.per100 = saved;
+      delete nutDraft[k];
+      nutMsg[k] = 'Сохранено ✓';
+      const el = document.getElementById('nm-' + k); if (el) el.textContent = nutMsg[k];
+    } catch (e) {
+      alert('Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.');
+    }
   }
 
   function renderMenu() {
@@ -366,12 +434,15 @@
       items.filter((m) => m.category === c).map((m) => `
         <div class="menu-row${m.stop ? ' off' : ''}">
           <div><div class="nm">${esc(m.name)}</div><div class="pr">${esc(m.price)} ₽</div></div>
-          <label class="sw">
-            <input type="checkbox" ${m.stop ? '' : 'checked'} onchange="toggleStop('${esc(m.id)}', !this.checked)" />
-            <span class="track"></span>
-            <span class="lbl">${m.stop ? 'На стопе' : 'В продаже'}</span>
-          </label>
-        </div>`).join('')
+          <div class="menu-actions">
+            <button class="nut-btn${editingId === m.id ? ' open' : ''}" onclick="toggleNut('${esc(m.id)}')">КБЖУ</button>
+            <label class="sw">
+              <input type="checkbox" ${m.stop ? '' : 'checked'} onchange="toggleStop('${esc(m.id)}', !this.checked)" />
+              <span class="track"></span>
+              <span class="lbl">${m.stop ? 'На стопе' : 'В продаже'}</span>
+            </label>
+          </div>
+        </div>${editingId === m.id ? nutPanel(m) : ''}`).join('')
     ).join('');
   }
 
@@ -382,9 +453,9 @@
     item.stop = stop;          // сразу показываем результат
     renderTabs(); renderMenu();
     try {
-      const res = await fetch('/api/admin/products/' + encodeURIComponent(id) + '/stop?key=' + encodeURIComponent(getKey()), {
+      const res = await fetch('/api/admin/products/' + encodeURIComponent(id) + '/stop', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ stop }),
       });
       if (!res.ok) throw new Error('bad');
@@ -454,7 +525,7 @@
 
   async function loadOrders() {
     let res;
-    try { res = await fetch('/api/admin/orders?key=' + encodeURIComponent(getKey()), { cache: 'no-store' }); }
+    try { res = await fetch('/api/admin/orders', { cache: 'no-store', headers: authHeaders() }); }
     catch (e) { showLoadError(); return; } // нет связи с сайтом — попробуем в следующий раз
     if (res.status === 401) {
       localStorage.removeItem('adminKey');
@@ -482,7 +553,7 @@
       loadOrders();
       loadMenu();
       setInterval(loadOrders, REFRESH_MS);
-      setInterval(() => { if (currentTab === 'menu') loadMenu(); }, 15000);
+      setInterval(() => { if (currentTab === 'menu' && !editingId) loadMenu(); }, 15000);
     }
   }
 
