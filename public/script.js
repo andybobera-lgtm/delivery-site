@@ -49,8 +49,16 @@ function restoreCart() {
     if (saved && saved.cart) {
       Object.keys(saved.cart).forEach((key) => {
         const line = saved.cart[key];
+        if (!line || typeof line !== 'object' || !/^[\w.:|-]{1,120}$/.test(key)) return; // защита: чужие/испорченные данные пропускаем
         const product = products.find((p) => p.id === line.productId);
-        if (!product || !line.qty || line.qty < 1) return; // блюда больше нет в меню — пропускаем
+        if (!product || !Number.isInteger(line.qty) || line.qty < 1 || line.qty > 50) return; // блюда больше нет в меню — пропускаем
+        // в корзину попадают только названия из нашего меню, а не то, что лежит в памяти браузера
+        line.name = String(line.name || product.name).replace(/[<>&"'`]/g, '').slice(0, 160);
+        if (Array.isArray(line.comboSelections)) {
+          line.comboSelections = line.comboSelections
+            .filter((s) => s && (product.options || []).some((o) => o.name === s.name) && Number.isInteger(s.count) && s.count > 0)
+            .map((s) => ({ name: (product.options.find((o) => o.name === s.name)).name, count: s.count }));
+        }
         if (line.type === 'variant') {
           const v = (product.variants || []).find((x) => x.id === line.variantId);
           if (!v) return;
@@ -1198,3 +1206,82 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLegal
 })();
 
 loadProducts();
+
+/* ================= ОТКЛИК, ВЫСОТА ШАПКИ, СВАЙП ШТОРКИ ================= */
+
+// Чтобы на iPhone срабатывал :active (кнопка сжимается сразу при касании)
+document.addEventListener('touchstart', function () {}, { passive: true });
+
+// Лёгкая вибрация "клика" на основных кнопках (там, где телефон это поддерживает; iPhone — нет)
+document.addEventListener('pointerdown', function (e) {
+  if (!navigator.vibrate) return;
+  const b = e.target.closest && e.target.closest('.add-btn, .buy-btn, .checkout-btn, .qty-stepper button, .choice-stepper button, .choice-box');
+  if (b && !b.disabled) navigator.vibrate(8);
+}, { passive: true });
+
+// Высота шапки → в CSS, чтобы строка категорий всегда ровно под шапкой, без щели и перекрытия
+(function () {
+  const header = document.querySelector('.site-header');
+  if (!header) return;
+  function setHeaderHeight() {
+    document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+  }
+  setHeaderHeight();
+  window.addEventListener('resize', setHeaderHeight);
+  window.addEventListener('load', setHeaderHeight);
+  if (window.ResizeObserver) new ResizeObserver(setHeaderHeight).observe(header);
+})();
+
+// Смахнуть карточку блюда вниз, как шторку на iPhone. Работает ТОЛЬКО за фото
+// (описание и кнопки внизу не реагируют на свайп) и только на телефоне.
+(function () {
+  const modal = document.getElementById('picker-modal');
+  const overlay = document.getElementById('picker-overlay');
+  if (!modal || !overlay) return;
+  let tracking = false, dragging = false, startX = 0, startY = 0, startT = 0, dy = 0;
+
+  const isPhone = () => window.matchMedia('(max-width: 640px)').matches;
+
+  function reset() {
+    modal.style.transform = '';
+    overlay.style.opacity = '';
+    modal.classList.remove('dragging');
+  }
+
+  modal.addEventListener('touchstart', function (e) {
+    if (!isPhone() || !modal.classList.contains('open') || e.touches.length !== 1) return;
+    if (!e.target.closest('.picker-photo')) return;           // только зона фото
+    const scroller = modal.querySelector('.picker-scroll');
+    if (scroller && scroller.scrollTop > 0) return;            // содержимое прокручено — не мешаем
+    tracking = true; dragging = false; dy = 0;
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY; startT = Date.now();
+  }, { passive: true });
+
+  modal.addEventListener('touchmove', function (e) {
+    if (!tracking) return;
+    const t = e.touches[0];
+    const mx = t.clientX - startX, my = t.clientY - startY;
+    if (!dragging) {
+      if (Math.abs(mx) < 6 && Math.abs(my) < 6) return;        // ещё не понятно, куда
+      if (my > 0 && my > Math.abs(mx)) { dragging = true; modal.classList.add('dragging'); }
+      else { tracking = false; return; }                        // вверх или вбок — это не закрытие
+    }
+    dy = Math.max(0, my);
+    modal.style.transform = 'translateY(' + dy + 'px)';
+    overlay.style.opacity = String(Math.max(0, 1 - dy / 450));
+    if (e.cancelable) e.preventDefault();
+  }, { passive: false });
+
+  function finish() {
+    if (!tracking) return;
+    const wasDragging = dragging;
+    tracking = false; dragging = false;
+    if (!wasDragging) return;
+    const speed = dy / Math.max(1, Date.now() - startT);        // пикселей в миллисекунду
+    const close = dy > 110 || (speed > 0.4 && dy > 30);
+    reset();                                                     // анимацию дальше ведёт CSS
+    if (close) closePicker();
+  }
+  modal.addEventListener('touchend', finish);
+  modal.addEventListener('touchcancel', finish);
+})();
