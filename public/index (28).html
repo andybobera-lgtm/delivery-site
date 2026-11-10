@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Дачная Беседка — доставка еды</title>
+<link rel="icon" type="image/png" href="images/logo.png" />
+<link rel="shortcut icon" type="image/png" href="images/logo.png" />
+<link rel="apple-touch-icon" href="images/logo.png" />
+<link rel="preload" href="fonts/Onest.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="fonts/onest.css">
+<link rel="stylesheet" href="style.css" />
+<script src="https://api-maps.yandex.ru/2.1/?apikey=f9e25577-c9c0-49ce-b057-04356e083b98&lang=ru_RU" defer></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <div class="brand">
+      <img src="images/logo.png" alt="Логотип" class="brand-logo" />
+      <span class="brand-name">Дачная Беседка</span>
+    </div>
+  </div>
+</header>
+
+<!-- Слайды с акциями: картинки берутся из файла slides.json -->
+<div class="promo-slider" id="promo-slider" hidden>
+  <div class="promo-track" id="promo-track"></div>
+  <div class="promo-dots" id="promo-dots"></div>
+</div>
+
+<div class="hours-banner" id="hours-banner" hidden>
+  <strong>Готовим для вас каждый день с 10:00 до 22:00.</strong> Ждём ваших заказов завтра утром!
+</div>
+
+<div class="category-nav-row" id="category-nav-row">
+  <button class="mobile-menu-btn" id="mobile-menu-btn">☰ Меню</button>
+  <nav class="category-nav" id="category-nav"></nav>
+</div>
+
+<div id="mobile-menu-overlay" class="cart-overlay"></div>
+<div id="mobile-menu-drawer" class="mobile-menu-drawer">
+  <div class="picker-header">
+    <h3>Меню</h3>
+    <button class="cart-close" id="mobile-menu-close">✕</button>
+  </div>
+  <div id="mobile-menu-list" class="mobile-menu-list"></div>
+</div>
+
+<main class="menu-wrap">
+  <div id="menu-sections">Загрузка меню...</div>
+</main>
+
+<footer class="footer">
+  <p><a href="/legal/privacy-policy.html">Политика конфиденциальности</a> ·
+     <a href="/legal/privacy-policy.html">Политика cookie</a> ·
+     <a href="#" id="cookie-open">Настройки cookie</a> ·
+     <a href="/legal/offer.html">Пользовательское соглашение (договор оферты)</a></p>
+</footer>
+
+<!-- Плавающая кнопка корзины -->
+<button id="cart-fab" class="cart-fab" hidden>
+  <span class="cart-fab-count" id="cart-fab-count">0</span>
+  <span class="cart-fab-label">Корзина</span>
+  <span class="cart-fab-total" id="cart-fab-total">0 ₽</span>
+</button>
+
+<!-- Затемнение фона при открытой корзине -->
+<div id="cart-overlay" class="cart-overlay"></div>
+
+<!-- Всплывающее окно выбора варианта / сборки набора -->
+<div id="picker-overlay" class="cart-overlay"></div>
+<div id="picker-modal" class="picker-modal"></div>
+
+<!-- Выезжающая панель корзины -->
+<aside id="cart-drawer" class="cart-drawer" aria-hidden="true">
+  <div class="cart-drawer-header">
+    <h2>Ваш заказ</h2>
+    <button id="cart-close" class="cart-close" aria-label="Закрыть">✕</button>
+  </div>
+
+  <div class="cart-scroll">
+    <div id="cart-items" class="cart-items">
+      <div id="delivery-bar" class="delivery-bar"></div>
+      <div id="cart-lines">Корзина пуста</div>
+      <div id="cart-upsell" class="cart-upsell"></div>
+    </div>
+
+    <div class="cart-drawer-footer">
+      <div class="cutlery-row">
+        <span>🍴 Приборы</span>
+        <div class="cutlery-stepper">
+          <button type="button" id="cutlery-minus">−</button>
+          <span id="cutlery-count">0</span>
+          <button type="button" id="cutlery-plus">+</button>
+        </div>
+      </div>
+
+      <form id="checkout-form">
+        <input type="text" id="name" placeholder="Ваше имя" required />
+        <input type="tel" id="phone" placeholder="Телефон (+7...)" required />
+
+        <button type="button" id="open-address-btn" class="address-btn">
+          <span id="address-summary">Указать адрес доставки</span>
+          <span>›</span>
+        </button>
+        <input type="hidden" id="address" required />
+
+        <textarea id="comment" placeholder="Комментарий к заказу (необязательно)"></textarea>
+
+        <label class="agree">
+          <input type="checkbox" id="agree" required />
+          <span>Принимаю условия
+            <a href="/legal/offer.html">пользовательского соглашения (договора оферты)</a>
+            и ознакомлен с
+            <a href="/legal/privacy-policy.html">политикой конфиденциальности</a>
+          </span>
+        </label>
+        <label class="agree">
+          <input type="checkbox" id="agree-pd" required />
+          <span>Даю
+            <a href="/legal/consent.html">согласие на обработку персональных данных</a>
+          </span>
+        </label>
+      </form>
+    </div>
+  </div>
+
+  <!-- Нижняя панель: итог и кнопка заказа всегда на виду -->
+  <div class="cart-bottom">
+    <div id="form-error" class="form-error"></div>
+    <div class="cart-sub" id="cart-sub"></div>
+    <div class="cart-total-row">
+      <span>Итого</span>
+      <span id="cart-total">0 ₽</span>
+    </div>
+    <button type="submit" form="checkout-form" class="checkout-btn" id="checkout-submit">Оформить и оплатить</button>
+  </div>
+</aside>
+
+<!-- Окно ввода адреса доставки -->
+<div id="address-overlay" class="cart-overlay"></div>
+<div id="address-modal" class="address-modal">
+  <div class="address-form-col">
+    <div class="picker-header">
+      <h3>Адрес доставки</h3>
+      <button class="cart-close" id="address-close">✕</button>
+    </div>
+    <div class="picker-body">
+      <input type="text" id="addr-street" placeholder="Улица, дом" />
+      <div class="address-grid">
+        <input type="text" id="addr-flat" placeholder="Квартира" />
+        <input type="text" id="addr-entrance" placeholder="Подъезд" />
+        <input type="text" id="addr-intercom" placeholder="Домофон" />
+        <input type="text" id="addr-floor" placeholder="Этаж" />
+      </div>
+      <textarea id="addr-comment" placeholder="Комментарий для курьера"></textarea>
+      <div class="product-meta" style="margin-top:6px;">Зона доставки — 4 км от кулинарной лавки «Дачная беседка». Можно кликнуть по карте или перетащить метку, чтобы выбрать точку.</div>
+      <div id="zone-warning" class="zone-warning" hidden>Ваш адрес не входит в зону доставки</div>
+    </div>
+    <div class="picker-footer">
+      <button class="checkout-btn" id="addr-save">Сохранить</button>
+    </div>
+  </div>
+  <div class="address-map-col">
+    <div id="delivery-map"></div>
+  </div>
+</div>
+
+<!-- Окно с документами (оферта / политика) -->
+<div id="legal-overlay" class="cart-overlay"></div>
+<div id="legal-modal" class="legal-modal">
+  <div class="legal-modal-bar"><button class="cart-close" id="legal-close" aria-label="Закрыть">✕</button></div>
+  <iframe id="legal-frame" title="Документ"></iframe>
+</div>
+
+<!-- Плашка про cookies -->
+<div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Настройки cookie" hidden>
+  <div id="cookie-main">
+    <p>Мы используем файлы cookie для корректной работы сайта и аналитики. Подробнее в <a href="/legal/privacy-policy.html">Политике конфиденциальности</a>.</p>
+    <div class="cookie-actions">
+      <button type="button" id="cookie-accept" class="cookie-btn">Разрешить все</button>
+      <button type="button" id="cookie-decline" class="cookie-btn secondary">Только необходимые</button>
+      <button type="button" id="cookie-settings" class="cookie-link">Настройки</button>
+    </div>
+  </div>
+  <div id="cookie-panel" class="cookie-panel" hidden>
+    <p>Технические cookie нужны для работы сайта и включены всегда. Дополнительно можно разрешить аналитику.</p>
+    <label class="cookie-row"><span>Технические <small>(всегда включены)</small></span><input type="checkbox" checked disabled></label>
+    <label class="cookie-row"><span>Аналитика: Яндекс.Метрика</span><input type="checkbox" id="cookie-analytics"></label>
+    <div class="cookie-actions">
+      <button type="button" id="cookie-save" class="cookie-btn">Разрешить выбранные</button>
+      <button type="button" id="cookie-necessary" class="cookie-btn">Только необходимые</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
