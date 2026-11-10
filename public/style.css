@@ -991,48 +991,49 @@ input, textarea {
 .combo-option-row { padding: 8px 0; }
 .variant-option { cursor: default; }
 
-/* ---------- Плашка cookies ---------- */
+/* ---------- Плашка cookies (чёрная, как раньше) ---------- */
 .cookie-banner {
   position: fixed;
   left: 20px;
-  right: 20px;
   bottom: 20px;
   z-index: 40;
-  max-width: 940px;
-  margin: 0 auto;
-  background: #110f1c;
+  width: 320px;
+  background: #111;
   color: #fff;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 16px;
-  padding: 18px 20px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35);
   font-family: 'Onest', sans-serif;
 }
 .cookie-banner[hidden], .cookie-banner [hidden] { display: none; }
-.cookie-banner p { margin: 0 0 14px; font-size: 15px; line-height: 1.5; }
-.cookie-banner a { color: #a98bff; text-decoration: underline; }
-.cookie-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.cookie-banner p { margin: 0 0 12px; font-size: 14px; line-height: 1.45; }
+.cookie-banner a { color: #fff; text-decoration: underline; }
+.cookie-actions { display: flex; flex-direction: column; gap: 8px; }
 .cookie-btn {
-  min-height: 44px;
-  padding: 0 20px;
-  border: 1px solid #7c5cff;
-  border-radius: 12px;
-  background: #1d1535;
-  color: #fff;
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #fff;
+  border-radius: 10px;
+  background: #fff;
+  color: #111;
   font-family: inherit;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
 }
+.cookie-btn.secondary, .cookie-panel .cookie-btn + .cookie-btn {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255,255,255,0.4);
+}
 .cookie-link {
-  min-height: 44px;
-  padding: 0 12px;
+  min-height: 34px;
   border: none;
   background: none;
-  color: #a39bb8;
+  color: rgba(255,255,255,0.7);
   font-family: inherit;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
 }
@@ -1041,22 +1042,20 @@ input, textarea {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
-  padding: 14px 16px;
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 12px;
-  background: rgba(255,255,255,0.04);
-  font-size: 15px;
+  margin-bottom: 8px;
+  padding: 11px 12px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
 }
-.cookie-row small { color: #a39bb8; font-size: 12px; }
-.cookie-row input { width: 20px; height: 20px; accent-color: #7c5cff; flex: none; }
-.cookie-panel .cookie-actions { margin-top: 14px; }
-@media (max-width: 560px) {
-  .cookie-banner { left: 12px; right: 12px; bottom: 12px; padding: 16px; }
-  .cookie-actions { flex-direction: column; align-items: stretch; }
-  .cookie-btn, .cookie-link { width: 100%; text-align: center; }
+.cookie-row small { color: rgba(255,255,255,0.6); font-size: 12px; }
+.cookie-row input { width: 18px; height: 18px; accent-color: #fff; flex: none; }
+.cookie-panel .cookie-actions { margin-top: 12px; }
+@media (max-width: 480px) {
+  .cookie-banner { left: 12px; right: 12px; bottom: 12px; width: auto; }
 }
 
 /* ---------- Прокрутка фона под открытым окном; запрет увеличения двойным тапом ---------- */
