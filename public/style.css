@@ -1024,6 +1024,10 @@ input, textarea {
 
 /* ---------- Прокрутка фона под открытым окном; запрет увеличения двойным тапом ---------- */
 html.no-scroll, body.no-scroll { overflow: hidden; }
+/* Страница под открытым окном стоит на месте (на iPhone одного overflow мало) */
+body.no-scroll { position: fixed; left: 0; right: 0; width: 100%; }
+/* Прокрутка внутри окна не «перетекает» на страницу под ним */
+.cart-scroll, .picker-scroll, .mobile-menu-drawer, .address-modal, .legal-modal { overscroll-behavior: contain; }
 * { -webkit-tap-highlight-color: transparent; }
 button, a, label, .product-card { touch-action: manipulation; }
 
