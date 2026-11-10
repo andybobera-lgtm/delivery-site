@@ -1132,7 +1132,7 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
     const res = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items, customer, cutleryCount }),
+      body: JSON.stringify({ items, customer, cutleryCount, consentPd: document.getElementById('agree-pd').checked }),
     });
     const data = await res.json();
 
