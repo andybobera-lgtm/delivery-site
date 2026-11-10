@@ -53,8 +53,10 @@
 </main>
 
 <footer class="footer">
-  <p><a href="/legal/privacy-policy.html">Политика обработки персональных данных</a> ·
-     <a href="/legal/offer.html">Договор оферты</a></p>
+  <p><a href="/legal/privacy-policy.html">Политика конфиденциальности</a> ·
+     <a href="/legal/privacy-policy.html">Политика cookie</a> ·
+     <a href="#" id="cookie-open">Настройки cookie</a> ·
+     <a href="/legal/offer.html">Пользовательское соглашение (договор оферты)</a></p>
 </footer>
 
 <!-- Плавающая кнопка корзины -->
@@ -110,9 +112,9 @@
         <label class="agree">
           <input type="checkbox" id="agree" required />
           <span>Согласен с
-            <a href="/legal/offer.html">договором оферты</a>
+            <a href="/legal/offer.html">пользовательским соглашением (договором оферты)</a>
             и
-            <a href="/legal/privacy-policy.html">политикой обработки персональных данных</a>
+            <a href="/legal/privacy-policy.html">политикой конфиденциальности и обработки персональных данных</a>
           </span>
         </label>
       </form>
@@ -168,11 +170,23 @@
 </div>
 
 <!-- Плашка про cookies -->
-<div id="cookie-banner" class="cookie-banner" hidden>
-  <p>Мы используем cookies и сервис «Яндекс Метрика», чтобы понимать, как пользуются сайтом. <a href="/legal/privacy-policy.html">Подробнее</a></p>
-  <div class="cookie-actions">
-    <button type="button" id="cookie-accept">Принять</button>
-    <button type="button" id="cookie-decline" class="cookie-decline">Отказаться</button>
+<div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Настройки cookie" hidden>
+  <div id="cookie-main">
+    <p>Мы используем файлы cookie для корректной работы сайта и аналитики. Подробнее в <a href="/legal/privacy-policy.html">Политике конфиденциальности</a>.</p>
+    <div class="cookie-actions">
+      <button type="button" id="cookie-accept" class="cookie-btn">Разрешить все</button>
+      <button type="button" id="cookie-decline" class="cookie-btn">Только необходимые</button>
+      <button type="button" id="cookie-settings" class="cookie-link">Настройки</button>
+    </div>
+  </div>
+  <div id="cookie-panel" class="cookie-panel" hidden>
+    <p>Технические cookie нужны для работы сайта и включены всегда. Дополнительно можно разрешить аналитику.</p>
+    <label class="cookie-row"><span>Технические <small>(всегда включены)</small></span><input type="checkbox" checked disabled></label>
+    <label class="cookie-row"><span>Аналитика: Яндекс.Метрика</span><input type="checkbox" id="cookie-analytics"></label>
+    <div class="cookie-actions">
+      <button type="button" id="cookie-save" class="cookie-btn">Разрешить выбранные</button>
+      <button type="button" id="cookie-necessary" class="cookie-btn">Только необходимые</button>
+    </div>
   </div>
 </div>
 
