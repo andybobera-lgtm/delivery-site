@@ -1199,11 +1199,15 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLegal
 /* ================= Плашка про cookies ================= */
 (function () {
   const METRIKA_ID = 114152765;
-  const KEY = 'cookie_consent_v2'; // '1' — согласен, '0' — отказался
+  const KEY = 'cookie_consent_v2'; // '1' — аналитика разрешена, '0' — только необходимые
   const banner = document.getElementById('cookie-banner');
+  const main = document.getElementById('cookie-main');
+  const panel = document.getElementById('cookie-panel');
+  const chk = document.getElementById('cookie-analytics');
 
-  // Яндекс Метрика запускается только после согласия. Вебвизор и карта кликов выключены.
+  // Яндекс Метрика запускается только с согласия. Вебвизор и карта кликов выключены.
   function loadMetrika() {
+    window['disableYaCounter' + METRIKA_ID] = false;
     if (window.__ymLoaded) return;
     window.__ymLoaded = true;
     (function (m, e, t, r, i, k, a) {
@@ -1217,20 +1221,43 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLegal
     });
   }
 
-  let choice = null;
-  try { choice = localStorage.getItem(KEY); } catch (e) {}
-  if (choice === '1') loadMetrika();
-  if (choice === null) banner.hidden = false;
+  // Если аналитику отключили: останавливаем счётчик и удаляем его cookie
+  function stopMetrika() {
+    window['disableYaCounter' + METRIKA_ID] = true;
+    document.cookie.split(';').forEach((c) => {
+      const name = c.split('=')[0].trim();
+      if (!/^_ym/.test(name)) return;
+      ['', '; domain=' + location.hostname, '; domain=.' + location.hostname].forEach((d) => {
+        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/' + d;
+      });
+    });
+  }
 
-  document.getElementById('cookie-accept').addEventListener('click', () => {
-    try { localStorage.setItem(KEY, '1'); } catch (e) {}
+  function getChoice() {
+    try { return localStorage.getItem(KEY); } catch (e) { return null; }
+  }
+  function save(analytics) {
+    try { localStorage.setItem(KEY, analytics ? '1' : '0'); } catch (e) {}
     banner.hidden = true;
-    loadMetrika();
-  });
-  document.getElementById('cookie-decline').addEventListener('click', () => {
-    try { localStorage.setItem(KEY, '0'); } catch (e) {}
-    banner.hidden = true;
-  });
+    if (analytics) loadMetrika(); else stopMetrika();
+  }
+  function showMain() { panel.hidden = true; main.hidden = false; banner.hidden = false; }
+  function showSettings() {
+    chk.checked = getChoice() === '1';
+    main.hidden = true; panel.hidden = false; banner.hidden = false;
+  }
+
+  const choice = getChoice();
+  if (choice === '1') loadMetrika();
+  if (choice === null) showMain();
+
+  document.getElementById('cookie-accept').addEventListener('click', () => save(true));
+  document.getElementById('cookie-decline').addEventListener('click', () => save(false));
+  document.getElementById('cookie-necessary').addEventListener('click', () => save(false));
+  document.getElementById('cookie-save').addEventListener('click', () => save(chk.checked));
+  document.getElementById('cookie-settings').addEventListener('click', showSettings);
+  // Ссылка «Настройки cookie» внизу сайта: изменить выбор можно в любой момент
+  document.getElementById('cookie-open').addEventListener('click', (e) => { e.preventDefault(); showSettings(); });
 })();
 
 /* ================= Слайды с акциями (картинки из slides.json) ================= */
