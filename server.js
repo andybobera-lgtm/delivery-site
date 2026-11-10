@@ -230,6 +230,10 @@ app.post('/api/orders', orderLimiter, async (req, res) => {
     if (!customer.name || !customer.phone || !customer.address) {
       return res.status(400).json({ error: 'Не заполнены данные покупателя' });
     }
+    // Согласие на обработку персональных данных — отдельная отметка (ст. 9 152-ФЗ)
+    if (body.consentPd !== true) {
+      return res.status(400).json({ error: 'Нужно дать согласие на обработку персональных данных' });
+    }
     const cutleryCount = toInt(body.cutleryCount, 0, 20) ?? 0;
 
     // Приводим телефон к формату, который требует ЮKassa: только цифры,
@@ -330,6 +334,7 @@ app.post('/api/orders', orderLimiter, async (req, res) => {
       paymentId: null,
       createdAt: new Date().toISOString(),
     };
+    order.consentPdAt = order.createdAt; // когда дано согласие на обработку ПДн
 
     // --- Создаём платёж в ЮKassa ---
     const paymentResponse = await fetch('https://api.yookassa.ru/v3/payments', {
