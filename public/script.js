@@ -164,6 +164,7 @@ function setupCategoryScrollSpy() {
   let ticking = false;
   const update = () => {
     ticking = false;
+    if (scrollLockY !== null) return; // страница заморожена под открытым окном
     const sections = [...document.querySelectorAll('.menu-section')];
     if (!sections.length) return;
     const line = 160; // линия чуть ниже шапки и панели категорий
@@ -344,11 +345,27 @@ function changeSimpleQty(product, delta) {
 }
 
 /* ================= ОБЩЕЕ: показать/скрыть окно с анимацией ================= */
+let scrollLockY = null;
 function updateScrollLock() {
   const anyOpen = !!document.querySelector('.picker-modal.open, .cart-drawer.open, .address-modal.open, .legal-modal.open, .mobile-menu-drawer.open');
-  // пока открыто окно — страница под ним не прокручивается (листается только само окно)
+  // пока открыто окно — страница под ним не прокручивается (листается только само окно).
+  // На iPhone одного overflow:hidden мало, поэтому страницу «замораживаем» на месте (position:fixed)
+  if (anyOpen && scrollLockY === null) {
+    scrollLockY = window.scrollY || document.documentElement.scrollTop || 0;
+    document.body.style.top = (-scrollLockY) + 'px';
+  }
   document.documentElement.classList.toggle('no-scroll', anyOpen);
   document.body.classList.toggle('no-scroll', anyOpen);
+  if (!anyOpen && scrollLockY !== null) {
+    const y = scrollLockY;
+    scrollLockY = null;
+    document.body.style.top = '';
+    const root = document.documentElement;
+    const prev = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto'; // вернуться на то же место мгновенно, без прокрутки
+    window.scrollTo(0, y);
+    root.style.scrollBehavior = prev;
+  }
 }
 function showPicker() {
   document.getElementById('picker-overlay').classList.add('open');
