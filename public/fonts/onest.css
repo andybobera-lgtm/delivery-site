@@ -1,1 +1,8 @@
-
+/* Шрифт Onest (SIL Open Font License 1.1, см. OFL.txt). Лежит на нашем сервере, обращений к Google нет. */
+@font-face {
+  font-family: 'Onest';
+  src: url('Onest.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
