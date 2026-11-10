@@ -12,7 +12,6 @@ function esc(s) {
 }
 
 function formatOrder(order) {
-  const c = order.customer || {};
   const lines = [];
   lines.push(`🔔 <b>Новый оплаченный заказ №${esc(String(order.id).slice(0, 8))}</b>`);
   lines.push('');
@@ -22,11 +21,10 @@ function formatOrder(order) {
   lines.push('');
   lines.push(`💰 <b>Итого: ${esc(order.total)} ₽</b> (оплачено)`);
   if (order.cutleryCount) lines.push(`🍴 Приборов: ${esc(order.cutleryCount)}`);
+  // Имя, телефон, адрес и комментарий клиента сюда НЕ отправляются: Telegram — зарубежный сервис.
+  // Эти данные видны только в админ-панели сайта.
   lines.push('');
-  lines.push(`👤 ${esc(c.name)}`);
-  lines.push(`📞 +${esc(c.phone)}`);
-  lines.push(`📍 ${esc(c.address)}`);
-  if (c.comment) lines.push(`💬 ${esc(c.comment)}`);
+  lines.push('ℹ️ Имя, телефон, адрес и комментарий клиента — в админ-панели сайта.');
   return lines.join('\n');
 }
 
