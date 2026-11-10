@@ -1203,26 +1203,26 @@ button, a, label, .product-card { touch-action: manipulation; }
   transition: opacity 0.16s ease-out, transform 0.22s var(--ease-out);
 }
 /* Карточка блюда: открывается плавно и неспешно, как в Лавке */
-.picker-modal {
+.picker-modal, .address-modal {
   transition: opacity 0.3s ease-out, transform 0.3s ease-out;
 }
-.picker-modal.open {
+.picker-modal.open, .address-modal.open {
   transition: opacity 0.35s ease-out, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.cart-overlay { transition: opacity 0.3s ease-out; }
+.cart-overlay { transition: opacity 0.35s ease-out; }
 .legal-modal {
   transform: translateX(-50%) scale(0.95);
   transform-origin: center center;
-  transition: opacity 0.12s ease-out, transform 0.12s ease-out, visibility 0s linear 0.12s;
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out, visibility 0s linear 0.3s;
 }
 .legal-modal.open {
   transform: translateX(-50%) scale(1);
-  transition: opacity 0.16s ease-out, transform 0.22s var(--ease-out), visibility 0s;
+  transition: opacity 0.35s ease-out, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
 }
 
-/* Шторки: корзина и меню — до 250 мс */
-.cart-drawer { transition: transform 0.25s var(--ease-out); }
-.mobile-menu-drawer { transition: transform 0.25s var(--ease-out); }
+/* Шторки: корзина и меню — открываются неспешно и мягко, закрываются чуть быстрее */
+.cart-drawer, .mobile-menu-drawer { transition: transform 0.32s ease-out; }
+.cart-drawer.open, .mobile-menu-drawer.open { transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
 
 /* Нижняя шторка карточки блюда на телефоне */
 @media (max-width: 640px) {
