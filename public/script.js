@@ -88,6 +88,7 @@ async function loadProducts() {
   renderCategoryNav();
   renderMenu();
   restoreCart();
+  cleanCategoryHash();
 }
 
 function renderCategoryNav() {
@@ -100,6 +101,8 @@ function renderCategoryNav() {
     a.className = 'category-chip' + (index === 0 ? ' active' : '');
     a.href = '#cat-' + slug(cat);
     a.textContent = cat;
+    // не меняем адрес страницы: ссылка всегда одна
+    a.addEventListener('click', (e) => { e.preventDefault(); goToCategory(a.getAttribute('href')); });
     nav.appendChild(a);
   });
 
@@ -109,11 +112,31 @@ function renderCategoryNav() {
     const a = document.createElement('a');
     a.href = '#cat-' + slug(cat);
     a.textContent = cat;
-    a.addEventListener('click', () => { closeMobileMenu(); });
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeMobileMenu();
+      goToCategory(a.getAttribute('href'));
+    });
     mobileList.appendChild(a);
   });
 
   setupCategoryScrollSpy();
+}
+
+// Прокрутка к разделу меню без изменения адреса страницы
+function goToCategory(hash) {
+  const el = document.getElementById(String(hash).replace(/^#/, ''));
+  if (el) el.scrollIntoView({ block: 'start' });
+}
+
+// Если человек пришёл по старой ссылке вида /#cat-...: показываем раздел и убираем «хвост» из адреса
+function cleanCategoryHash() {
+  let h = location.hash;
+  if (!h) return;
+  try { h = decodeURIComponent(h); } catch (e) {}
+  if (!/^#cat-/.test(h)) return;
+  goToCategory(h);
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
 }
 
 let lastActiveCat = null;
