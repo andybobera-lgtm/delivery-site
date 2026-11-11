@@ -351,7 +351,7 @@ app.post('/api/orders', orderLimiter, async (req, res) => {
           type: 'redirect',
           return_url: `${SITE_URL}/order-success.html?orderId=${orderId}`,
         },
-        description: `Заказ №${orderId.slice(0, 8)}`,
+        description: 'Заказ на сайте «Дачная Беседка»',
         metadata: { orderId },
         receipt: {
           customer: { phone: customer.phone },
@@ -404,6 +404,7 @@ app.get('/api/orders/:id', async (req, res) => {
     if (!order) return res.status(404).json({ error: 'Заказ не найден' });
     res.json({
       id: order.id,
+      number: order.number || null,
       status: order.status,
       total: order.total,
       createdAt: order.createdAt,
@@ -551,7 +552,8 @@ app.post('/api/yookassa-webhook', async (req, res) => {
             // ЮKassa может прислать одно уведомление несколько раз — сообщаем о заказе только один раз
             const amountOk = payment.amount && payment.amount.currency === 'RUB' && Number(payment.amount.value) === Number(before && before.total);
             if (sameOrder && amountOk && before.status === 'ожидает оплаты') {
-              const paid = await db.updateOrder(orderId, { status: 'оплачен', paidAt: new Date().toISOString() });
+              const number = await db.nextOrderNumber(); // красивый номер заказа выдаётся при оплате
+              const paid = await db.updateOrder(orderId, { status: 'оплачен', paidAt: new Date().toISOString(), number });
               if (paid) await notifyPaidOrder(paid);
             } else if (before && !(sameOrder && amountOk)) {
               console.error('Вебхук: платёж не совпал с заказом', orderId);
