@@ -59,6 +59,26 @@ input, textarea {
 @media (max-width: 480px) {
   .brand-name { font-size: 15px; }
 }
+.header-phone {
+  font-family: 'Onest', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+/* На компьютере номер — просто текст, не ссылка */
+@media (hover: hover) and (pointer: fine) {
+  .header-phone { pointer-events: none; cursor: default; }
+}
+@media (max-width: 480px) {
+  .header-phone { font-size: 14px; }
+  .site-header { padding-left: 14px; padding-right: 14px; }
+  .brand { gap: 6px; }
+}
+@media (max-width: 360px) {
+  .brand-name { display: none; }
+}
 
 .promo-banner {
   background: #f4f4f4;
