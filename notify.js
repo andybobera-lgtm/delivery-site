@@ -13,7 +13,7 @@ function esc(s) {
 
 function formatOrder(order) {
   const lines = [];
-  lines.push(`🔔 <b>Новый оплаченный заказ №${esc(String(order.id).slice(0, 8))}</b>`);
+  lines.push(`🔔 <b>Новый оплаченный заказ №${esc(String(order.number || String(order.id).slice(0, 8)))}</b>`);
   lines.push('');
   (order.items || []).forEach((it) => {
     lines.push(`• ${esc(it.name)} × ${esc(it.qty)} — ${esc(it.price * it.qty)} ₽`);
