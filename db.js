@@ -64,6 +64,7 @@ async function init() {
         PRIMARY KEY (id, variant)
       )
     `);
+    await pool.query('CREATE SEQUENCE IF NOT EXISTS order_number_seq START 1001');
     mode = 'postgres';
     console.log('✔ Заказы хранятся в базе данных PostgreSQL');
   } catch (err) {
@@ -77,6 +78,16 @@ async function init() {
 
 function getMode() {
   return mode;
+}
+
+// Красивый порядковый номер заказа: 1001, 1002, 1003… Выдаётся при оплате, поэтому без «дыр».
+async function nextOrderNumber() {
+  if (mode === 'postgres') {
+    const r = await pool.query("SELECT nextval('order_number_seq') AS n");
+    return Number(r.rows[0].n);
+  }
+  const nums = fileRead().map((o) => Number(o.number) || 0);
+  return Math.max(1000, ...nums) + 1;
 }
 
 async function addOrder(order) {
@@ -188,4 +199,4 @@ async function setNutrition(id, variant, per100) {
   fs.writeFileSync(NUTRITION_FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-module.exports = { init, getMode, addOrder, getOrder, listOrders, setStatus, updateOrder, getStopOverrides, setProductStop, getNutritionOverrides, setNutrition };
+module.exports = { init, getMode, nextOrderNumber, addOrder, getOrder, listOrders, setStatus, updateOrder, getStopOverrides, setProductStop, getNutritionOverrides, setNutrition };
