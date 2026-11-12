@@ -129,7 +129,9 @@
   const REFRESH_MS = 5000;   // как часто проверять новые заказы
 
   const TABS = [
-    { id: 'new',  title: 'Новые',        hint: 'ждут принятия',   match: (o) => o.status === 'оплачен' },
+    // «Новые» — главная страница повара: тут и ждущие принятия, и принятые (готовим / везут).
+    // Принял заказ — он остаётся здесь, переключать вкладки не нужно. Цифра на вкладке — только число ждущих принятия.
+    { id: 'new',  title: 'Новые',        hint: 'ждут принятия',   match: (o) => ['оплачен', 'принят', 'готов', 'передан курьеру'].includes(o.status), count: (o) => o.status === 'оплачен' },
     { id: 'work', title: 'В работе',     hint: '',                match: (o) => ['принят', 'готов', 'передан курьеру'].includes(o.status) },
     { id: 'done', title: 'Завершённые',  hint: '',                match: (o) => ['доставлен', 'отменён'].includes(o.status) },
     { id: 'all',  title: 'Все заказы',   hint: '',                match: () => true },
@@ -346,7 +348,7 @@
   function renderTabs() {
     const box = document.getElementById('tabs');
     box.innerHTML = TABS.map((t) => {
-      const n = t.menu ? menuItems.filter((m) => m.stop).length : orders.filter(t.match).length;
+      const n = t.menu ? menuItems.filter((m) => m.stop).length : orders.filter(t.count || t.match).length;
       const hot = t.id === 'new' && n > 0 ? ' hot' : '';
       return `<button class="tab${currentTab === t.id ? ' active' : ''}${hot}" onclick="selectTab('${t.id}')">${t.title}<span class="cnt">${n}</span></button>`;
     }).join('');
@@ -471,7 +473,11 @@
     document.getElementById('list').style.display = isMenu ? 'none' : '';
     document.getElementById('menu-view').style.display = isMenu ? 'block' : 'none';
     if (isMenu) return; // список стоп-листа обновляется только при действиях, чтобы не прыгал
-    const rows = orders.filter(tab.match);
+    let rows = orders.filter(tab.match);
+    // на вкладке «Новые» сверху — те, что ждут принятия, ниже — уже принятые
+    if (currentTab === 'new') {
+      rows = rows.filter((o) => o.status === 'оплачен').concat(rows.filter((o) => o.status !== 'оплачен'));
+    }
     const box = document.getElementById('list');
     if (!rows.length) {
       box.innerHTML = `<div class="empty">${currentTab === 'new' ? 'Новых заказов нет' : 'Здесь пока пусто'}</div>`;
