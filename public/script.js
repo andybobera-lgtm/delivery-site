@@ -668,10 +668,33 @@ function cartCount() {
 }
 
 /* ================= ДОСТАВКА: минимальный заказ, стоимость, бесплатно от суммы ================= */
-let deliveryCfg = { minOrder: 1000, deliveryFee: 250, freeDeliveryFrom: 3000 };
+let deliveryCfg = { minOrder: 1000, deliveryFee: 250, freeDeliveryFrom: 3000, farFee: 500, farFeeFree: 200, nearRadius: 2000, farRadius: 4000 };
 fetch('/api/config').then((r) => r.json()).then((c) => {
-  if (c && c.minOrder) { deliveryCfg = c; renderCartWidgets(); }
+  if (c && c.minOrder) { deliveryCfg = Object.assign({}, deliveryCfg, c); renderCartWidgets(); }
 }).catch(() => {});
+
+// Две зоны от кулинарной лавки: ближняя (до nearRadius) и дальняя (до farRadius).
+// Зона известна только после того, как человек отметил адрес на карте и сохранил его.
+let deliveryGeo = null;    // {lat, lon} сохранённой точки доставки
+let deliveryZone = null;   // 'near' | 'far' | null (пока адрес не выбран)
+
+// Расстояние по прямой, метры. Та же формула, что на сервере — цены в корзине и при оплате совпадают.
+function distanceM(a, b) {
+  const R = 6371000, rad = Math.PI / 180;
+  const dLat = (b[0] - a[0]) * rad, dLon = (b[1] - a[1]) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a[0] * rad) * Math.cos(b[0] * rad) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+function roundCoords(c) { return [Math.round(c[0] * 1e6) / 1e6, Math.round(c[1] * 1e6) / 1e6]; }
+function zoneOf(coords) {
+  const d = distanceM(roundCoords(coords), KITCHEN_COORDS);
+  return d <= deliveryCfg.nearRadius ? 'near' : (d <= deliveryCfg.farRadius ? 'far' : 'out');
+}
+function feeFor(zone, sub) {
+  const reduced = sub >= deliveryCfg.freeDeliveryFrom;
+  if (zone === 'far') return reduced ? deliveryCfg.farFeeFree : deliveryCfg.farFee;
+  return reduced ? 0 : deliveryCfg.deliveryFee;
+}
 
 function money(n) {
   return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0') + '\u00a0₽';
@@ -679,43 +702,54 @@ function money(n) {
 function deliveryCost() {
   const sub = cartTotal();
   if (sub === 0) return 0;
-  return sub >= deliveryCfg.freeDeliveryFrom ? 0 : deliveryCfg.deliveryFee;
+  return feeFor(deliveryZone, sub);
 }
 
 function renderDeliveryBar() {
   const box = document.getElementById('delivery-bar');
   if (!box) return;
-  const { minOrder, deliveryFee, freeDeliveryFrom } = deliveryCfg;
+  const { minOrder, deliveryFee, freeDeliveryFrom, farFee, farFeeFree, nearRadius, farRadius } = deliveryCfg;
   const sub = cartTotal();
   const pct = Math.min(100, Math.round((sub / freeDeliveryFrom) * 100));
   const minPct = Math.round((minOrder / freeDeliveryFrom) * 100);
-  const isFree = sub >= freeDeliveryFrom;
+  const reduced = sub >= freeDeliveryFrom;
   const belowMin = sub < minOrder;
+  const far = deliveryZone === 'far';
+  const known = deliveryZone === 'near' || far;
+  const fee = feeFor(deliveryZone, sub);
+  const goal = far ? farFeeFree : 0;           // цена доставки после порога
+  const goalText = far ? `стоимость доставки стала ${money(farFeeFree)}` : 'получить бесплатную доставку';
+  const km = (m) => (m / 1000).toString().replace('.', ',') + '\u00a0км';
 
   let title, subtitle, warn = false;
-  if (isFree) {
-    title = 'Доставка бесплатная 🎉';
-    subtitle = 'Вы получили бесплатную доставку!';
+  if (reduced && !belowMin) {
+    title = far ? `Доставка ${money(farFeeFree)} 🎉` : (known ? 'Доставка бесплатная 🎉' : 'Скидка на доставку 🎉');
+    subtitle = far ? 'Вы получили сниженную стоимость доставки!' : (known ? 'Вы получили бесплатную доставку!' : 'Точная стоимость — после выбора адреса');
   } else if (belowMin) {
-    title = `Доставка ${money(deliveryFee)}`;
+    title = known ? `Доставка ${money(fee)}` : `Доставка от ${money(deliveryFee)}`;
     subtitle = sub === 0
       ? `Минимальный заказ от ${money(minOrder)}`
       : `Минимальный заказ от ${money(minOrder)} — добавьте товары ещё на ${money(minOrder - sub)}`;
     warn = sub > 0;
   } else {
-    title = `Доставка ${money(deliveryFee)}`;
-    subtitle = `Добавьте товары ещё на ${money(freeDeliveryFrom - sub)}, чтобы получить бесплатную доставку!`;
+    title = known ? `Доставка ${money(fee)}` : `Доставка от ${money(deliveryFee)}`;
+    subtitle = known
+      ? `Добавьте товары ещё на ${money(freeDeliveryFrom - sub)}, чтобы ${goalText}!`
+      : 'Точная стоимость зависит от адреса — выберите его на карте';
   }
+  const label = reduced ? (far ? money(farFeeFree) : (known ? 'Бесплатно' : 'Бесплатно / ' + money(farFeeFree))) : (known ? money(fee) : 'от ' + money(deliveryFee));
 
   box.innerHTML = `
     <div class="db-title">${title}</div>
     <div class="db-sub${warn ? ' warn' : ''}">${subtitle}</div>
     <div class="db-track">
-      <div class="db-fill${isFree ? ' full' : ''}" style="width:${pct}%"></div>
-      ${isFree ? '' : `<span class="db-mark" style="left:${minPct}%"></span>`}
+      <div class="db-fill${reduced ? ' full' : ''}" style="width:${pct}%"></div>
+      ${reduced ? '' : `<span class="db-mark" style="left:${minPct}%"></span>`}
     </div>
-    <div class="db-labels"><span>🛵 ${isFree ? 'Бесплатно' : money(deliveryFee)}</span><span>${money(0)}</span></div>
-    <div class="db-rules">Минимальный заказ от ${money(minOrder)} · Доставка ${money(deliveryFee)} · Бесплатно от ${money(freeDeliveryFrom)}</div>
+    <div class="db-labels"><span>🛵 ${label}</span><span>${money(0)}</span></div>
+    <div class="db-rules">Минимальный заказ от ${money(minOrder)}<br>
+      до ${km(nearRadius)} — ${money(deliveryFee)}, до ${km(farRadius)} — ${money(farFee)}<br>
+      от ${money(freeDeliveryFrom)}: до ${km(nearRadius)} бесплатно, до ${km(farRadius)} — ${money(farFeeFree)}</div>
   `;
 }
 
@@ -725,9 +759,9 @@ function renderTotals() {
   const subEl = document.getElementById('cart-sub');
   if (subEl) {
     subEl.innerHTML = sub === 0 ? '' :
-      `<span>Товары ${money(sub)}</span><span>Доставка ${fee === 0 ? 'бесплатно' : money(fee)}</span>`;
+      `<span>Товары ${money(sub)}</span><span>Доставка ${deliveryZone ? (fee === 0 ? 'бесплатно' : money(fee)) : 'по адресу'}</span>`;
   }
-  document.getElementById('cart-total').textContent = money(sub + fee);
+  document.getElementById('cart-total').textContent = (deliveryZone || sub === 0 ? '' : 'от ') + money(sub + fee);
   const btn = document.getElementById('checkout-submit');
   if (btn) {
     const belowMin = sub < deliveryCfg.minOrder;
@@ -914,7 +948,7 @@ document.getElementById('cart-overlay').addEventListener('click', closeCart);
 
 /* ================= АДРЕС ДОСТАВКИ ================= */
 const KITCHEN_COORDS = [55.673030, 37.614196]; // Кулинарная лавка «Дачная беседка»
-const DELIVERY_RADIUS_M = 4000;
+let markerPicked = false; // человек сам поставил/передвинул метку (а не оставил её на лавке по умолчанию)
 const GEOCODER_API_KEY = 'f9e25577-c9c0-49ce-b057-04356e083b98';
 let deliveryMap = null;
 let addressMarkerRef = null;
@@ -954,11 +988,19 @@ function initDeliveryMap() {
     deliveryMap.controls.add(zoomControl);
     deliveryMap.controls.add(geoControl);
 
-    deliveryMap.geoObjects.add(new ymaps.Circle([KITCHEN_COORDS, DELIVERY_RADIUS_M], {}, {
-      fillColor: '#f15a2422',
+    // Дальняя зона (до farRadius) и ближняя (до nearRadius)
+    deliveryMap.geoObjects.add(new ymaps.Circle([KITCHEN_COORDS, deliveryCfg.farRadius], {}, {
+      fillColor: '#f15a2418',
       strokeColor: '#f15a24',
       strokeWidth: 2,
       interactivityModel: 'default#transparent', // круг не перехватывает клики — они проходят на карту
+    }));
+    deliveryMap.geoObjects.add(new ymaps.Circle([KITCHEN_COORDS, deliveryCfg.nearRadius], {}, {
+      fillColor: '#2e7d3220',
+      strokeColor: '#2e7d32',
+      strokeWidth: 2,
+      strokeStyle: 'dash',
+      interactivityModel: 'default#transparent',
     }));
 
     // Метка адреса — её можно перетаскивать, а клик по карте переставляет её на новое место.
@@ -1002,9 +1044,8 @@ function initDeliveryMap() {
 
     // Проверяем, попадает ли точка в зону доставки, и блокируем сохранение, если нет
     function checkDeliveryZone(coords) {
-      const distance = ymaps.coordSystem.geo.getDistance(coords, KITCHEN_COORDS);
-      const warning = document.getElementById('zone-warning');
-      warning.hidden = distance <= DELIVERY_RADIUS_M;
+      markerPicked = true;
+      showZone(zoneOf(coords));
     }
 
     addressMark.events.add('dragend', () => {
@@ -1028,6 +1069,26 @@ function initDeliveryMap() {
       deliveryMap.setCenter(coords, 15);
     });
   });
+}
+
+// Подсказка под картой: в какой зоне выбранная точка и сколько стоит доставка
+function showZone(zone) {
+  const warning = document.getElementById('zone-warning');
+  const info = document.getElementById('zone-info');
+  warning.textContent = 'Ваш адрес не входит в зону доставки';
+  warning.hidden = zone !== 'out';
+  if (!info) return;
+  if (zone === 'near' || zone === 'far') {
+    const km = (m) => (m / 1000).toString().replace('.', ',') + '\u00a0км';
+    const sub = cartTotal();
+    const fee = feeFor(zone, Math.max(sub, 0));
+    info.hidden = false;
+    info.textContent = zone === 'near'
+      ? `Ближняя зона (до ${km(deliveryCfg.nearRadius)}). Доставка: ${sub >= deliveryCfg.freeDeliveryFrom ? 'бесплатно' : money(deliveryCfg.deliveryFee)}.`
+      : `Дальняя зона (до ${km(deliveryCfg.farRadius)}). Доставка: ${money(fee)}.`;
+  } else {
+    info.hidden = true;
+  }
 }
 
 function openAddressModal() {
@@ -1074,16 +1135,28 @@ document.getElementById('addr-save').addEventListener('click', () => {
     return;
   }
 
-  // Проверяем зону доставки заново, по текущему положению метки на карте —
-  // не полагаемся на состояние, выставленное когда-то раньше
-  if (addressMarkerRef && typeof ymaps !== 'undefined') {
-    const coords = addressMarkerRef.geometry.getCoordinates();
-    const distance = ymaps.coordSystem.geo.getDistance(coords, KITCHEN_COORDS);
-    if (distance > DELIVERY_RADIUS_M) {
-      document.getElementById('zone-warning').hidden = false;
-      return;
-    }
+  // Точка на карте обязательна: по ней сервер определяет зону и стоимость доставки.
+  // Зону проверяем заново по текущему положению метки — не полагаемся на то, что выставлено раньше.
+  const warn = document.getElementById('zone-warning');
+  if (!addressMarkerRef || typeof ymaps === 'undefined') {
+    warn.textContent = 'Карта не загрузилась. Обновите страницу и отметьте адрес на карте';
+    warn.hidden = false;
+    return;
   }
+  if (!markerPicked) {
+    warn.textContent = 'Отметьте адрес на карте: нажмите на карту или перетащите метку';
+    warn.hidden = false;
+    return;
+  }
+  const pickedCoords = roundCoords(addressMarkerRef.geometry.getCoordinates());
+  const pickedZone = zoneOf(pickedCoords);
+  if (pickedZone === 'out') {
+    showZone('out');
+    return;
+  }
+  deliveryGeo = { lat: pickedCoords[0], lon: pickedCoords[1] };
+  deliveryZone = pickedZone;
+  warn.hidden = true;
 
   const parts = [street];
   if (flat) parts.push('кв. ' + flat);
@@ -1095,6 +1168,7 @@ document.getElementById('addr-save').addEventListener('click', () => {
   document.getElementById('address').value = fullAddress;
   document.getElementById('address-summary').textContent = fullAddress;
   closeAddressModal();
+  renderCartWidgets();
 });
 
 // Убираем подсветку "не заполнено" как только пользователь начал вводить значение
@@ -1120,8 +1194,8 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
     return;
   }
 
-  if (!document.getElementById('address').value.trim()) {
-    errorEl.textContent = 'Укажите адрес доставки';
+  if (!document.getElementById('address').value.trim() || !deliveryGeo) {
+    errorEl.textContent = 'Укажите адрес доставки, отметив точку на карте';
     return;
   }
 
@@ -1147,7 +1221,7 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
     const res = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items, customer, cutleryCount, consentPd: document.getElementById('agree-pd').checked }),
+      body: JSON.stringify({ items, customer, geo: deliveryGeo, cutleryCount, consentPd: document.getElementById('agree-pd').checked }),
     });
     const data = await res.json();
 
