@@ -10,6 +10,7 @@ const fs = require('fs');
 const FILE_PATH = process.env.ORDERS_FILE || '/tmp/orders.json';
 const STOP_FILE_PATH = process.env.STOPLIST_FILE || '/tmp/stoplist.json';
 const NUTRITION_FILE_PATH = process.env.NUTRITION_FILE || '/tmp/nutrition.json';
+const PRICE_FILE_PATH = process.env.PRICES_FILE || '/tmp/prices.json';
 
 let pool = null;
 let mode = 'file'; // 'postgres' или 'file'
@@ -61,6 +62,14 @@ async function init() {
         id      TEXT NOT NULL,
         variant TEXT NOT NULL DEFAULT '',
         per100  JSONB NOT NULL,
+        PRIMARY KEY (id, variant)
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS product_price (
+        id      TEXT NOT NULL,
+        variant TEXT NOT NULL DEFAULT '',
+        price   INTEGER NOT NULL,
         PRIMARY KEY (id, variant)
       )
     `);
@@ -199,4 +208,40 @@ async function setNutrition(id, variant, per100) {
   fs.writeFileSync(NUTRITION_FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-module.exports = { init, getMode, nextOrderNumber, addOrder, getOrder, listOrders, setStatus, updateOrder, getStopOverrides, setProductStop, getNutritionOverrides, setNutrition };
+// ---------- Цены, изменённые в админ-панели ----------
+// Возвращает объект { "id блюда|id варианта": цена в рублях }. Если для блюда цены тут нет — берётся цена из products.json.
+async function getPriceOverrides() {
+  if (mode === 'postgres') {
+    const r = await pool.query('SELECT id, variant, price FROM product_price');
+    const out = {};
+    r.rows.forEach((row) => { out[row.id + '|' + row.variant] = row.price; });
+    return out;
+  }
+  try {
+    return JSON.parse(fs.readFileSync(PRICE_FILE_PATH, 'utf-8'));
+  } catch (e) {
+    return {};
+  }
+}
+
+// price = число (рубли) — задать новую цену; price = null — убрать правку и вернуть цену из products.json
+async function setPrice(id, variant, price) {
+  const v = variant || '';
+  if (mode === 'postgres') {
+    if (price === null) {
+      await pool.query('DELETE FROM product_price WHERE id = $1 AND variant = $2', [id, v]);
+    } else {
+      await pool.query(
+        `INSERT INTO product_price (id, variant, price) VALUES ($1, $2, $3)
+         ON CONFLICT (id, variant) DO UPDATE SET price = EXCLUDED.price`,
+        [id, v, price]
+      );
+    }
+    return;
+  }
+  const data = await getPriceOverrides();
+  if (price === null) delete data[id + '|' + v]; else data[id + '|' + v] = price;
+  fs.writeFileSync(PRICE_FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+module.exports = { init, getMode, nextOrderNumber, addOrder, getOrder, listOrders, setStatus, updateOrder, getStopOverrides, setProductStop, getNutritionOverrides, setNutrition, getPriceOverrides, setPrice };
