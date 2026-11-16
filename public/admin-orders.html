@@ -323,6 +323,20 @@
     const price = c.finalPrice ? ' · ' + fmt(c.finalPrice) + ' ₽' : (c.price ? ' · ' + fmt(c.price) + ' ₽' : '');
     return `<div class="eta">🛵 ${esc(txt)}${who}${eta}${price}</div>`;
   }
+  // Подсказка про время вызова курьера (для принятого заказа): «вызовется автоматически в 19:40» или «вызовите в 19:40»
+  function courierPlanHtml(o) {
+    if (!courierCfg.enabled || !o.geo || o.status !== 'принят' || !o.courierCallAt) return '';
+    const c = o.courier;
+    if (c && !COURIER_DEAD.includes(c.status)) return '';          // курьер уже заказан — видно статус ниже
+    const at = new Date(o.courierCallAt);
+    const t = at.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    const late = at.getTime() <= Date.now();
+    if (courierCfg.auto) {
+      if (o.courierCallDone) return '';
+      return `<div class="eta">🛵 Курьер вызовется сам${late ? ' — вот-вот' : ' в ' + esc(t)}</div>`;
+    }
+    return `<div class="eta" style="${late ? 'color:#c0392b;font-weight:600' : ''}">🛵 Курьера лучше вызвать ${late ? 'уже сейчас' : 'в ' + esc(t)}</div>`;
+  }
   async function courierAction(id, action, btn) {
     if (btn) { btn.disabled = true; btn.textContent = 'Подождите…'; }
     try {
@@ -347,7 +361,7 @@
     if (o.status === 'принят') {
       const eta = o.readyEta ? new Date(o.readyEta).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '';
       return `<div class="eta">Готовим${eta ? ' до ' + eta : ''}</div>
-        <button onclick="setStatus('${id}','готов')">🍳 Заказ готов</button>${courierHtml(o)}`;
+        <button onclick="setStatus('${id}','готов')">🍳 Заказ готов</button>${courierPlanHtml(o)}${courierHtml(o)}`;
     }
     if (o.status === 'готов') {
       return `<div class="eta">Заказ готов, ищем курьера</div>${courierHtml(o)}
