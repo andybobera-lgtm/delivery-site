@@ -1340,6 +1340,15 @@
     }
   },
   {
+    "id": "shurpa-sup",
+    "image": "images/shurpa.jpg",
+    "category": "Супы",
+    "name": "Шурпа",
+    "price": 450,
+    "weight": "500 г",
+    "description": "Наваристый узбекский суп с мясом, картофелем, морковью и ароматными специями."
+  },
+  {
     "id": "salat-ovoshnoy",
     "image": "images/salat-ovoshnoy.jpg",
     "category": "Салаты",
