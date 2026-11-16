@@ -173,10 +173,16 @@ function round1(v) { return Math.round(v * 10) / 10; }
 function withPer100(nutrition, per100) {
   const w = (nutrition && nutrition.perPortion && nutrition.perPortion.weight) || 0;
   const k = w / 100;
-  return {
-    per100: { kcal: per100.kcal, protein: per100.protein, fat: per100.fat, carbs: per100.carbs },
-    perPortion: { weight: w, kcal: round1(per100.kcal * k), protein: round1(per100.protein * k), fat: round1(per100.fat * k), carbs: round1(per100.carbs * k) },
-  };
+  const out = { per100: { kcal: per100.kcal, protein: per100.protein, fat: per100.fat, carbs: per100.carbs } };
+  if (w > 0) out.perPortion = { weight: w, kcal: round1(per100.kcal * k), protein: round1(per100.protein * k), fat: round1(per100.fat * k), carbs: round1(per100.carbs * k) };
+  return out;
+}
+// Вес порции из текста вроде «500 г» или «1.36 кг» (нужен, если у блюда КБЖУ в файле не задано, а в админке введено)
+function weightFromText(text) {
+  const m = String(text || '').replace(',', '.').match(/(\d+(?:\.\d+)?)\s*(кг|мл|г|л)(?![а-яёa-z])/i);
+  if (!m) return 0;
+  const n = parseFloat(m[1]);
+  return Math.round(/^(кг|л)$/i.test(m[2]) ? n * 1000 : n);
 }
 async function loadCatalog() {
   const products = readJSON(PRODUCTS_FILE);
@@ -185,7 +191,9 @@ async function loadCatalog() {
   try { nuts = await db.getNutritionOverrides(); } catch (e) { console.error('КБЖУ не прочитано:', e.message); }
   return products.map((p) => {
     const q = { ...p, stop: Object.prototype.hasOwnProperty.call(stops, p.id) ? !!stops[p.id] : !!p.stop };
-    if (nuts[p.id + '|'] && q.nutrition) q.nutrition = withPer100(q.nutrition, nuts[p.id + '|']);
+    if (nuts[p.id + '|'] && !Array.isArray(q.variants)) {
+      q.nutrition = withPer100(q.nutrition || { perPortion: { weight: weightFromText(p.weight) } }, nuts[p.id + '|']);
+    }
     if (Array.isArray(q.variants)) {
       q.variants = q.variants.map((v) => (nuts[p.id + '|' + v.id] && v.nutrition ? { ...v, nutrition: withPer100(v.nutrition, nuts[p.id + '|' + v.id]) } : v));
       // у блюд с вариантами общий КБЖУ повторяет первый вариант
