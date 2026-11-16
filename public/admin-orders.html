@@ -48,7 +48,7 @@
   .act select { padding: 8px; font-size: 14px; margin-bottom: 6px; width: 100%; }
   .act button { width: 100%; white-space: nowrap; }
   .act button.green { background: #2e7d32; }
-  .act .eta { font-size: 12px; color: #555; margin-bottom: 4px; }
+  .act .eta { font-size: 12px; color: #555; margin: 6px 0 4px; }
   .table-wrap { overflow-x: auto; }
 
   /* Стоп-лист */
@@ -294,6 +294,44 @@
     document.title = waitingCount > 0 ? `(${waitingCount}) НОВЫЙ ЗАКАЗ — Дачная Беседка` : 'Заказы — Дачная Беседка';
   }
 
+  // ---------- Курьер Яндекс Доставки (показывается, только если на сайте включён токен) ----------
+  let courierCfg = { enabled: false, auto: false, statusText: {} };
+  async function loadCourierCfg() {
+    try {
+      const res = await fetch('/api/admin/courier-config', { cache: 'no-store', headers: authHeaders() });
+      if (res.ok) { courierCfg = await res.json(); renderAll(); }
+    } catch (e) { /* не подключён — ничего не показываем */ }
+  }
+  const COURIER_DEAD = ['performer_not_found', 'failed', 'estimating_failed', 'cancelled', 'cancelled_with_payment', 'cancelled_by_taxi', 'cancelled_with_items_on_hands'];
+  function courierHtml(o) {
+    if (!courierCfg.enabled || !o.geo) return '';
+    const id = esc(o.id);
+    const c = o.courier;
+    const txt = c ? (courierCfg.statusText[c.status] || c.status) : '';
+    const fmt = (v) => esc(String(Math.round(Number(v))));
+    const estBtn = `<button onclick="courierAction('${id}','estimate',this)">🛵 Узнать цену курьера</button>`;
+    if (!c || COURIER_DEAD.includes(c.status)) {
+      if (o.status === 'передан курьеру') return '';
+      return (c ? `<div class="eta" style="color:#c0392b">🛵 ${esc(txt)}${c.error ? ' — ' + esc(c.error) : ''}</div>` : '') + estBtn;
+    }
+    if (c.status === 'ready_for_approval') {
+      return `<div class="eta">🛵 Курьер Яндекса: ${c.price ? fmt(c.price) + ' ₽' : 'цена готова'} <span style="color:#888">(действует 10 мин)</span></div>
+        <button class="green" onclick="courierAction('${id}','accept',this)">🛵 Вызвать курьера${c.price ? ' за ' + fmt(c.price) + ' ₽' : ''}</button>`;
+    }
+    const who = c.performer && c.performer.name ? ': ' + esc(c.performer.name) + (c.performer.car ? ' (' + esc(c.performer.car) + ')' : '') : '';
+    const eta = c.eta ? ' · ~' + esc(c.eta) + ' мин' : '';
+    const price = c.finalPrice ? ' · ' + fmt(c.finalPrice) + ' ₽' : (c.price ? ' · ' + fmt(c.price) + ' ₽' : '');
+    return `<div class="eta">🛵 ${esc(txt)}${who}${eta}${price}</div>`;
+  }
+  async function courierAction(id, action, btn) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Подождите…'; }
+    try {
+      const res = await fetch('/api/admin/orders/' + encodeURIComponent(id) + '/courier/' + action, { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: '{}' });
+      if (!res.ok) { const d = await res.json().catch(() => ({})); alert(d.error || 'Не удалось связаться с Яндекс Доставкой'); }
+    } catch (e) { alert('Нет связи с сайтом. Проверьте интернет.'); }
+    await loadOrders();
+  }
+
   // ---------- Кнопки смены статуса ----------
   function actionHtml(o) {
     const id = esc(o.id);
@@ -309,10 +347,10 @@
     if (o.status === 'принят') {
       const eta = o.readyEta ? new Date(o.readyEta).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '';
       return `<div class="eta">Готовим${eta ? ' до ' + eta : ''}</div>
-        <button onclick="setStatus('${id}','готов')">🍳 Заказ готов</button>`;
+        <button onclick="setStatus('${id}','готов')">🍳 Заказ готов</button>${courierHtml(o)}`;
     }
     if (o.status === 'готов') {
-      return `<div class="eta">Заказ готов, ищем курьера</div>
+      return `<div class="eta">Заказ готов, ищем курьера</div>${courierHtml(o)}
         <select id="deliv-${id}">
           <option value="10">Курьер довезёт ~10 мин</option>
           <option value="15">~15 мин</option>
@@ -322,7 +360,7 @@
         </select>
         <button onclick="setStatus('${id}','передан курьеру')">🛵 Передан курьеру</button>`;
     }
-    if (o.status === 'передан курьеру') return `<button class="green" onclick="setStatus('${id}','доставлен')">📦 Доставлен</button>`;
+    if (o.status === 'передан курьеру') return courierHtml(o) + `<button class="green" onclick="setStatus('${id}','доставлен')">📦 Доставлен</button>`;
     return '';
   }
 
@@ -557,6 +595,7 @@
       renderTop();
       loadOrders();
       loadMenu();
+      loadCourierCfg();
       setInterval(loadOrders, REFRESH_MS);
       setInterval(() => { if (currentTab === 'menu' && !editingId) loadMenu(); }, 15000);
     }
