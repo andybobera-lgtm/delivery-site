@@ -16,6 +16,7 @@ const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const db = require('./db');
 const { notifyPaidOrder } = require('./notify');
+const yd = require('./yandex-delivery');
 
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 const IS_LOCAL = /^https?:\/\/(localhost|127\.0\.0\.1)/.test(SITE_URL);
@@ -576,12 +577,126 @@ app.post('/api/admin/orders/:id/status', adminAuth, async (req, res) => {
       patch.courierEta = new Date(now.getTime() + dm * 60000).toISOString();
     }
     if (next === 'доставлен') patch.deliveredAt = now.toISOString();
-    res.json(await db.updateOrder(order.id, patch));
+    const updated = await db.updateOrder(order.id, patch);
+    // Если включён автоматический вызов курьера Яндекса — вызываем сразу, как заказ готов
+    if (next === 'готов' && yd.enabled() && yd.autoMode() && updated) {
+      autoCourier(updated).catch((e) => console.error('Авто-вызов курьера:', e.message));
+    }
+    res.json(updated);
   } catch (err) {
     console.error('Ошибка смены статуса:', err.message);
     res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
+
+// ==========================================================================
+// КУРЬЕР ЯНДЕКС ДОСТАВКИ (работает только если задан YANDEX_DELIVERY_TOKEN, см. yandex-delivery.js)
+// ==========================================================================
+const courierBusy = new Set(); // заказы, по которым прямо сейчас идёт запрос к Яндексу (защита от двойного нажатия)
+
+function courierError(res, err) {
+  console.error('Яндекс Доставка:', err.status || '', err.apiCode || '', err.apiMessage || err.message);
+  const text = err.apiMessage ? `Яндекс Доставка отказала: ${String(err.apiMessage).slice(0, 200)}` : 'Яндекс Доставка не ответила. Попробуйте ещё раз через минуту.';
+  res.status(502).json({ error: text });
+}
+
+async function loadCourierOrder(req, res) {
+  if (!yd.enabled()) { res.status(400).json({ error: 'Курьер Яндекса не подключён' }); return null; }
+  if (!UUID_RE.test(req.params.id)) { res.status(404).json({ error: 'Заказ не найден' }); return null; }
+  const order = await db.getOrder(req.params.id);
+  if (!order) { res.status(404).json({ error: 'Заказ не найден' }); return null; }
+  return order;
+}
+
+async function autoCourier(order) {
+  if (!order.geo || courierBusy.has(order.id)) return;
+  courierBusy.add(order.id);
+  try {
+    let courier = await yd.estimate(order, KITCHEN_COORDS);
+    await db.updateOrder(order.id, { courier });
+    if (courier.status === 'ready_for_approval') {
+      const done = await yd.confirm(courier);
+      if (done) await db.updateOrder(order.id, { courier: done });
+    }
+  } finally {
+    courierBusy.delete(order.id);
+  }
+}
+
+app.get('/api/admin/courier-config', adminAuth, (req, res) => {
+  res.json({ enabled: yd.enabled(), auto: yd.autoMode(), statusText: yd.STATUS_TEXT });
+});
+
+// Узнать цену курьера (создаёт заявку в Яндексе, но курьера пока не вызывает)
+app.post('/api/admin/orders/:id/courier/estimate', adminAuth, async (req, res) => {
+  const order = await loadCourierOrder(req, res); if (!order) return;
+  if (!['принят', 'готов'].includes(order.status)) return res.status(400).json({ error: 'Курьера можно вызвать, когда заказ принят или готов' });
+  if (!order.geo) return res.status(400).json({ error: 'У этого заказа нет точки на карте — вызовите курьера вручную' });
+  const c = order.courier;
+  if (c && yd.LIVE.has(c.status) && !(c.status === 'ready_for_approval' && Date.now() - new Date(c.createdAt).getTime() > yd.OFFER_TTL_MS)) {
+    return res.json(c); // уже есть живая заявка — второго курьера не заказываем
+  }
+  if (courierBusy.has(order.id)) return res.status(409).json({ error: 'Запрос уже выполняется, подождите несколько секунд' });
+  courierBusy.add(order.id);
+  try {
+    const courier = await yd.estimate(order, KITCHEN_COORDS);
+    await db.updateOrder(order.id, { courier });
+    res.json(courier);
+  } catch (err) {
+    courierError(res, err);
+  } finally {
+    courierBusy.delete(order.id);
+  }
+});
+
+// Вызвать курьера: подтвердить заявку по названной цене
+app.post('/api/admin/orders/:id/courier/accept', adminAuth, async (req, res) => {
+  const order = await loadCourierOrder(req, res); if (!order) return;
+  const c = order.courier;
+  if (!c || !c.claimId) return res.status(400).json({ error: 'Сначала узнайте цену курьера' });
+  if (courierBusy.has(order.id)) return res.status(409).json({ error: 'Запрос уже выполняется, подождите несколько секунд' });
+  courierBusy.add(order.id);
+  try {
+    const done = await yd.confirm(c);
+    if (done === null) {
+      await db.updateOrder(order.id, { courier: { ...c, status: 'failed', error: 'Цена устарела — узнайте её заново' } });
+      return res.status(409).json({ error: 'Цена устарела (прошло больше 9 минут). Нажмите «Узнать цену» ещё раз.' });
+    }
+    await db.updateOrder(order.id, { courier: done });
+    res.json(done);
+  } catch (err) {
+    courierError(res, err);
+  } finally {
+    courierBusy.delete(order.id);
+  }
+});
+
+// Раз в 20 секунд спрашиваем Яндекс, что с курьерами; забрал — «передан курьеру», доставил — «доставлен»
+async function pollCouriers() {
+  if (!yd.enabled()) return;
+  let list;
+  try { list = await db.listOrders(); } catch (e) { return; }
+  for (const o of list) {
+    const c = o.courier;
+    if (!c || !c.claimId || yd.TERMINAL.has(c.status) || courierBusy.has(o.id)) continue;
+    try {
+      const fresh = await yd.getInfo(c.claimId, c);
+      const patch = {};
+      if (fresh.status !== c.status || fresh.price !== c.price || fresh.eta !== c.eta || JSON.stringify(fresh.performer) !== JSON.stringify(c.performer)) patch.courier = fresh;
+      const now = new Date();
+      if (['pickuped', 'delivery_arrived', 'ready_for_delivery_confirmation'].includes(fresh.status) && o.status === 'готов') {
+        const dm = Math.min(120, Math.max(5, fresh.eta || 20));
+        Object.assign(patch, { status: 'передан курьеру', deliveryMinutes: dm, handedToCourierAt: now.toISOString(), courierEta: new Date(now.getTime() + dm * 60000).toISOString() });
+      }
+      if (['delivered', 'delivered_finish'].includes(fresh.status) && ['готов', 'передан курьеру'].includes(o.status)) {
+        Object.assign(patch, { status: 'доставлен', deliveredAt: now.toISOString() });
+      }
+      if (Object.keys(patch).length) await db.updateOrder(o.id, patch);
+    } catch (e) {
+      console.error('Опрос Яндекс Доставки:', e.status || '', e.apiMessage || e.message);
+    }
+  }
+}
 
 // --- Вебхук от ЮKassa: сюда ЮKassa сама присылает уведомления об оплате ---
 // Статус платежа мы НЕ берём из присланного сообщения (его мог подделать кто угодно),
@@ -641,4 +756,8 @@ db.init().then(() => {
   app.listen(PORT, () => {
     console.log(`Сайт запущен: http://localhost:${PORT}`);
   });
+  if (yd.enabled()) {
+    console.log('Курьер Яндекс Доставки подключён' + (yd.autoMode() ? ' (автоматический вызов)' : ' (вызов кнопкой)'));
+    setInterval(() => { pollCouriers().catch(() => {}); }, Number(process.env.YANDEX_POLL_MS) || 20000).unref();
+  }
 });
