@@ -568,6 +568,13 @@ app.post('/api/admin/orders/:id/status', adminAuth, async (req, res) => {
       patch.prepMinutes = mins;
       patch.acceptedAt = now.toISOString();
       patch.readyEta = new Date(now.getTime() + mins * 60000).toISOString();
+      // Курьера нужно вызвать заранее: за «время подачи» (COURIER_LEAD_MIN) до готовности блюда.
+      // Готовим 10 мин, подача 15 — вызываем сразу; готовим 40 — вызываем через 25 минут.
+      if (yd.enabled() && order.geo) {
+        const delayMin = Math.max(0, mins - courierLeadMin());
+        patch.courierCallAt = new Date(now.getTime() + delayMin * 60000).toISOString();
+        patch.courierCallDone = false;
+      }
     }
     if (next === 'готов') patch.readyAt = now.toISOString();
     if (next === 'передан курьеру') {
@@ -578,9 +585,13 @@ app.post('/api/admin/orders/:id/status', adminAuth, async (req, res) => {
     }
     if (next === 'доставлен') patch.deliveredAt = now.toISOString();
     const updated = await db.updateOrder(order.id, patch);
-    // Если включён автоматический вызов курьера Яндекса — вызываем сразу, как заказ готов
-    if (next === 'готов' && yd.enabled() && yd.autoMode() && updated) {
-      autoCourier(updated).catch((e) => console.error('Авто-вызов курьера:', e.message));
+    // Автоматический вызов курьера: если время вызова уже пришло (короткая готовка) — вызываем сразу,
+    // иначе его вызовет таймер (pollCouriers). Если заказ готов, а курьер так и не вызван — вызываем сейчас.
+    if (yd.enabled() && yd.autoMode() && updated) {
+      if (next === 'принят') runScheduledCourier(updated).catch((e) => console.error('Авто-вызов курьера:', e.message));
+      if (next === 'готов' && !courierIsLive(updated.courier)) {
+        callCourierNow(updated).catch((e) => console.error('Авто-вызов курьера:', e.message));
+      }
     }
     res.json(updated);
   } catch (err) {
@@ -623,8 +634,42 @@ async function autoCourier(order) {
   }
 }
 
+// За сколько минут до готовности вызывать курьера (сколько он обычно едет к лавке). Меняется в Timeweb: COURIER_LEAD_MIN
+function courierLeadMin() {
+  const n = Number(process.env.COURIER_LEAD_MIN);
+  return Number.isFinite(n) && n >= 0 && n <= 120 ? n : 15;
+}
+
+// есть ли по заказу «живая» заявка курьера (тогда второго не вызываем)
+function courierIsLive(c) {
+  if (!c || !c.claimId || !yd.LIVE.has(c.status)) return false;
+  if (c.status === 'ready_for_approval' && Date.now() - new Date(c.createdAt).getTime() > yd.OFFER_TTL_MS) return false;
+  return true;
+}
+
+// Вызов курьера с записью ошибки в заказ (чтобы повар увидел, что не получилось, и нажал кнопку вручную)
+async function callCourierNow(order) {
+  try {
+    await autoCourier(order);
+  } catch (e) {
+    console.error('Яндекс Доставка (авто):', e.status || '', e.apiMessage || e.message);
+    const msg = e.apiMessage ? String(e.apiMessage).slice(0, 200) : 'Яндекс Доставка не ответила';
+    await db.updateOrder(order.id, { courier: { status: 'failed', error: msg + '. Вызовите курьера кнопкой.' } });
+  }
+}
+
+// Если у принятого заказа пришло время вызова курьера — вызываем (один раз)
+async function runScheduledCourier(order) {
+  if (!yd.enabled() || !yd.autoMode()) return;
+  if (order.status !== 'принят' || !order.courierCallAt || order.courierCallDone) return;
+  if (new Date(order.courierCallAt).getTime() > Date.now()) return;
+  if (courierIsLive(order.courier) || courierBusy.has(order.id)) return;
+  const claimed = await db.updateOrder(order.id, { courierCallDone: true }); // отметили заранее, чтобы не вызвать дважды
+  if (claimed) await callCourierNow({ ...order, ...claimed });
+}
+
 app.get('/api/admin/courier-config', adminAuth, (req, res) => {
-  res.json({ enabled: yd.enabled(), auto: yd.autoMode(), statusText: yd.STATUS_TEXT });
+  res.json({ enabled: yd.enabled(), auto: yd.autoMode(), leadMin: courierLeadMin(), statusText: yd.STATUS_TEXT });
 });
 
 // Узнать цену курьера (создаёт заявку в Яндексе, но курьера пока не вызывает)
@@ -677,6 +722,10 @@ async function pollCouriers() {
   let list;
   try { list = await db.listOrders(); } catch (e) { return; }
   for (const o of list) {
+    try { await runScheduledCourier(o); } catch (e) { console.error('Плановый вызов курьера:', e.message); }
+  }
+  try { list = await db.listOrders(); } catch (e) { return; }
+  for (const o of list) {
     const c = o.courier;
     if (!c || !c.claimId || yd.TERMINAL.has(c.status) || courierBusy.has(o.id)) continue;
     try {
@@ -684,11 +733,11 @@ async function pollCouriers() {
       const patch = {};
       if (fresh.status !== c.status || fresh.price !== c.price || fresh.eta !== c.eta || JSON.stringify(fresh.performer) !== JSON.stringify(c.performer)) patch.courier = fresh;
       const now = new Date();
-      if (['pickuped', 'delivery_arrived', 'ready_for_delivery_confirmation'].includes(fresh.status) && o.status === 'готов') {
+      if (['pickuped', 'delivery_arrived', 'ready_for_delivery_confirmation'].includes(fresh.status) && ['принят', 'готов'].includes(o.status)) {
         const dm = Math.min(120, Math.max(5, fresh.eta || 20));
         Object.assign(patch, { status: 'передан курьеру', deliveryMinutes: dm, handedToCourierAt: now.toISOString(), courierEta: new Date(now.getTime() + dm * 60000).toISOString() });
       }
-      if (['delivered', 'delivered_finish'].includes(fresh.status) && ['готов', 'передан курьеру'].includes(o.status)) {
+      if (['delivered', 'delivered_finish'].includes(fresh.status) && ['принят', 'готов', 'передан курьеру'].includes(o.status)) {
         Object.assign(patch, { status: 'доставлен', deliveredAt: now.toISOString() });
       }
       if (Object.keys(patch).length) await db.updateOrder(o.id, patch);
