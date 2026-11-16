@@ -919,8 +919,23 @@ const GEOCODER_API_KEY = 'f9e25577-c9c0-49ce-b057-04356e083b98';
 let deliveryMap = null;
 let addressMarkerRef = null;
 
+// Яндекс Карты подгружаются только когда человек открыл окно адреса:
+// до этого браузер ничего не отправляет в Яндекс (политика конфиденциальности это и обещает).
+let ymapsLoading = false;
+function loadYandexMaps(done) {
+  if (typeof ymaps !== 'undefined') { done(); return; }
+  if (ymapsLoading) return;
+  ymapsLoading = true;
+  const s = document.createElement('script');
+  s.src = 'https://api-maps.yandex.ru/2.1/?apikey=' + GEOCODER_API_KEY + '&lang=ru_RU';
+  s.onload = () => { ymapsLoading = false; done(); };
+  s.onerror = () => { ymapsLoading = false; };
+  document.head.appendChild(s);
+}
+
 function initDeliveryMap() {
-  if (deliveryMap || typeof ymaps === 'undefined') return;
+  if (deliveryMap) return;
+  if (typeof ymaps === 'undefined') { loadYandexMaps(initDeliveryMap); return; }
   ymaps.ready(() => {
     deliveryMap = new ymaps.Map('delivery-map', {
       center: KITCHEN_COORDS,
