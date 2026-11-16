@@ -215,11 +215,22 @@ function weightFromText(text) {
 }
 async function loadCatalog() {
   const products = readJSON(PRODUCTS_FILE);
-  let stops = {}, nuts = {};
+  let stops = {}, nuts = {}, prices = {};
+  try { prices = await db.getPriceOverrides(); } catch (e) { console.error('Цены из админки не прочитаны:', e.message); }
   try { stops = await db.getStopOverrides(); } catch (e) { console.error('Стоп-лист не прочитан:', e.message); }
   try { nuts = await db.getNutritionOverrides(); } catch (e) { console.error('КБЖУ не прочитано:', e.message); }
   return products.map((p) => {
     const q = { ...p, stop: Object.prototype.hasOwnProperty.call(stops, p.id) ? !!stops[p.id] : !!p.stop };
+    // Цены, которые повар поменял в админ-панели, главнее цен из products.json
+    if (Number.isInteger(prices[p.id + '|']) && !Array.isArray(q.variants)) {
+      q.price = prices[p.id + '|'];
+      if (q.oldPrice && q.oldPrice <= q.price) delete q.oldPrice; // зачёркнутая «старая» цена не должна быть ниже новой
+    }
+    if (Array.isArray(q.variants)) {
+      q.variants = q.variants.map((v) => (Number.isInteger(prices[p.id + '|' + v.id]) ? { ...v, price: prices[p.id + '|' + v.id] } : v));
+      // общая цена блюда с вариантами повторяет первый вариант (как и в products.json)
+      if (q.variants[0] && Number.isInteger(prices[p.id + '|' + q.variants[0].id])) q.price = q.variants[0].price;
+    }
     if (nuts[p.id + '|'] && !Array.isArray(q.variants)) {
       q.nutrition = withPer100(q.nutrition || { perPortion: { weight: weightFromText(p.weight) } }, nuts[p.id + '|']);
     }
@@ -491,6 +502,7 @@ app.get('/api/admin/orders', adminAuth, async (req, res) => {
 app.get('/api/admin/products', adminAuth, async (req, res) => {
   try {
     const catalog = await loadCatalog();
+    const fileProducts = readJSON(PRODUCTS_FILE); // исходные цены из products.json
     const per = (n) => (n && n.per100 ? { kcal: n.per100.kcal, protein: n.per100.protein, fat: n.per100.fat, carbs: n.per100.carbs } : null);
     res.json(catalog.map((p) => ({
       id: p.id,
@@ -498,6 +510,9 @@ app.get('/api/admin/products', adminAuth, async (req, res) => {
       category: p.category || 'Меню',
       price: p.price,
       stop: !!p.stop,
+      // цена из файла products.json (чтобы можно было вернуть) и цены вариантов
+      basePrice: (fileProducts.find((x) => x.id === p.id) || {}).price,
+      variantPrices: Array.isArray(p.variants) ? p.variants.map((v) => ({ id: v.id, label: v.label, price: v.price, basePrice: (((fileProducts.find((x) => x.id === p.id) || {}).variants || []).find((x) => x.id === v.id) || {}).price })) : [],
       per100: Array.isArray(p.variants) && p.variants.length ? null : per(p.nutrition),
       variants: Array.isArray(p.variants) ? p.variants.map((v) => ({ id: v.id, label: v.label, per100: per(v.nutrition) })) : [],
     })));
@@ -516,6 +531,34 @@ app.post('/api/admin/products/:id/stop', adminAuth, async (req, res) => {
     res.json({ ok: true, id: req.params.id, stop: !!(req.body && req.body.stop) });
   } catch (err) {
     console.error('Ошибка стоп-листа:', err.message);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+// --- Цена: изменить цену блюда (или одного из его вариантов). price: пустое/null — вернуть цену из файла ---
+app.post('/api/admin/products/:id/price', adminAuth, async (req, res) => {
+  try {
+    const product = readJSON(PRODUCTS_FILE).find((p) => p.id === req.params.id);
+    if (!product) return res.status(404).json({ error: 'Такого блюда нет' });
+    const b = req.body && typeof req.body === 'object' ? req.body : {};
+    let variantId = '';
+    if (Array.isArray(product.variants) && product.variants.length) {
+      variantId = typeof b.variantId === 'string' ? b.variantId : '';
+      if (!product.variants.some((v) => v.id === variantId)) return res.status(400).json({ error: 'Не выбран вариант блюда' });
+    }
+    let price = null;
+    if (!(b.price === null || b.price === '' || b.price === undefined)) {
+      const n = Number(b.price);
+      if (!Number.isInteger(n) || n < 1 || n > 100000) {
+        return res.status(400).json({ error: 'Цена — целое число рублей от 1 до 100000' });
+      }
+      price = n;
+    }
+    await db.setPrice(product.id, variantId, price);
+    console.log(`Цена изменена в админке: ${product.id}${variantId ? '/' + variantId : ''} → ${price === null ? 'как в файле' : price + ' ₽'}`);
+    res.json({ ok: true, price });
+  } catch (err) {
+    console.error('Ошибка сохранения цены:', err.message);
     res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
