@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
@@ -419,13 +419,74 @@
       if (!res.ok) return;
       menuItems = await res.json();
       renderTabs();
-      if (currentTab === 'menu' && !editingId) renderMenu();
+      if (currentTab === 'menu' && !editingId && !priceEditId) renderMenu();
     } catch (e) { /* нет связи — попробуем позже */ }
   }
 
   let editingId = null;      // блюдо, у которого открыта правка КБЖУ
   const nutDraft = {};       // то, что набрано, но ещё не сохранено
   const nutMsg = {};
+
+  // ---------- Цены ----------
+  let priceEditId = null;    // блюдо, у которого открыта правка цены
+  const priceDraft = {};     // набранное, но не сохранённое: ключ "id|вариант"
+  const priceMsg = {};
+
+  function priceTargets(m) {
+    return m.variantPrices && m.variantPrices.length
+      ? m.variantPrices.map((v) => ({ vid: v.id, label: v.label, price: v.price, base: v.basePrice }))
+      : [{ vid: '', label: '', price: m.price, base: m.basePrice }];
+  }
+  function pricePanel(m) {
+    return `<div class="nut-panel"><div class="nut-note">Новая цена сразу появится на сайте и будет в чеке для новых заказов. Уже оформленные заказы не меняются.</div>` +
+      priceTargets(m).map((t) => {
+        const k = m.id + '|' + t.vid;
+        const val = priceDraft[k] !== undefined ? priceDraft[k] : (typeof t.price === 'number' ? t.price : '');
+        const changed = typeof t.base === 'number' && t.price !== t.base;
+        return `<div class="nut-row">${t.label ? `<div class="vl">${esc(t.label)}</div>` : ''}
+          <label class="nut-field">Цена, ₽<input type="number" inputmode="numeric" step="1" min="1" max="100000" value="${esc(val)}" oninput="priceInput('${esc(m.id)}','${esc(t.vid)}',this.value)" onkeydown="if(event.key==='Enter')savePrice('${esc(m.id)}','${esc(t.vid)}')" /></label>
+          <button class="nut-save" onclick="savePrice('${esc(m.id)}','${esc(t.vid)}')">Сохранить</button>
+          ${changed ? `<button class="nut-btn" onclick="resetPrice('${esc(m.id)}','${esc(t.vid)}')">Вернуть ${esc(t.base)} ₽</button>` : ''}
+          <span class="nut-msg" id="pm-${esc(k)}">${esc(priceMsg[k] || '')}</span></div>`;
+      }).join('') + `</div>`;
+  }
+  function priceInput(id, vid, value) {
+    const k = id + '|' + vid;
+    priceDraft[k] = value;
+    priceMsg[k] = '';
+    const el = document.getElementById('pm-' + k); if (el) el.textContent = '';
+  }
+  function togglePrice(id) { priceEditId = priceEditId === id ? null : id; renderMenu(); }
+  async function sendPrice(id, vid, price) {
+    const m = menuItems.find((x) => x.id === id);
+    const k = id + '|' + vid;
+    try {
+      const res = await fetch('/api/admin/products/' + encodeURIComponent(id) + '/price', {
+        method: 'POST',
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ variantId: vid, price }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { alert(data.error || 'Не удалось сохранить цену'); return; }
+      await loadMenu();                       // перечитываем меню, чтобы показать цену как её видит сайт
+      delete priceDraft[k];
+      priceMsg[k] = 'Сохранено ✓';
+      renderMenu();
+    } catch (e) {
+      alert('Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.');
+    }
+  }
+  function savePrice(id, vid) {
+    const m = menuItems.find((x) => x.id === id);
+    const t = priceTargets(m).find((x) => x.vid === vid);
+    const k = id + '|' + vid;
+    const raw = priceDraft[k] !== undefined ? String(priceDraft[k]).trim() : (typeof t.price === 'number' ? String(t.price) : '');
+    if (!/^\d{1,6}$/.test(raw) || Number(raw) < 1) { alert('Введите цену целым числом рублей, например 450'); return; }
+    sendPrice(id, vid, Number(raw));
+  }
+  function resetPrice(id, vid) {
+    if (confirm('Вернуть цену, которая была задана в меню изначально?')) sendPrice(id, vid, null);
+  }
 
   function nutTargets(m) {
     return m.variants && m.variants.length
@@ -486,8 +547,9 @@
     box.innerHTML = cats.map((c) => `<div class="menu-cat">${esc(c)}</div>` +
       items.filter((m) => m.category === c).map((m) => `
         <div class="menu-row${m.stop ? ' off' : ''}">
-          <div><div class="nm">${esc(m.name)}</div><div class="pr">${esc(m.price)} ₽</div></div>
+          <div><div class="nm">${esc(m.name)}</div><div class="pr">${typeof m.price === 'number' ? esc(m.price) + ' ₽' : 'цена не указана'}</div></div>
           <div class="menu-actions">
+            <button class="nut-btn${priceEditId === m.id ? ' open' : ''}" onclick="togglePrice('${esc(m.id)}')">Цена</button>
             <button class="nut-btn${editingId === m.id ? ' open' : ''}" onclick="toggleNut('${esc(m.id)}')">КБЖУ</button>
             <label class="sw">
               <input type="checkbox" ${m.stop ? '' : 'checked'} onchange="toggleStop('${esc(m.id)}', !this.checked)" />
@@ -495,7 +557,7 @@
               <span class="lbl">${m.stop ? 'На стопе' : 'В продаже'}</span>
             </label>
           </div>
-        </div>${editingId === m.id ? nutPanel(m) : ''}`).join('')
+        </div>${priceEditId === m.id ? pricePanel(m) : ''}${editingId === m.id ? nutPanel(m) : ''}`).join('')
     ).join('');
   }
 
