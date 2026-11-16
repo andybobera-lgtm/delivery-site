@@ -92,7 +92,31 @@ const YOOKASSA_SECRET_KEY = process.env.YOOKASSA_SECRET_KEY;
 // Условия доставки (можно поменять здесь или через переменные окружения)
 const MIN_ORDER = Number(process.env.MIN_ORDER) || 1000;            // минимальная сумма заказа, ₽
 const DELIVERY_FEE = Number(process.env.DELIVERY_FEE) || 250;       // стоимость доставки, ₽
-const FREE_DELIVERY_FROM = Number(process.env.FREE_DELIVERY_FROM) || 3000; // от этой суммы доставка бесплатная, ₽
+const FREE_DELIVERY_FROM = Number(process.env.FREE_DELIVERY_FROM) || 3000; // от этой суммы действует сниженная цена доставки, ₽
+
+// Две зоны доставки (расстояние по прямой от кулинарной лавки):
+//   ближняя — до NEAR_RADIUS_M: DELIVERY_FEE, а от FREE_DELIVERY_FROM — бесплатно;
+//   дальняя — до FAR_RADIUS_M:  DELIVERY_FEE_FAR, а от FREE_DELIVERY_FROM — DELIVERY_FEE_FAR_DISCOUNT.
+function envNum(name, def) { const v = process.env[name]; return v !== undefined && v !== '' && Number.isFinite(Number(v)) ? Number(v) : def; }
+const NEAR_RADIUS_M = envNum('NEAR_RADIUS_M', 2000);
+const FAR_RADIUS_M = envNum('FAR_RADIUS_M', 4000);
+const DELIVERY_FEE_FAR = envNum('DELIVERY_FEE_FAR', 500);
+const DELIVERY_FEE_FAR_DISCOUNT = envNum('DELIVERY_FEE_FAR_DISCOUNT', 200);
+const KITCHEN_COORDS = [55.673030, 37.614196]; // кулинарная лавка «Дачная беседка» [широта, долгота]
+
+// Расстояние между двумя точками по прямой, метры. Та же формула стоит в браузере (script.js),
+// поэтому цена, которую человек видит в корзине, совпадает с ценой, которую считает сервер.
+function distanceM(a, b) {
+  const R = 6371000, rad = Math.PI / 180;
+  const dLat = (b[0] - a[0]) * rad, dLon = (b[1] - a[1]) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a[0] * rad) * Math.cos(b[0] * rad) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+function deliveryFeeFor(zone, subtotal) {
+  const reduced = subtotal >= FREE_DELIVERY_FROM;
+  if (zone === 'far') return reduced ? DELIVERY_FEE_FAR_DISCOUNT : DELIVERY_FEE_FAR;
+  return reduced ? 0 : DELIVERY_FEE;
+}
 
 function readJSON(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
@@ -163,7 +187,11 @@ app.get('/api/health', (req, res) => {
 
 // --- Условия доставки для сайта (корзина берёт отсюда цифры) ---
 app.get('/api/config', (req, res) => {
-  res.json({ minOrder: MIN_ORDER, deliveryFee: DELIVERY_FEE, freeDeliveryFrom: FREE_DELIVERY_FROM });
+  res.json({
+    minOrder: MIN_ORDER, deliveryFee: DELIVERY_FEE, freeDeliveryFrom: FREE_DELIVERY_FROM,
+    farFee: DELIVERY_FEE_FAR, farFeeFree: DELIVERY_FEE_FAR_DISCOUNT,
+    nearRadius: NEAR_RADIUS_M, farRadius: FAR_RADIUS_M,
+  });
 });
 
 // --- Каталог с учётом стоп-листа и правок КБЖУ из админ-панели ---
@@ -238,6 +266,19 @@ app.post('/api/orders', orderLimiter, async (req, res) => {
     if (!customer.name || !customer.phone || !customer.address) {
       return res.status(400).json({ error: 'Не заполнены данные покупателя' });
     }
+    // Точка доставки на карте: по ней сервер сам определяет зону и цену доставки и не принимает адреса вне зоны
+    const g = body.geo && typeof body.geo === 'object' ? body.geo : null;
+    const lat = g ? Number(g.lat) : NaN, lon = g ? Number(g.lon) : NaN;
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+      return res.status(400).json({ error: 'Отметьте адрес доставки точкой на карте' });
+    }
+    const geo = { lat: Math.round(lat * 1e6) / 1e6, lon: Math.round(lon * 1e6) / 1e6 };
+    const distance = distanceM([geo.lat, geo.lon], KITCHEN_COORDS);
+    if (distance > FAR_RADIUS_M) {
+      return res.status(400).json({ error: `Адрес не входит в зону доставки (до ${FAR_RADIUS_M / 1000} км)` });
+    }
+    const deliveryZone = distance <= NEAR_RADIUS_M ? 'near' : 'far';
+
     // Согласие на обработку персональных данных — отдельная отметка (ст. 9 152-ФЗ)
     if (body.consentPd !== true) {
       return res.status(400).json({ error: 'Нужно дать согласие на обработку персональных данных' });
@@ -326,7 +367,7 @@ app.post('/api/orders', orderLimiter, async (req, res) => {
     if (subtotal < MIN_ORDER) {
       return res.status(400).json({ error: `Минимальный заказ — ${MIN_ORDER} ₽. Добавьте товары ещё на ${MIN_ORDER - subtotal} ₽` });
     }
-    const deliveryFee = subtotal >= FREE_DELIVERY_FROM ? 0 : DELIVERY_FEE;
+    const deliveryFee = deliveryFeeFor(deliveryZone, subtotal);
     total = subtotal + deliveryFee;
 
     const orderId = uuidv4();
@@ -335,6 +376,8 @@ app.post('/api/orders', orderLimiter, async (req, res) => {
       items: orderItems,
       subtotal,
       deliveryFee,
+      deliveryZone,
+      geo,
       total,
       customer,
       cutleryCount,
