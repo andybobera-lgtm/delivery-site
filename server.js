@@ -76,6 +76,16 @@ function makeLimiter(windowMs, max) {
 app.use('/api/', makeLimiter(60 * 1000, 300));                       // всего: 300 запросов в минуту с одного адреса
 const orderLimiter = makeLimiter(10 * 60 * 1000, 15);                // создание заказов: 15 за 10 минут
 
+// SEO: главная с мета-тегами, страницы /menu/... и /dish/..., sitemap.xml и robots.txt (подключаем ДО раздачи файлов из public)
+require('./seo')(app, {
+  siteUrl: SITE_URL,
+  publicDir: path.join(__dirname, 'public'),
+  productsFile: path.join(__dirname, 'products.json'),
+  loadCatalog: () => loadCatalog(),
+  minOrder: () => MIN_ORDER,
+  farRadiusM: () => FAR_RADIUS_M,
+});
+
 app.use(express.static(path.join(__dirname, 'public'), {
   dotfiles: 'ignore',
   setHeaders: (res, filePath) => {
