@@ -154,17 +154,21 @@ module.exports = function setupSeo(app, opts) {
         openingHoursSpecification: [{ '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], opens: '10:00', closes: '22:00' }],
         acceptsReservations: false,
       },
-      { '@type': 'WebSite', '@id': SITE + '/#website', url: SITE + '/', name: BRAND, inLanguage: 'ru-RU' },
+      { '@type': 'WebSite', '@id': SITE + '/#website', url: SITE + '/', name: BRAND, alternateName: ['Дачная беседка', 'Dachnaya Besedka'], inLanguage: 'ru-RU' },
     ],
   });
 
   // ---------- Главная: вставляем мета-теги, разметку и ссылки на категории в index.html ----------
   let homeCache = { mtime: 0, html: '' };
-  async function homeHtml() {
+  function rawHome() {
     const file = path.join(PUBLIC, 'index.html');
     const st = fs.statSync(file);
     if (st.mtimeMs !== homeCache.mtime) homeCache = { mtime: st.mtimeMs, html: fs.readFileSync(file, 'utf-8') };
-    let html = homeCache.html;
+    return homeCache.html;
+  }
+  const FOOTER_NAV_CSS = '.footer-menu{max-width:980px;margin:0 auto 14px;padding:0 16px;font-size:13px;line-height:1.9;text-align:center}.footer-menu a{color:inherit;opacity:.75;text-decoration:none;white-space:nowrap}.footer-menu a:hover{opacity:1;text-decoration:underline}.footer-menu .fm-title{opacity:.6}';
+  async function homeHtml() {
+    let html = rawHome();
     let nav = '';
     try {
       const { cats } = await catalog();
@@ -244,7 +248,7 @@ ${(jsonld || []).map(ld).join('\n')}
 <main class="wrap">
 ${body}
 </main>
-<footer class="ft"><a href="/">Главная и заказ</a><a href="/legal/offer.html">Оферта</a><a href="/legal/privacy-policy.html">Политика конфиденциальности</a></footer>
+<footer class="ft"><p style="margin:0 0 8px"><a href="/">Главная и заказ</a></p><p style="margin:0"><a href="/legal/privacy-policy.html">Политика конфиденциальности</a> · <a href="/legal/privacy-policy.html">Политика cookie</a> · <a href="/legal/consent.html">Согласие на обработку персональных данных</a> · <a href="/legal/offer.html">Пользовательское соглашение (договор оферты)</a></p></footer>
 <div class="sticky"><a href="${esc(st.href)}">${esc(st.label)}</a></div>
 </body>
 </html>`;
@@ -272,6 +276,23 @@ ${body}
   }));
 
   // ---------- Страница категории: /menu/shashlyk ----------
+  // Это та же страница сайта (с корзиной и окнами блюд), но показывает только одну категорию:
+  // добавлять в корзину можно прямо здесь, без перехода на главную.
+  const CAT_CSS = `body.cat-page{background:#fcf8ee}
+.cat-page .promo-slider,.cat-page .category-nav-row{display:none!important}
+.cat-intro{max-width:1100px;margin:0 auto;padding:18px 20px 20px}
+.cat-intro .back,.cat-more .back{display:inline-flex;align-items:center;gap:8px;background:#f1ece0;color:#1e1e1e;text-decoration:none;font-weight:600;font-size:15px;padding:9px 16px 9px 10px;border-radius:999px}
+.cat-intro .back:hover{background:#e9e2d2}.cat-intro .bi{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#fff;font-size:16px;line-height:1}
+.cat-intro h1{font-size:clamp(30px,5vw,52px);line-height:1.05;font-weight:800;text-transform:uppercase;letter-spacing:-.01em;margin:14px 0 12px}
+.cat-intro .lead{color:#5b5850;margin:0;max-width:780px;font-size:15px;line-height:1.5}
+.cat-page .menu-wrap{padding-top:18px}
+.cat-more{max-width:1100px;margin:10px auto 40px;padding:0 20px}
+.cat-more h2{font-size:22px;font-weight:800;text-transform:uppercase;margin:0 0 12px}
+.cat-more nav{display:flex;flex-wrap:wrap;gap:8px}
+.cat-more nav a{padding:9px 16px;border-radius:999px;background:#f1ece0;font-size:14px;font-weight:600;text-decoration:none;color:#1e1e1e}.cat-more nav a:hover{background:#e9e2d2}
+.cat-more p{font-size:14px;color:#6b685f;margin:16px 0 0;line-height:1.5}
+@media(max-width:720px){.cat-intro{padding:14px 16px 16px}.cat-more{padding:0 16px}}`;
+
   app.get('/menu/:slug', async (req, res) => {
     try {
       const { cats, by } = await catalog();
@@ -284,19 +305,33 @@ ${body}
       const url = `${SITE}/menu/${catSlug(name)}`;
       const names = items.slice(0, 4).map((p) => p.name).join(', ');
       const desc = cut(`${seo.lead} В меню: ${names}${items.length > 4 ? ' и другое' : ''}.` + (from ? ` Цены от ${money(from)}.` : '') + ' Доставка по Москве, оплата онлайн.', 158);
-      const cards = items.map((p) => cardHtml(p, true)).join('\n');
-      const body = `<a class="back" href="/"><span class="bi" aria-hidden="true">⌂</span>На главную</a>
-<h1>${esc(seo.h1)}</h1>
-<p class="lead">${esc(seo.lead)} ${esc(deliveryLine())}</p>
-<div class="grid">${cards}</div>`;
       const jsonld = [
         { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Главная', item: SITE + '/' },
           { '@type': 'ListItem', position: 2, name, item: url }] },
         { '@context': 'https://schema.org', '@type': 'ItemList', name: seo.h1, itemListElement: items.map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: `${SITE}/dish/${p.id}`, name: p.name })) },
       ];
-      res.set({ 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' })
-        .send(page({ title: cut(seo.title + ' | ' + BRAND, 70), desc, url, image: ogImage(items.find(hasImg) || {}), body, jsonld }));
+      const title = cut(seo.title + ' | ' + BRAND, 70);
+      const head = headBlock({ title, desc, url, image: ogImage(items.find(hasImg) || {}), extra: verificationTags() }) +
+        '\n<base href="/" />\n' + jsonld.map(ld).join('\n') + `\n<style>${FOOTER_NAV_CSS}${CAT_CSS}</style>`;
+      const nav = '<span class="fm-title">Меню:</span> ' + cats.map((c) => `<a href="/menu/${catSlug(c)}">${esc((CAT_SEO[c] || {}).h1 || c)}</a>`).join(' · ');
+      const intro = `<section class="cat-intro"><a class="back" href="/"><span class="bi" aria-hidden="true">⌂</span>На главную</a>
+<h1>${esc(seo.h1)}</h1>
+<p class="lead">${esc(seo.lead)} ${esc(deliveryLine())}</p></section>`;
+      const others = cats.filter((c) => c !== name);
+      const more = `<section class="cat-more"><h2>Другие разделы меню</h2><nav aria-label="Другие разделы">${others.map((c) => `<a href="/menu/${catSlug(c)}">${esc(c)}</a>`).join('')}</nav>
+<p>${esc(deliveryLine())}</p></section>`;
+      const fallback = `<noscript><ul>${items.map((p) => `<li><a href="/dish/${esc(p.id)}">${esc(p.name)}</a>${priceOf(p) !== null ? ' — ' + (p.type === 'variant' ? 'от ' : '') + money(priceOf(p)) : ''}${p.description ? '. ' + esc(p.description) : ''}</li>`).join('')}</ul></noscript>`;
+
+      let html = rawHome();
+      html = html.replace(/<title>[\s\S]*?<\/title>/, head)
+        .replace('<body>', '<body class="cat-page">')
+        .replace('</header>', '</header>\n' + intro)
+        .replace('<div id="menu-sections">Загрузка меню...</div>', `<div id="menu-sections">${fallback}</div>`)
+        .replace('<footer class="footer">', more + '\n<footer class="footer">')
+        .replace('<!--SEO_NAV-->', nav)
+        .replace('<script src="script.js"></script>', `<script>window.ONLY_CATEGORY=${JSON.stringify(name).replace(/</g, '\\u003c')};</script>\n<script src="script.js"></script>`);
+      res.set({ 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }).send(html);
     } catch (e) { console.error('SEO категория:', e.message); res.status(500).send('Ошибка'); }
   });
 
