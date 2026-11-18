@@ -217,16 +217,20 @@ function slug(text) {
 function renderMenu() {
   const container = document.getElementById('menu-sections');
   container.innerHTML = '';
-  const categories = [...new Set(products.map((p) => p.category || 'Меню'))];
+  // страница категории (/menu/...): показываем только одну категорию, заголовок уже есть сверху страницы
+  const only = window.ONLY_CATEGORY || null;
+  const categories = [...new Set(products.map((p) => p.category || 'Меню'))].filter((c) => !only || c === only);
 
   categories.forEach((cat) => {
     const section = document.createElement('section');
     section.className = 'menu-section';
     section.id = 'cat-' + slug(cat);
 
-    const heading = document.createElement('h2');
-    heading.textContent = cat;
-    section.appendChild(heading);
+    if (!only) {
+      const heading = document.createElement('h2');
+      heading.textContent = cat;
+      section.appendChild(heading);
+    }
 
     const grid = document.createElement('div');
     grid.className = 'products-grid';
@@ -254,7 +258,7 @@ function renderProductCard(p) {
   const body = document.createElement('div');
   body.className = 'product-body';
   body.innerHTML = `
-    <h3>${p.name}</h3>
+    <h3><a class="card-link" href="/dish/${p.id}">${p.name}</a></h3>
     <div class="product-meta">${p.weight || ''}</div>
     <div class="product-footer">
       <div class="card-action"></div>
@@ -266,6 +270,7 @@ function renderProductCard(p) {
 
   card.addEventListener('click', (e) => {
     if (e.target.closest('.card-action')) return;
+    if (e.target.closest('a')) e.preventDefault(); // ссылка на страницу блюда нужна поисковикам; людям открываем окно блюда
     openDetailFor(p);
   });
 
