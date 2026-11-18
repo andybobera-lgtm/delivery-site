@@ -359,7 +359,9 @@ function changeSimpleQty(product, delta) {
 /* ================= ОБЩЕЕ: показать/скрыть окно с анимацией ================= */
 let scrollLockY = null;
 function updateScrollLock() {
-  const anyOpen = !!document.querySelector('.picker-modal.open, .cart-drawer.open, .address-modal.open, .legal-modal.open, .mobile-menu-drawer.open, .info-modal.open');
+  // на компьютере корзина закреплена справа и не блокирует страницу — меню можно листать
+  const deskCart = window.matchMedia('(min-width: 900px)').matches;
+  const anyOpen = !!document.querySelector('.picker-modal.open, ' + (deskCart ? '' : '.cart-drawer.open, ') + '.address-modal.open, .legal-modal.open, .mobile-menu-drawer.open, .info-modal.open');
   // пока открыто окно — страница под ним не прокручивается (листается только само окно).
   // На iPhone одного overflow:hidden мало, поэтому страницу «замораживаем» на месте (position:fixed)
   if (anyOpen && scrollLockY === null) {
@@ -379,13 +381,35 @@ function updateScrollLock() {
     root.style.scrollBehavior = prev;
   }
 }
+/* Карточка блюда «вылетает» из того места, где нажали (компьютер) */
+let lastOpenRect = null;
+document.addEventListener('click', (e) => {
+  const c = e.target.closest && e.target.closest('.product-card, .upsell-card');
+  lastOpenRect = c ? c.getBoundingClientRect() : null;
+}, true);
+function setFlyFrom(modal) {
+  const desk = window.matchMedia('(min-width: 641px)').matches;
+  if (!desk || !lastOpenRect || modal.classList.contains('open')) { modal.style.setProperty('--fx', '0px'); modal.style.setProperty('--fy', '0px'); modal.style.setProperty('--fs', '0.9'); return; }
+  const cartShift = document.body.classList.contains('cart-open') && window.matchMedia('(min-width: 900px)').matches ? 420 : 0;
+  const cx = (window.innerWidth - cartShift) / 2, cy = window.innerHeight / 2;
+  const r = lastOpenRect;
+  const fx = r.left + r.width / 2 - cx, fy = r.top + r.height / 2 - cy;
+  const fs = Math.max(0.3, Math.min(0.8, r.width / (modal.offsetWidth || 900)));
+  modal.style.setProperty('--fx', fx.toFixed(0) + 'px');
+  modal.style.setProperty('--fy', fy.toFixed(0) + 'px');
+  modal.style.setProperty('--fs', fs.toFixed(3));
+}
 function showPicker() {
+  const modal = document.getElementById('picker-modal');
+  if (!modal.classList.contains('open')) { setFlyFrom(modal); void modal.offsetWidth; }
   document.getElementById('picker-overlay').classList.add('open');
-  document.getElementById('picker-modal').classList.add('open');
+  modal.classList.add('open');
   updateScrollLock();
 }
 function closePicker() {
   document.getElementById('picker-overlay').classList.remove('open');
+  const pm = document.getElementById('picker-modal');
+  pm.style.setProperty('--fx', '0px'); pm.style.setProperty('--fy', '0px'); pm.style.setProperty('--fs', '0.94');
   document.getElementById('picker-modal').classList.remove('open');
   document.getElementById('picker-modal').dataset.pid = '';
   updateScrollLock();
