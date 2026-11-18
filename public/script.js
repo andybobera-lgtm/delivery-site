@@ -89,6 +89,17 @@ async function loadProducts() {
   renderMenu();
   restoreCart();
   cleanCategoryHash();
+  openDishFromLink();
+}
+
+// Ссылка вида /?dish=shashlyk-lamb (со страницы блюда в поиске): открываем карточку этого блюда
+function openDishFromLink() {
+  let id = null;
+  try { id = new URLSearchParams(location.search).get('dish'); } catch (e) {}
+  if (!id) return;
+  const p = products.find((x) => x.id === id);
+  try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
+  if (p) openDetailFor(p);
 }
 
 function renderCategoryNav() {
