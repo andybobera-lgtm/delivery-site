@@ -79,6 +79,7 @@ function restoreCart() {
   cartRestored = true;
   renderCutlery();
   renderCartWidgets();
+  cartArmed = true;
 }
 ['name', 'phone'].forEach((id) => document.getElementById(id).addEventListener('input', saveCustomer));
 
@@ -358,7 +359,7 @@ function changeSimpleQty(product, delta) {
 /* ================= ОБЩЕЕ: показать/скрыть окно с анимацией ================= */
 let scrollLockY = null;
 function updateScrollLock() {
-  const anyOpen = !!document.querySelector('.picker-modal.open, .cart-drawer.open, .address-modal.open, .legal-modal.open, .mobile-menu-drawer.open');
+  const anyOpen = !!document.querySelector('.picker-modal.open, .cart-drawer.open, .address-modal.open, .legal-modal.open, .mobile-menu-drawer.open, .info-modal.open');
   // пока открыто окно — страница под ним не прокручивается (листается только само окно).
   // На iPhone одного overflow:hidden мало, поэтому страницу «замораживаем» на месте (position:fixed)
   if (anyOpen && scrollLockY === null) {
@@ -716,53 +717,112 @@ function deliveryCost() {
   return feeFor(deliveryZone, sub);
 }
 
+/* Круглый индикатор: кольцо заполняется по мере набора суммы */
+function ringSvg(pct, done) {
+  const C = 2 * Math.PI * 17;
+  const p = Math.max(0, Math.min(100, pct));
+  return `<svg class="db-ring" viewBox="0 0 40 40" aria-hidden="true">
+    <circle cx="20" cy="20" r="17" fill="none" stroke="#ebe8e1" stroke-width="4"></circle>
+    <circle cx="20" cy="20" r="17" fill="none" stroke="${done ? '#2e9e4f' : '#f15a24'}" stroke-width="4" stroke-linecap="round"
+      stroke-dasharray="${(C * p / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 20 20)"></circle>
+  </svg>`;
+}
+
 function renderDeliveryBar() {
   const box = document.getElementById('delivery-bar');
   if (!box) return;
-  const { minOrder, deliveryFee, freeDeliveryFrom, farFee, farFeeFree, nearRadius, farRadius } = deliveryCfg;
+  const { minOrder, deliveryFee, freeDeliveryFrom, farFeeFree } = deliveryCfg;
   const sub = cartTotal();
-  const pct = Math.min(100, Math.round((sub / freeDeliveryFrom) * 100));
-  const minPct = Math.round((minOrder / freeDeliveryFrom) * 100);
-  const reduced = sub >= freeDeliveryFrom;
-  const belowMin = sub < minOrder;
+  if (sub === 0) { box.innerHTML = ''; box.hidden = true; return; }
+  box.hidden = false;
+
   const far = deliveryZone === 'far';
   const known = deliveryZone === 'near' || far;
+  const belowMin = sub < minOrder;
+  const reduced = sub >= freeDeliveryFrom;
   const fee = feeFor(deliveryZone, sub);
-  const goal = far ? farFeeFree : 0;           // цена доставки после порога
-  const goalText = far ? `стоимость доставки стала ${money(farFeeFree)}` : 'получить бесплатную доставку';
-  const km = (m) => (m / 1000).toString().replace('.', ',') + '\u00a0км';
 
-  let title, subtitle, warn = false;
-  if (reduced && !belowMin) {
-    title = far ? `Доставка ${money(farFeeFree)} 🎉` : (known ? 'Доставка бесплатная 🎉' : 'Скидка на доставку 🎉');
-    subtitle = far ? 'Вы получили сниженную стоимость доставки!' : (known ? 'Вы получили бесплатную доставку!' : 'Точная стоимость — после выбора адреса');
-  } else if (belowMin) {
-    title = known ? `Доставка ${money(fee)}` : `Доставка от ${money(deliveryFee)}`;
-    subtitle = sub === 0
-      ? `Минимальный заказ от ${money(minOrder)}`
-      : `Минимальный заказ от ${money(minOrder)} — добавьте товары ещё на ${money(minOrder - sub)}`;
-    warn = sub > 0;
-  } else {
-    title = known ? `Доставка ${money(fee)}` : `Доставка от ${money(deliveryFee)}`;
-    subtitle = known
-      ? `Добавьте товары ещё на ${money(freeDeliveryFrom - sub)}, чтобы ${goalText}!`
-      : 'Точная стоимость зависит от адреса — выберите его на карте';
+  const chips = [];
+  if (belowMin) {
+    chips.push({ pct: sub / minOrder * 100, ico: '⚡', done: false, warn: true,
+      title: `Ещё ${money(minOrder - sub)}`, text: 'до минимальной суммы корзины' });
+  } else if (!reduced) {
+    chips.push({ pct: 100, ico: '✓', done: true, title: 'Минимум набран', text: `заказ от ${money(minOrder)}` });
   }
-  const label = reduced ? (far ? money(farFeeFree) : (known ? 'Бесплатно' : 'Бесплатно / ' + money(farFeeFree))) : (known ? money(fee) : 'от ' + money(deliveryFee));
+  if (reduced) {
+    chips.push({ pct: 100, ico: '🛵', done: true,
+      title: far ? `Доставка ${money(farFeeFree)}` : (known ? 'Доставка бесплатная' : 'Скидка на доставку'),
+      text: far ? 'сниженная цена получена' : (known ? 'вы получили её 🎉' : 'точная цена — по адресу') });
+  } else {
+    chips.push({ pct: sub / freeDeliveryFrom * 100, ico: '🛵', done: false,
+      title: `Ещё ${money(freeDeliveryFrom - sub)}`,
+      text: far ? `до доставки за ${money(farFeeFree)}` : 'до бесплатной доставки' });
+  }
 
+  const feeText = known ? (fee === 0 ? 'бесплатно' : money(fee)) : `от ${money(deliveryFee)}`;
   box.innerHTML = `
-    <div class="db-title">${title}</div>
-    <div class="db-sub${warn ? ' warn' : ''}">${subtitle}</div>
-    <div class="db-track">
-      <div class="db-fill${reduced ? ' full' : ''}" style="width:${pct}%"></div>
-      ${reduced ? '' : `<span class="db-mark" style="left:${minPct}%"></span>`}
+    <div class="db-chips">
+      ${chips.map((c) => `
+        <button type="button" class="db-chip${c.warn ? ' warn' : ''}" data-info="1">
+          <span class="db-ring-wrap">${ringSvg(c.pct, c.done)}<span class="db-ring-ico">${c.ico}</span></span>
+          <span class="db-chip-text"><b>${c.title}</b><span>${c.text}</span></span>
+        </button>`).join('')}
     </div>
-    <div class="db-labels"><span>🛵 ${label}</span><span>${money(0)}</span></div>
-    <div class="db-rules">Минимальный заказ от ${money(minOrder)}<br>
-      до ${km(nearRadius)} — ${money(deliveryFee)}, до ${km(farRadius)} — ${money(farFee)}<br>
-      от ${money(freeDeliveryFrom)}: до ${km(nearRadius)} бесплатно, до ${km(farRadius)} — ${money(farFeeFree)}</div>
+    <button type="button" class="db-line" data-info="1">🛵 Доставка ${feeText}<span>Условия доставки ›</span></button>
   `;
+  box.querySelectorAll('[data-info]').forEach((b) => b.addEventListener('click', openDeliveryInfo));
 }
+
+/* Окно «Условия доставки» (без времени ожидания) */
+function openDeliveryInfo() {
+  const { minOrder, deliveryFee, freeDeliveryFrom, farFee, farFeeFree, nearRadius, farRadius } = deliveryCfg;
+  const sub = cartTotal();
+  const km = (m) => (m / 1000).toString().replace('.', ',') + ' км';
+  const belowMin = sub < minOrder;
+  const near = deliveryZone === 'near', far = deliveryZone === 'far', known = near || far;
+  const reduced = sub >= freeDeliveryFrom;
+  const addr = (document.getElementById('address').value || '').trim();
+
+  const rows = [`<div class="info-row${belowMin && sub > 0 ? ' now' : ''}"><span>Минимальный заказ</span><b>${money(minOrder)}</b></div>`];
+  const zoneRows = (label, low, high, active) => {
+    const pre = label ? label + ': ' : '';
+    rows.push(`<div class="info-row${active && !reduced ? ' now' : ''}"><span>${pre}при заказе до ${money(freeDeliveryFrom)}</span><b>${money(low)}</b></div>`);
+    rows.push(`<div class="info-row${active && reduced ? ' now' : ''}"><span>${pre}при заказе от ${money(freeDeliveryFrom)}</span><b>${high === 0 ? 'бесплатно' : money(high)}</b></div>`);
+  };
+  if (!known || near) zoneRows(known ? '' : `до ${km(nearRadius)}`, deliveryFee, 0, near);
+  if (!known || far) zoneRows(known ? '' : `${km(nearRadius).replace(' км', '')}–${km(farRadius)}`, farFee, farFeeFree, far);
+
+  let head;
+  if (belowMin) {
+    const pct = sub / minOrder * 100;
+    head = `<div class="info-top"><span class="db-ring-wrap lg">${ringSvg(pct, false)}<span class="db-ring-ico">⚡</span></span>
+            <div class="info-need"><b>Ещё ${money(minOrder - sub)}</b><span>до минимальной суммы корзины</span></div></div>`;
+  } else {
+    head = `<div class="info-top"><span class="db-ring-wrap lg">${ringSvg(100, true)}<span class="db-ring-ico">✓</span></span>
+            <div class="info-need"><b>Минимальная сумма набрана</b><span>можно оформлять заказ</span></div></div>`;
+  }
+
+  const modal = document.getElementById('info-modal');
+  modal.innerHTML = `
+    <button class="cart-close info-close" id="info-close" aria-label="Закрыть">✕</button>
+    ${head}
+    <h3 class="info-addr">${addr ? addr.replace(/[<>&]/g, '') : 'Условия доставки'}</h3>
+    ${addr ? '' : '<div class="info-note">Точная цена зависит от адреса — выберите его на карте при оформлении.</div>'}
+    <div class="info-rows">${rows.join('')}</div>
+    <button type="button" class="info-ok" id="info-ok">Понятно</button>
+  `;
+  document.getElementById('info-overlay').classList.add('open');
+  modal.classList.add('open');
+  document.getElementById('info-close').addEventListener('click', closeDeliveryInfo);
+  document.getElementById('info-ok').addEventListener('click', closeDeliveryInfo);
+  updateScrollLock();
+}
+function closeDeliveryInfo() {
+  document.getElementById('info-overlay').classList.remove('open');
+  document.getElementById('info-modal').classList.remove('open');
+  updateScrollLock();
+}
+document.getElementById('info-overlay').addEventListener('click', closeDeliveryInfo);
 
 function renderTotals() {
   const sub = cartTotal();
@@ -783,9 +843,14 @@ function renderTotals() {
   }
 }
 
+let lastCartCount = 0;
+let cartArmed = false; // включается после загрузки сохранённой корзины, чтобы она не открывалась сама при входе на сайт
 function renderCartWidgets() {
   const fab = document.getElementById('cart-fab');
   const count = cartCount();
+  // Компьютер: добавили блюдо — корзина сама выезжает справа
+  const grew = cartArmed && count > lastCartCount;
+  lastCartCount = count;
 
   if (count === 0) {
     fab.hidden = true;
@@ -801,6 +866,7 @@ function renderCartWidgets() {
   renderUpsell();
   refreshAllCards();
   saveCart();
+  if (grew && window.matchMedia('(min-width: 900px)').matches && !document.getElementById('cart-drawer').classList.contains('open')) openCart();
 }
 
 function renderCartLines() {
@@ -945,11 +1011,13 @@ document.getElementById('cutlery-minus').addEventListener('click', () => {
 function openCart() {
   document.getElementById('cart-drawer').classList.add('open');
   document.getElementById('cart-overlay').classList.add('open');
+  document.body.classList.add('cart-open');
   updateScrollLock();
 }
 function closeCart() {
   document.getElementById('cart-drawer').classList.remove('open');
   document.getElementById('cart-overlay').classList.remove('open');
+  document.body.classList.remove('cart-open');
   closeAddressModal();
   updateScrollLock();
 }
