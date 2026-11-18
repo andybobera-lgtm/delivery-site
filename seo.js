@@ -194,7 +194,7 @@ body{margin:0;font-family:'Onest',-apple-system,Arial,sans-serif;color:#1e1e1e;b
 .hd-phone{text-decoration:none;font-weight:600;font-size:15px}
 .hd-cta{background:#ff4b05;color:#fff;text-decoration:none;font-weight:700;padding:11px 20px;border-radius:14px;font-size:15px;white-space:nowrap}
 .wrap{max-width:1240px;margin:0 auto;padding:18px 20px 110px}
-.bc{font-size:13px;color:#8a8a8a;margin-bottom:6px}.bc a{color:#8a8a8a;text-decoration:none}.bc a:hover{text-decoration:underline}
+.back{display:inline-flex;align-items:center;gap:8px;background:#f1ece0;color:#1e1e1e;text-decoration:none;font-weight:600;font-size:15px;padding:9px 16px 9px 10px;border-radius:999px;margin:2px 8px 6px 0}.back:hover{background:#e9e2d2}.back .bi{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#fff;font-size:16px;line-height:1}
 h1{font-size:clamp(30px,5vw,52px);line-height:1.05;font-weight:800;text-transform:uppercase;letter-spacing:-.01em;margin:6px 0 12px}
 .lead{color:#5b5850;margin:0 0 18px;max-width:780px;font-size:15px}
 .pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -20px 8px;padding:2px 20px 12px;-webkit-overflow-scrolling:touch}.pills::-webkit-scrollbar{display:none}
@@ -285,10 +285,9 @@ ${body}
       const names = items.slice(0, 4).map((p) => p.name).join(', ');
       const desc = cut(`${seo.lead} В меню: ${names}${items.length > 4 ? ' и другое' : ''}.` + (from ? ` Цены от ${money(from)}.` : '') + ' Доставка по Москве, оплата онлайн.', 158);
       const cards = items.map((p) => cardHtml(p, true)).join('\n');
-      const body = `<div class="bc"><a href="/">Главная</a> › ${esc(name)}</div>
+      const body = `<a class="back" href="/"><span class="bi" aria-hidden="true">⌂</span>На главную</a>
 <h1>${esc(seo.h1)}</h1>
 <p class="lead">${esc(seo.lead)} ${esc(deliveryLine())}</p>
-${pills(cats, name)}
 <div class="grid">${cards}</div>`;
       const jsonld = [
         { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
@@ -342,8 +341,7 @@ ${pills(cats, name)}
       const more = same.length ? `<h2 class="more">Ещё из раздела «${esc(p.category)}»</h2><div class="grid">${same.map((x) => cardHtml(x, false)).join('')}</div>` : '';
       const orderHref = `/?dish=${encodeURIComponent(p.id)}`;
       const canOrder = !p.stop && pr !== null;
-      const body = `<div class="bc"><a href="/">Главная</a> › <a href="/menu/${catSlug(p.category)}">${esc(p.category)}</a> › ${esc(p.name)}</div>
-${pills(cats, p.category)}
+      const body = `<a class="back" href="/menu/${catSlug(p.category)}"><span class="bi" aria-hidden="true">‹</span>${esc(p.category)}</a><a class="back" href="/"><span class="bi" aria-hidden="true">⌂</span>На главную</a>
 <div class="dish${hasImg(p) ? '' : ' nophoto'}">
 ${hasImg(p) ? `<div class="dimg">${imgTag(p)}</div>` : ''}
 <div class="dinfo">
