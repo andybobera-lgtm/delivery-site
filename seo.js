@@ -68,7 +68,7 @@ module.exports = function setupSeo(app, opts) {
   const priceOf = (p) => (typeof p.price === 'number' ? p.price : null);
   // файл картинки блюда есть на сайте? (если нет — не показываем битую картинку)
   const hasImg = (p) => !!p.image && fs.existsSync(path.join(PUBLIC, String(p.image).replace(/^\/+/, '')));
-  const imgTag = (p, extra) => (hasImg(p) ? `<img src="/${esc(p.image)}" alt="${esc(p.name)}"${extra || ''} />` : '<div style="aspect-ratio:4/3;background:#f3f1ec"></div>');
+  const imgTag = (p, extra) => (hasImg(p) ? `<img src="/${esc(p.image)}" alt="${esc(p.name)}"${extra || ''} />` : '<div class="ph" role="img" aria-label="' + esc(p.name) + '"></div>');
 
   // картинка для превью в мессенджерах: уменьшенная копия images/og/<имя>, если она есть, иначе исходная
   function ogImage(p) {
@@ -186,24 +186,47 @@ module.exports = function setupSeo(app, opts) {
   app.get('/index.html', homeHandler);
 
   // ---------- Общий шаблон внутренних страниц ----------
-  const css = `*{box-sizing:border-box}body{margin:0;font-family:'Onest',-apple-system,Arial,sans-serif;color:#1e1e1e;background:#fff;line-height:1.5}a{color:#487648}
-.hd{background:#152f24;color:#fff}.hd-in{max-width:980px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.hd a{color:#fff;text-decoration:none}.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px}.brand img{width:36px;height:36px;object-fit:contain}
-.wrap{max-width:980px;margin:0 auto;padding:18px 16px 40px}.bc{font-size:13px;color:#8a8a8a;margin-bottom:10px}.bc a{color:#8a8a8a}
-h1{font-size:28px;line-height:1.2;margin:4px 0 10px}.lead{color:#444;margin:0 0 18px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
-.card{border:1px solid #ece7de;border-radius:14px;overflow:hidden;background:#fff;display:flex;flex-direction:column}
-.card img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#f3f1ec}.card .b{padding:10px 12px 12px;display:flex;flex-direction:column;gap:4px;flex:1}
-.card a.t{color:#1e1e1e;text-decoration:none;font-weight:600}.card .m{font-size:13px;color:#8a8a8a}.card .p{font-weight:700;color:#487648;margin-top:auto}
-.btn{display:inline-block;background:#ff4b05;color:#fff!important;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:12px}
-.btn.g{background:#487648}.old{color:#8a8a8a;text-decoration:line-through;font-weight:400;margin-right:6px}
-.dish{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}@media(max-width:720px){.dish{grid-template-columns:1fr}}
-.dish img{width:100%;border-radius:14px;background:#f3f1ec}.price{font-size:26px;font-weight:700;color:#487648;margin:8px 0 14px}
-table.v{border-collapse:collapse;margin:6px 0 14px;width:100%}table.v td{padding:7px 0;border-bottom:1px solid #ece7de}table.v td:last-child{text-align:right;font-weight:700;white-space:nowrap}
-.note{font-size:14px;color:#555;margin:18px 0}.cats{margin-top:28px;font-size:14px;line-height:2}.cats a{margin-right:12px;white-space:nowrap}
-.ft{border-top:1px solid #ece7de;padding:16px;text-align:center;font-size:13px;color:#8a8a8a}.ft a{color:#8a8a8a;margin:0 6px}`;
+  const css = `*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;font-family:'Onest',-apple-system,Arial,sans-serif;color:#1e1e1e;background:#fcf8ee;line-height:1.45;-webkit-font-smoothing:antialiased}a{color:inherit}
+.hd{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #ece7de}
+.hd-in{max-width:1240px;margin:0 auto;padding:8px 20px;display:flex;align-items:center;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;text-decoration:none;margin-right:auto}.brand img{height:48px;width:auto;object-fit:contain}
+.hd-phone{text-decoration:none;font-weight:600;font-size:15px}
+.hd-cta{background:#ff4b05;color:#fff;text-decoration:none;font-weight:700;padding:11px 20px;border-radius:14px;font-size:15px;white-space:nowrap}
+.wrap{max-width:1240px;margin:0 auto;padding:18px 20px 110px}
+.bc{font-size:13px;color:#8a8a8a;margin-bottom:6px}.bc a{color:#8a8a8a;text-decoration:none}.bc a:hover{text-decoration:underline}
+h1{font-size:clamp(30px,5vw,52px);line-height:1.05;font-weight:800;text-transform:uppercase;letter-spacing:-.01em;margin:6px 0 12px}
+.lead{color:#5b5850;margin:0 0 18px;max-width:780px;font-size:15px}
+.pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -20px 8px;padding:2px 20px 12px;-webkit-overflow-scrolling:touch}.pills::-webkit-scrollbar{display:none}
+.pill{flex:0 0 auto;padding:9px 16px;border-radius:999px;background:#f1ece0;font-size:14px;font-weight:600;text-decoration:none;color:#1e1e1e;white-space:nowrap}.pill:hover{background:#e9e2d2}.pill.on{background:#1e1e1e;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px 20px;margin-top:10px}
+.card{display:flex;flex-direction:column;min-width:0}
+.card .pic{display:block;margin-bottom:10px;border-radius:16px;overflow:hidden;background:#efe6d3}
+.card img,.card .ph{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;transition:transform .35s ease}.card .pic:hover img{transform:scale(1.03)}
+.ph{background:linear-gradient(135deg,#efe6d3,#e4d8bf)}
+.card .t{font-weight:600;font-size:17px;text-decoration:none;line-height:1.25}.card .t:hover{text-decoration:underline}
+.card .m{font-size:12px;color:#8a8a8a;margin:2px 0 4px}
+.card .d{font-size:13px;color:#777;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:0 0 10px}
+.card .buy{margin-top:auto;padding-top:4px}
+.pbtn{display:inline-flex;align-items:center;gap:8px;background:#487648;color:#fff!important;text-decoration:none;font-weight:700;font-size:14px;padding:9px 14px;border-radius:12px;transition:background .2s}.pbtn:hover{background:#395f39}
+.pbtn.o{background:#ff4b05;font-size:17px;padding:15px 28px;border-radius:16px;box-shadow:0 8px 20px rgba(241,90,36,.3)}.pbtn.o:hover{background:#e84300}
+.old{color:#8a8a8a;text-decoration:line-through;font-weight:400;margin-right:6px}
+.dish{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:40px;align-items:start;margin-top:8px}
+.dish.nophoto{grid-template-columns:1fr;max-width:760px}.dimg img,.dimg .ph{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:22px;display:block;background:#efe6d3}
+.dinfo .w{color:#8a8a8a;margin:0 0 6px}.price{font-size:30px;font-weight:800;margin:8px 0 16px}
+.dtext{font-size:16px;color:#3b3934;margin:0 0 14px}
+table.v{border-collapse:collapse;margin:6px 0 16px;width:100%;background:#fff;border-radius:14px;overflow:hidden}table.v td{padding:12px 16px;border-bottom:1px solid #f0eadc}table.v tr:last-child td{border-bottom:none}table.v td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+.note{font-size:14px;color:#6b685f;margin:16px 0}
+h2.more{font-size:24px;font-weight:800;text-transform:uppercase;margin:44px 0 6px}
+.ft{border-top:1px solid #ece7de;padding:18px;text-align:center;font-size:13px;color:#8a8a8a;background:#fff}.ft a{color:#8a8a8a;margin:0 8px;text-decoration:none}.ft a:hover{text-decoration:underline}
+.sticky{display:none}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 14px}.dish{grid-template-columns:1fr;gap:20px}.card .t{font-size:15px}}
+@media(max-width:720px){.wrap{padding:14px 16px 110px}.pills{margin:0 -16px 6px;padding:2px 16px 12px}.hd-phone,.hd-cta{display:none}.hd-in{padding:6px 16px}.brand img{height:42px}.brand{font-size:16px}
+.sticky{display:block;position:fixed;left:0;right:0;bottom:0;z-index:30;padding:22px 14px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(to top,#fcf8ee 62%,rgba(252,248,238,0))}
+.sticky a{display:block;text-align:center;background:#ff4b05;color:#fff;font-weight:700;font-size:17px;padding:16px;border-radius:16px;text-decoration:none;box-shadow:0 8px 20px rgba(241,90,36,.35)}}`;
 
-  function page({ title, desc, url, image, type, body, jsonld, bodyClass }) {
+  function page({ title, desc, url, image, type, body, jsonld, sticky }) {
+    const st = sticky || { href: '/', label: 'Перейти к заказу →' };
     return `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -217,16 +240,31 @@ ${headBlock({ title, desc, url, image, type })}
 ${(jsonld || []).map(ld).join('\n')}
 </head>
 <body>
-<header class="hd"><div class="hd-in"><a class="brand" href="/"><img src="/images/logo.png" alt="Логотип ${BRAND}" /><span>${BRAND}</span></a><a href="tel:${PHONE}">${PHONE_VIEW}</a></div></header>
+<header class="hd"><div class="hd-in"><a class="brand" href="/"><img src="/images/logo.png" alt="Логотип ${BRAND}" /><span>${BRAND}</span></a><a class="hd-phone" href="tel:${PHONE}">${PHONE_VIEW}</a><a class="hd-cta" href="/">Перейти к заказу</a></div></header>
 <main class="wrap">
 ${body}
 </main>
 <footer class="ft"><a href="/">Главная и заказ</a><a href="/legal/offer.html">Оферта</a><a href="/legal/privacy-policy.html">Политика конфиденциальности</a></footer>
+<div class="sticky"><a href="${esc(st.href)}">${esc(st.label)}</a></div>
 </body>
 </html>`;
   }
 
-  const catLinks = (cats, active) => `<div class="cats"><strong>Всё меню:</strong><br/>${cats.map((c) => `<a href="/menu/${catSlug(c)}"${c === active ? ' style="font-weight:700"' : ''}>${esc((CAT_SEO[c] || {}).h1 || c)}</a>`).join('')}</div>`;
+  // полоска категорий (обычные ссылки — их видят и люди, и поисковики)
+  const pills = (cats, active) => `<nav class="pills" aria-label="Меню">${cats.map((c) => `<a class="pill${c === active ? ' on' : ''}" href="/menu/${catSlug(c)}">${esc(c)}</a>`).join('')}</nav>`;
+
+  // карточка блюда: фото и название ведут на страницу блюда, кнопка с ценой — в заказ на главной
+  const cardHtml = (p, withDesc) => {
+    const pr = priceOf(p);
+    const id = esc(p.id);
+    const btn = p.stop ? '<span class="m">Сейчас нет в наличии</span>'
+      : pr === null ? '<span class="m">Цену уточняйте</span>'
+        : `<a class="pbtn" href="/?dish=${encodeURIComponent(p.id)}" rel="nofollow">${p.oldPrice && p.oldPrice > pr ? `<span class="old" style="color:#d6e3d6">${money(p.oldPrice)}</span>` : ''}${p.type === 'variant' ? 'от ' : ''}${money(pr)} <span aria-hidden="true">→</span></a>`;
+    return `<article class="card"><a class="pic" href="/dish/${id}">${imgTag(p, ' loading="lazy"')}</a>
+<a class="t" href="/dish/${id}">${esc(p.name)}</a>${p.weight ? `<div class="m">${esc(p.weight)}</div>` : ''}${withDesc && p.description ? `<p class="d">${esc(p.description)}</p>` : ''}
+<div class="buy">${btn}</div></article>`;
+  };
+
 
   const notFound = (res) => res.status(404).set('Content-Type', 'text/html; charset=utf-8').send(page({
     title: 'Страница не найдена — ' + BRAND, desc: 'Такой страницы нет. Перейдите в меню.', url: SITE + '/', image: cover,
@@ -246,18 +284,12 @@ ${body}
       const url = `${SITE}/menu/${catSlug(name)}`;
       const names = items.slice(0, 4).map((p) => p.name).join(', ');
       const desc = cut(`${seo.lead} В меню: ${names}${items.length > 4 ? ' и другое' : ''}.` + (from ? ` Цены от ${money(from)}.` : '') + ' Доставка по Москве, оплата онлайн.', 158);
-      const cards = items.map((p) => {
-        const pr = priceOf(p);
-        return `<div class="card"><a href="/dish/${esc(p.id)}">${imgTag(p, ' loading="lazy"')}</a>
-<div class="b"><a class="t" href="/dish/${esc(p.id)}">${esc(p.name)}</a>${p.weight ? `<span class="m">${esc(p.weight)}</span>` : ''}
-<span class="p">${p.type === 'variant' && pr !== null ? 'от ' : ''}${pr !== null ? money(pr) : 'уточняйте'}</span></div></div>`;
-      }).join('\n');
+      const cards = items.map((p) => cardHtml(p, true)).join('\n');
       const body = `<div class="bc"><a href="/">Главная</a> › ${esc(name)}</div>
 <h1>${esc(seo.h1)}</h1>
 <p class="lead">${esc(seo.lead)} ${esc(deliveryLine())}</p>
-<div class="grid">${cards}</div>
-<p style="margin-top:22px"><a class="btn" href="/#cat-${encodeURIComponent(String(name).toLowerCase().replace(/[^a-zа-я0-9]+/gi, '-'))}">Заказать на сайте</a></p>
-${catLinks(cats, name)}`;
+${pills(cats, name)}
+<div class="grid">${cards}</div>`;
       const jsonld = [
         { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Главная', item: SITE + '/' },
@@ -306,23 +338,26 @@ ${catLinks(cats, name)}`;
         ? `<p class="note"><strong>На выбор:</strong> ${esc(p.options.map((o) => o.name).filter(Boolean).join(', '))}.</p>` : '';
       const priceHtml = pr === null ? '<div class="price">Цену уточняйте</div>'
         : `<div class="price">${p.oldPrice && p.oldPrice > pr ? `<span class="old">${money(p.oldPrice)}</span>` : ''}${p.type === 'variant' ? 'от ' : ''}${money(pr)}</div>`;
-      const same = (by[p.category] || []).filter((x) => x.id !== p.id).slice(0, 4);
-      const more = same.length ? `<h2 style="font-size:20px;margin:30px 0 12px">Ещё из раздела «${esc(p.category)}»</h2><div class="grid">${same.map((x) => `<div class="card"><a href="/dish/${esc(x.id)}">${imgTag(x, ' loading="lazy"')}</a><div class="b"><a class="t" href="/dish/${esc(x.id)}">${esc(x.name)}</a><span class="p">${priceOf(x) !== null ? money(priceOf(x)) : ''}</span></div></div>`).join('')}</div>` : '';
+      const same = (by[p.category] || []).filter((x) => x.id !== p.id).slice(0, 6);
+      const more = same.length ? `<h2 class="more">Ещё из раздела «${esc(p.category)}»</h2><div class="grid">${same.map((x) => cardHtml(x, false)).join('')}</div>` : '';
+      const orderHref = `/?dish=${encodeURIComponent(p.id)}`;
+      const canOrder = !p.stop && pr !== null;
       const body = `<div class="bc"><a href="/">Главная</a> › <a href="/menu/${catSlug(p.category)}">${esc(p.category)}</a> › ${esc(p.name)}</div>
-<div class="dish">
-<div>${hasImg(p) ? imgTag(p) : ''}</div>
-<div>
+${pills(cats, p.category)}
+<div class="dish${hasImg(p) ? '' : ' nophoto'}">
+${hasImg(p) ? `<div class="dimg">${imgTag(p)}</div>` : ''}
+<div class="dinfo">
 <h1>${esc(p.name)}</h1>
-${p.weight ? `<div class="m" style="color:#8a8a8a">${esc(p.weight)}</div>` : ''}
+${p.weight ? `<p class="w">${esc(p.weight)}</p>` : ''}
 ${priceHtml}${variantsHtml}
-<p>${esc(text)}</p>${optionsHtml}
-${p.stop ? '<p class="note"><strong>Сейчас нет в наличии.</strong> Загляните позже.</p>' : `<p><a class="btn" href="/?dish=${encodeURIComponent(p.id)}">Заказать</a></p>`}
+<p class="dtext">${esc(text)}</p>${optionsHtml}
+${p.stop ? '<p class="note"><strong>Сейчас нет в наличии.</strong> Загляните позже.</p>' : (canOrder ? `<p><a class="pbtn o" href="${orderHref}" rel="nofollow">Заказать</a></p>` : '<p><a class="pbtn o" href="/">Перейти в меню</a></p>')}
 <p class="note">${esc(deliveryLine())}</p>
 </div></div>
-${more}
-${catLinks(cats, p.category)}`;
+${more}`;
+      const sticky = canOrder ? { href: orderHref, label: `Заказать — ${p.type === 'variant' ? 'от ' : ''}${money(pr)}` } : { href: '/', label: 'Перейти к заказу →' };
       res.set({ 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' })
-        .send(page({ title: (`${p.name} — заказать с доставкой в Москве | ${BRAND}`.length <= 70 ? `${p.name} — заказать с доставкой в Москве | ${BRAND}` : cut(`${p.name} — заказать с доставкой в Москве`, 70)), desc, url, image: ogImage(p), type: 'product', body, jsonld }));
+        .send(page({ title: (`${p.name} — заказать с доставкой в Москве | ${BRAND}`.length <= 70 ? `${p.name} — заказать с доставкой в Москве | ${BRAND}` : cut(`${p.name} — заказать с доставкой в Москве`, 70)), desc, url, image: ogImage(p), type: 'product', body, jsonld, sticky }));
     } catch (e) { console.error('SEO блюдо:', e.message); res.status(500).send('Ошибка'); }
   });
 
