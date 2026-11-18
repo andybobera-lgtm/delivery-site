@@ -1380,3 +1380,27 @@ button:disabled:active { transform: none; }
   body.cart-open .picker-modal.open { transition: opacity 0.35s ease-out, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), left 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
   body.cart-open #picker-overlay.open { background: transparent; }
 }
+
+
+/* ---------- Плавность как в видео-примере ---------- */
+/* Карточка блюда на компьютере: вылетает из места нажатия, фон темнеет плавно */
+@media (min-width: 641px) {
+  .picker-modal {
+    transform: translate(calc(-50% + var(--fx, 0px)), calc(-50% + var(--fy, 0px))) scale(var(--fs, 0.94));
+    transition: opacity 0.22s ease-out, transform 0.28s ease-in;
+  }
+  .picker-modal.open {
+    transform: translate(-50%, -50%) scale(1);
+    transition: opacity 0.3s ease-out, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+/* Корзина на компьютере: выезжает справа без затемнения, страница сдвигается влево */
+@media (min-width: 900px) {
+  body { transition: padding-right 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+  body.cart-open { padding-right: 420px; }
+  #cart-overlay { background: transparent !important; pointer-events: none !important; }
+  .cart-fab { transition: opacity 0.25s ease, transform 0.2s ease; }
+  body.cart-open .cart-fab { opacity: 0; pointer-events: none; transform: scale(0.9); }
+  .cart-drawer { box-shadow: -1px 0 0 #ece7de, -12px 0 32px rgba(0, 0, 0, 0.06); }
+}
