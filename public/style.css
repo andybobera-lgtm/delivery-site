@@ -1314,9 +1314,7 @@ button:active, .product-card:active, .promo-slide:active, .choice-box:active {
 .cart-fab:active { transform: scale(0.96); }
 button:disabled:active { transform: none; }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
-}
+/* (убрано правило, которое отключало анимации при настройке Windows «Показывать анимацию» — из-за него всё открывалось резко) */
 
 /* Цена в кнопке не переносится на вторую строку на узких экранах */
 .view-btn { white-space: nowrap; }
