@@ -1213,6 +1213,77 @@ function closeAddressModal() {
   document.getElementById('address-modal').classList.remove('open');
   updateScrollLock();
 }
+/* Ввели адрес текстом — метка на карте сама переезжает на этот адрес */
+let streetTimer = null;
+let streetSeq = 0;
+function streetHint(text, kind) {
+  let h = document.getElementById('addr-hint');
+  if (!h) {
+    h = document.createElement('div');
+    h.id = 'addr-hint';
+    h.className = 'product-meta';
+    h.style.margin = '-4px 0 8px';
+    document.getElementById('addr-street').insertAdjacentElement('afterend', h);
+  }
+  h.textContent = text || '';
+  h.style.color = kind === 'bad' ? '#c0392b' : (kind === 'ok' ? '#2e7d32' : '');
+  h.hidden = !text;
+}
+// Ищем адрес только по Москве и ближайшим окрестностям лавки
+function geocodeUrls(text) {
+  const q = encodeURIComponent('Москва, ' + text);
+  const tail = `geocode=${q}&format=json&results=1&lang=ru_RU&ll=${KITCHEN_COORDS[1]},${KITCHEN_COORDS[0]}&spn=0.5,0.35&rspn=1`;
+  return [
+    `https://geocode-maps.yandex.ru/1.x/?apikey=${GEOCODER_API_KEY}&${tail}`,
+    `https://geocode-maps.yandex.ru/v1/?apikey=${GEOCODER_API_KEY}&${tail}`,
+  ];
+}
+async function forwardGeocode(text) {
+  let lastErr = null;
+  for (const url of geocodeUrls(text)) {
+    try {
+      const data = await (await fetch(url)).json();
+      const m = data?.response?.GeoObjectCollection?.featureMember?.[0];
+      if (!m) { if (data?.response) return null; throw new Error('bad response'); }
+      const [lon, lat] = String(m.GeoObject.Point.pos).split(' ').map(Number);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) throw new Error('bad point');
+      return { coords: [lat, lon], precision: m.GeoObject.metaDataProperty?.GeocoderMetaData?.precision || '' };
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('geocode failed');
+}
+async function moveMapToTypedAddress(tries = 0) {
+  const text = document.getElementById('addr-street').value.trim();
+  if (text.length < 5) { streetHint(''); return; }
+  if (!addressMarkerRef || !deliveryMap) { // карта ещё загружается — попробуем чуть позже
+    if (tries < 8) streetTimer = setTimeout(() => moveMapToTypedAddress(tries + 1), 800);
+    return;
+  }
+  const seq = ++streetSeq;
+  streetHint('Ищем адрес на карте…');
+  try {
+    const r = await forwardGeocode(text);
+    if (seq !== streetSeq) return; // человек уже ввёл что-то новое
+    if (!r) { streetHint('Не нашли такой адрес. Отметьте точку на карте вручную.', 'bad'); return; }
+    addressMarkerRef.geometry.setCoordinates(r.coords);
+    deliveryMap.setCenter(r.coords, 17, { duration: 500 });
+    if (['exact', 'number', 'near'].includes(r.precision)) {
+      markerPicked = true;
+      showZone(zoneOf(r.coords));
+      streetHint('Метка поставлена на ваш адрес. Проверьте её на карте — при необходимости передвиньте.', 'ok');
+    } else {
+      streetHint('Нашли улицу, но не точный дом. Добавьте номер дома или поставьте метку на карте.', 'bad');
+    }
+  } catch (e) {
+    if (seq === streetSeq) streetHint('Не удалось найти адрес. Отметьте точку на карте вручную.', 'bad');
+  }
+}
+document.getElementById('addr-street').addEventListener('input', () => {
+  clearTimeout(streetTimer);
+  streetHint('');
+  streetTimer = setTimeout(() => moveMapToTypedAddress(0), 800);
+});
+
 document.getElementById('open-address-btn').addEventListener('click', openAddressModal);
 document.getElementById('address-close').addEventListener('click', closeAddressModal);
 document.getElementById('address-overlay').addEventListener('click', closeAddressModal);
