@@ -709,7 +709,7 @@ function cartCount() {
 }
 
 /* ================= ДОСТАВКА: минимальный заказ, стоимость, бесплатно от суммы ================= */
-let deliveryCfg = { minOrder: 1000, deliveryFee: 250, freeDeliveryFrom: 3000, farFee: 500, farFeeFree: 200, nearRadius: 2000, farRadius: 4000 };
+let deliveryCfg = { minOrder: 1000, deliveryFee: 250, freeDeliveryFrom: 3000, farFee: 500, farFeeFree: 200, nearRadius: 2000, farRadius: 4000, giftFrom: 3000, giftProductId: 'chudu-zelen' };
 fetch('/api/config').then((r) => r.json()).then((c) => {
   if (c && c.minOrder) { deliveryCfg = Object.assign({}, deliveryCfg, c); renderCartWidgets(); }
 }).catch(() => {});
@@ -783,9 +783,14 @@ function renderDeliveryBar() {
       title: far ? `Доставка ${money(farFeeFree)}` : (known ? 'Доставка бесплатная' : 'Скидка на доставку'),
       text: far ? 'сниженная цена получена' : (known ? 'вы получили её 🎉' : 'точная цена — по адресу') });
   } else {
+    const alsoGift = deliveryCfg.giftFrom === freeDeliveryFrom ? ' и чуду в подарок' : '';
     chips.push({ pct: sub / freeDeliveryFrom * 100, ico: '🛵', done: false,
       title: `Ещё ${money(freeDeliveryFrom - sub)}`,
-      text: far ? `до доставки за ${money(farFeeFree)}` : 'до бесплатной доставки' });
+      text: (far ? `до доставки за ${money(farFeeFree)}` : 'до бесплатной доставки') + alsoGift });
+  }
+  if (deliveryCfg.giftFrom && deliveryCfg.giftFrom !== freeDeliveryFrom) {
+    if (sub >= deliveryCfg.giftFrom) chips.push({ pct: 100, ico: '🎁', done: true, title: 'Чуду в подарок', text: 'уже в вашей корзине' });
+    else chips.push({ pct: sub / deliveryCfg.giftFrom * 100, ico: '🎁', done: false, title: `Ещё ${money(deliveryCfg.giftFrom - sub)}`, text: 'до чуду в подарок' });
   }
 
   const feeText = known ? (fee === 0 ? 'бесплатно' : money(fee)) : `от ${money(deliveryFee)}`;
@@ -820,6 +825,8 @@ function openDeliveryInfo() {
   };
   if (!known || near) zoneRows(known ? '' : `до ${km(nearRadius)}`, deliveryFee, 0, near);
   if (!known || far) zoneRows(known ? '' : `${km(nearRadius).replace(' км', '')}–${km(farRadius)}`, farFee, farFeeFree, far);
+
+  if (deliveryCfg.giftFrom) rows.push(`<div class="info-row${sub >= deliveryCfg.giftFrom ? ' now' : ''}"><span>🎁 Чуду в подарок при заказе от ${money(deliveryCfg.giftFrom)}</span><b>бесплатно</b></div>`);
 
   let head;
   if (belowMin) {
@@ -965,6 +972,24 @@ function renderCartLines() {
     }
     container.appendChild(row);
   });
+
+  // Подарок: от giftFrom ₽ чуду добавляется само (сервер добавит его в заказ)
+  if (deliveryCfg.giftFrom && cartTotal() >= deliveryCfg.giftFrom) {
+    const gp = products.find((p) => p.id === deliveryCfg.giftProductId);
+    if (gp) {
+      const t = thumbStyleAndText(gp);
+      const g = document.createElement('div');
+      g.className = 'cart-line cart-gift';
+      g.innerHTML = `
+        <div class="cart-line-thumb" style="${t.style}">${t.text}</div>
+        <div class="cart-line-info">
+          <span class="cart-line-name">${gp.name}</span>
+          <span class="gift-badge">🎁 В подарок</span>
+        </div>
+        <div class="cart-line-side"><span class="cart-line-price gift-free">0 ₽</span></div>`;
+      container.appendChild(g);
+    }
+  }
 
   totalEl.textContent = cartTotal() + ' ₽';
 }
