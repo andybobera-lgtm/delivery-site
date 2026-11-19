@@ -103,6 +103,8 @@ const YOOKASSA_SECRET_KEY = process.env.YOOKASSA_SECRET_KEY;
 // Условия доставки (можно поменять здесь или через переменные окружения)
 const MIN_ORDER = Number(process.env.MIN_ORDER) || 1000;            // минимальная сумма заказа, ₽
 const DELIVERY_FEE = Number(process.env.DELIVERY_FEE) || 250;       // стоимость доставки, ₽
+const GIFT_FROM = Number(process.env.GIFT_FROM) || 3000;        // от этой суммы заказа чуду в подарок, ₽
+const GIFT_PRODUCT_ID = process.env.GIFT_PRODUCT_ID || 'chudu-zelen'; // какое блюдо дарим (id из products.json)
 const FREE_DELIVERY_FROM = Number(process.env.FREE_DELIVERY_FROM) || 3000; // от этой суммы действует сниженная цена доставки, ₽
 
 // Две зоны доставки (расстояние по прямой от кулинарной лавки):
@@ -202,6 +204,7 @@ app.get('/api/config', (req, res) => {
     minOrder: MIN_ORDER, deliveryFee: DELIVERY_FEE, freeDeliveryFrom: FREE_DELIVERY_FROM,
     farFee: DELIVERY_FEE_FAR, farFeeFree: DELIVERY_FEE_FAR_DISCOUNT,
     nearRadius: NEAR_RADIUS_M, farRadius: FAR_RADIUS_M,
+    giftFrom: GIFT_FROM, giftProductId: GIFT_PRODUCT_ID,
   });
 });
 
@@ -392,6 +395,12 @@ app.post('/api/orders', orderLimiter, async (req, res) => {
     const deliveryFee = deliveryFeeFor(deliveryZone, subtotal);
     total = subtotal + deliveryFee;
 
+    // Подарок: от GIFT_FROM ₽ к заказу добавляется чуду бесплатно (в сумму и чек оплаты не входит, но видно кухне)
+    if (subtotal >= GIFT_FROM) {
+      const gift = products.find((p) => p.id === GIFT_PRODUCT_ID && !p.stop);
+      if (gift) orderItems.push({ id: gift.id, name: `${gift.name} — в подарок`, price: 0, qty: 1, gift: true });
+    }
+
     const orderId = uuidv4();
     const order = {
       id: orderId,
@@ -428,7 +437,7 @@ app.post('/api/orders', orderLimiter, async (req, res) => {
         metadata: { orderId },
         receipt: {
           customer: { phone: customer.phone },
-          items: orderItems.map((it) => ({
+          items: orderItems.filter((it) => it.price > 0).map((it) => ({
             description: it.name.slice(0, 128),
             quantity: it.qty.toFixed(2),
             amount: { value: it.price.toFixed(2), currency: 'RUB' },
