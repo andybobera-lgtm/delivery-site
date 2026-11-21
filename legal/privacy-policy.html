@@ -94,6 +94,39 @@ IP-адрес), чтобы показать карту и найти адрес;
 или отозвать согласие можно в любой момент по ссылке «Настройки cookie» внизу
 сайта; также можно установить
 <a href="https://yandex.ru/support/metrica/general/opt-out.html">расширение Яндекса для отказа от Метрики</a>.</p>
+
+<div id="cookie-pref" style="border:1px solid #ccc;border-radius:12px;padding:14px 16px;margin:16px 0;background:#f7f7f7;">
+  <b>Ваш выбор по cookie</b>
+  <label style="display:flex;align-items:center;gap:10px;margin-top:10px;cursor:pointer;">
+    <input type="checkbox" id="pref-analytics" style="width:20px;height:20px;">
+    <span>Аналитика: Яндекс Метрика</span>
+  </label>
+  <div style="color:#666;font-size:14px;margin-top:6px;">Технические cookie нужны для работы сайта и включены всегда. Галочка снята — Метрика не работает.</div>
+  <div id="pref-status" style="color:#2e7d32;font-size:14px;margin-top:6px;min-height:20px;"></div>
+</div>
+<script>
+(function () {
+  var KEY = 'cookie_consent_v2'; // '1' — аналитика разрешена, '0' — только необходимые (тот же ключ, что и на сайте)
+  var chk = document.getElementById('pref-analytics');
+  var st = document.getElementById('pref-status');
+  function get() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function dropYm() {
+    document.cookie.split(';').forEach(function (c) {
+      var name = c.split('=')[0].trim();
+      if (!/^_ym/.test(name)) return;
+      ['', '; domain=' + location.hostname, '; domain=.' + location.hostname].forEach(function (d) {
+        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/' + d;
+      });
+    });
+  }
+  chk.checked = get() === '1';
+  chk.addEventListener('change', function () {
+    try { localStorage.setItem(KEY, chk.checked ? '1' : '0'); } catch (e) {}
+    if (!chk.checked) dropYm();
+    st.textContent = chk.checked ? 'Аналитика включена. Сохранено.' : 'Аналитика выключена. Сохранено.';
+  });
+})();
+</script>
 <p>Кроме того, для удобства сайт сохраняет в памяти вашего браузера (на вашем
 устройстве): содержимое корзины, ваше имя и телефон (чтобы не вводить их
 заново) и ваш выбор в уведомлении о cookies. Эти данные остаются на вашем
