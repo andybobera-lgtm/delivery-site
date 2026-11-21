@@ -248,7 +248,7 @@ ${(jsonld || []).map(ld).join('\n')}
 <main class="wrap">
 ${body}
 </main>
-<footer class="ft"><p style="margin:0 0 8px"><a href="/">Главная и заказ</a></p><p style="margin:0"><a href="/legal/privacy-policy.html">Политика конфиденциальности</a> · <a href="/legal/privacy-policy.html">Политика cookie</a> · <a href="/legal/consent.html">Согласие на обработку персональных данных</a> · <a href="/legal/offer.html">Пользовательское соглашение (договор оферты)</a></p></footer>
+<footer class="ft"><p style="margin:0 0 8px"><a href="/">Главная и заказ</a></p><p style="margin:0"><a href="/legal/privacy-policy.html" target="_blank" rel="noopener">Политика конфиденциальности</a> · <a href="/legal/privacy-policy.html" target="_blank" rel="noopener">Политика cookie</a> · <a href="/legal/consent.html" target="_blank" rel="noopener">Согласие на обработку персональных данных</a> · <a href="/legal/offer.html" target="_blank" rel="noopener">Пользовательское соглашение (договор оферты)</a></p></footer>
 <div class="sticky"><a href="${esc(st.href)}">${esc(st.label)}</a></div>
 </body>
 </html>`;
