@@ -232,12 +232,18 @@ async function loadCatalog() {
   try { prices = await db.getPriceOverrides(); } catch (e) { console.error('Цены из админки не прочитаны:', e.message); }
   try { stops = await db.getStopOverrides(); } catch (e) { console.error('Стоп-лист не прочитан:', e.message); }
   try { nuts = await db.getNutritionOverrides(); } catch (e) { console.error('КБЖУ не прочитано:', e.message); }
+  let edits = {};
+  try { edits = await db.getProductEdits(); } catch (e) { console.error('Правки описаний не прочитаны:', e.message); }
   return products.map((p) => {
-    const q = { ...p, stop: Object.prototype.hasOwnProperty.call(stops, p.id) ? !!stops[p.id] : !!p.stop };
+    const ed = edits[p.id] || {};
+    const q = { ...p, ...(ed.description ? { description: ed.description } : {}), ...(ed.weight ? { weight: ed.weight } : {}), stop: Object.prototype.hasOwnProperty.call(stops, p.id) ? !!stops[p.id] : !!p.stop };
     // Цены, которые повар поменял в админ-панели, главнее цен из products.json
     if (Number.isInteger(prices[p.id + '|']) && !Array.isArray(q.variants)) {
       q.price = prices[p.id + '|'];
       if (q.oldPrice && q.oldPrice <= q.price) delete q.oldPrice; // зачёркнутая «старая» цена не должна быть ниже новой
+    }
+    if (Array.isArray(q.variants) && ed.variantWeights) {
+      q.variants = q.variants.map((v) => (ed.variantWeights[v.id] ? { ...v, weight: ed.variantWeights[v.id] } : v));
     }
     if (Array.isArray(q.variants)) {
       q.variants = q.variants.map((v) => (Number.isInteger(prices[p.id + '|' + v.id]) ? { ...v, price: prices[p.id + '|' + v.id] } : v));
@@ -354,7 +360,7 @@ app.post('/api/orders', orderLimiter, async (req, res) => {
         // Проверяем состав по нашему каталогу: только существующие позиции, не больше мест в наборе и лимита мясных.
         const selections = Array.isArray(item.comboSelections) ? item.comboSelections : [];
         let count = 0, meat = 0;
-        const parts = [];
+        const parts = [], partsList = [];
         for (const sel of selections.slice(0, 20)) {
           const opt = (product.options || []).find((o) => sel && o.name === sel.name);
           const c = toInt(sel && sel.count, 1, product.totalSlots);
@@ -362,6 +368,7 @@ app.post('/api/orders', orderLimiter, async (req, res) => {
           count += c;
           if (opt.isMeat) meat += c;
           parts.push(`${opt.name} ×${c}`);
+          partsList.push({ name: opt.name, count: c });
         }
         if (count !== product.totalSlots || meat > product.meatMax) {
           return res.status(400).json({ error: 'Соберите набор полностью: неверный состав' });
@@ -372,6 +379,8 @@ app.post('/api/orders', orderLimiter, async (req, res) => {
           name: `${product.name}: ${parts.join(', ')}`,
           price: product.price,
           qty: 1,
+          set: product.name,              // название набора и состав — для красивого показа в админке
+          parts: partsList,
         });
       } else {
         // Обычный товар без вариантов
@@ -499,6 +508,8 @@ app.get('/api/orders/:id', async (req, res) => {
       handedToCourierAt: order.handedToCourierAt || null,
       deliveredAt: order.deliveredAt || null,
       deliveryMinutes: order.deliveryMinutes || null,
+      courierSearchAt: order.courierSearchAt || null,
+      rejectReason: order.status === 'отклонён' ? (order.rejectReason || '') : null,
     });
   } catch (err) {
     console.error('Ошибка чтения заказа:', err.message);
@@ -528,6 +539,10 @@ app.get('/api/admin/products', adminAuth, async (req, res) => {
       name: p.name,
       category: p.category || 'Меню',
       price: p.price,
+      description: p.description || '',
+      weight: p.weight || '',
+      isCombo: p.type === 'combo',
+      variantWeights: Array.isArray(p.variants) ? p.variants.map((v) => ({ id: v.id, label: v.label, weight: v.weight || '' })) : [],
       stop: !!p.stop,
       // цена из файла products.json (чтобы можно было вернуть) и цены вариантов
       basePrice: (fileProducts.find((x) => x.id === p.id) || {}).price,
@@ -611,9 +626,12 @@ app.post('/api/admin/products/:id/nutrition', adminAuth, async (req, res) => {
 const STATUS_FLOW = {
   'оплачен': ['принят'],
   'принят': ['готов'],
-  'готов': ['передан курьеру'],
+  'готов': ['ищем курьера', 'передан курьеру'],
+  'ищем курьера': ['передан курьеру'],
   'передан курьеру': ['доставлен'],
 };
+// Статусы, в которых заказ ещё можно отклонить (деньги вернём)
+const REJECTABLE = ['оплачен', 'принят', 'готов', 'ищем курьера'];
 app.post('/api/admin/orders/:id/status', adminAuth, async (req, res) => {
   try {
     if (!UUID_RE.test(req.params.id)) return res.status(404).json({ error: 'Заказ не найден' });
@@ -626,7 +644,7 @@ app.post('/api/admin/orders/:id/status', adminAuth, async (req, res) => {
     const patch = { status: next };
     const now = new Date();
     if (next === 'принят') {
-      const mins = Math.min(180, Math.max(5, parseInt(req.body.prepMinutes, 10) || 30));
+      const mins = Math.min(180, Math.max(5, parseInt(req.body.prepMinutes, 10) || 50));
       patch.prepMinutes = mins;
       patch.acceptedAt = now.toISOString();
       patch.readyEta = new Date(now.getTime() + mins * 60000).toISOString();
@@ -639,6 +657,7 @@ app.post('/api/admin/orders/:id/status', adminAuth, async (req, res) => {
       }
     }
     if (next === 'готов') patch.readyAt = now.toISOString();
+    if (next === 'ищем курьера') patch.courierSearchAt = now.toISOString();
     if (next === 'передан курьеру') {
       const dm = Math.min(120, Math.max(5, parseInt(req.body.deliveryMinutes, 10) || 20));
       patch.deliveryMinutes = dm;
@@ -661,6 +680,176 @@ app.post('/api/admin/orders/:id/status', adminAuth, async (req, res) => {
     res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
+
+// --- Отклонить заказ с причиной: деньги возвращаются клиенту автоматически, курьер Яндекса отменяется ---
+async function refundPayment(order) {
+  const r = await fetch('https://api.yookassa.ru/v3/refunds', {
+    method: 'POST',
+    headers: { Authorization: yookassaAuth(), 'Content-Type': 'application/json', 'Idempotence-Key': 'refund-' + order.id },
+    body: JSON.stringify({ payment_id: order.paymentId, amount: { value: Number(order.total).toFixed(2), currency: 'RUB' }, description: ('Заказ отклонён: ' + (order.rejectReason || '')).slice(0, 250) }),
+    signal: AbortSignal.timeout(15000),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error('ЮKassa: ' + r.status + ' ' + (data.description || data.code || '')); e.status = r.status; throw e; }
+  return data;
+}
+app.post('/api/admin/orders/:id/reject', adminAuth, async (req, res) => {
+  try {
+    if (!UUID_RE.test(req.params.id)) return res.status(404).json({ error: 'Заказ не найден' });
+    const reason = cleanStr(req.body && req.body.reason, 300);
+    if (reason.length < 3) return res.status(400).json({ error: 'Напишите причину (клиент её увидит)' });
+    const order = await db.getOrder(req.params.id);
+    if (!order) return res.status(404).json({ error: 'Заказ не найден' });
+    if (!REJECTABLE.includes(order.status)) return res.status(400).json({ error: `Заказ в статусе «${order.status}» отклонить уже нельзя` });
+    // 1) возврат денег (если не получился — заказ НЕ отклоняем, чтобы не потерять деньги клиента из виду)
+    let refund = null;
+    try {
+      refund = await refundPayment({ ...order, rejectReason: reason });
+    } catch (e) {
+      console.error('Возврат не прошёл:', e.message);
+      return res.status(502).json({ error: 'Не удалось вернуть деньги через ЮKassa (' + String(e.message).slice(0, 120) + '). Заказ не отклонён — попробуйте ещё раз или верните деньги в кабинете ЮKassa.' });
+    }
+    // 2) курьер Яндекса (если уже вызван) — отменяем, ошибка не критична
+    let courierNote = '';
+    if (yd.enabled() && order.courier && order.courier.claimId && !yd.TERMINAL.has(order.courier.status)) {
+      try { await yd.cancel(order.courier); courierNote = 'Заявка курьеру отменена.'; }
+      catch (e) { courierNote = 'Курьера отменить не удалось — отмените заявку в кабинете Яндекс Доставки.'; console.error('Отмена курьера:', e.apiMessage || e.message); }
+    }
+    const updated = await db.updateOrder(order.id, {
+      status: 'отклонён', rejectReason: reason, rejectedAt: new Date().toISOString(),
+      refundId: refund && refund.id || null, refundStatus: refund && refund.status || null, courierCallDone: true,
+    });
+    res.json({ ok: true, order: updated, courierNote });
+  } catch (err) {
+    console.error('Ошибка отклонения заказа:', err.message);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+// --- Статистика: выручка, число заказов, средний чек (день / неделя / месяц, по Москве) ---
+app.get('/api/admin/stats', adminAuth, async (req, res) => {
+  try {
+    const list = await db.listOrders();
+    const DAY = 86400000, MSK = 3 * 3600000;
+    const nowMsk = Date.now() + MSK;
+    const startToday = Math.floor(nowMsk / DAY) * DAY - MSK;           // полночь по Москве (в UTC-мс)
+    const dow = (new Date(nowMsk).getUTCDay() + 6) % 7;                 // 0 = понедельник
+    const m = new Date(nowMsk);
+    const startMonth = Date.UTC(m.getUTCFullYear(), m.getUTCMonth(), 1) - MSK;
+    const periods = { day: startToday, week: startToday - dow * DAY, month: startMonth };
+    const sold = list.filter((o) => ['оплачен', 'принят', 'готов', 'ищем курьера', 'передан курьеру', 'доставлен'].includes(o.status));
+    const out = {};
+    for (const [k, from] of Object.entries(periods)) {
+      const part = sold.filter((o) => new Date(o.paidAt || o.createdAt).getTime() >= from);
+      const revenue = part.reduce((a, o) => a + (Number(o.total) || 0), 0);
+      out[k] = { revenue, orders: part.length, avg: part.length ? Math.round(revenue / part.length) : 0 };
+    }
+    out.rejected = list.filter((o) => o.status === 'отклонён' && new Date(o.rejectedAt || o.createdAt).getTime() >= periods.month).length;
+    res.json(out);
+  } catch (err) {
+    console.error('Ошибка статистики:', err.message);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+// --- Быстрая правка описания и веса блюда (и веса вариантов). Пустое значение — вернуть как в products.json ---
+app.post('/api/admin/products/:id/details', adminAuth, async (req, res) => {
+  try {
+    const product = readJSON(PRODUCTS_FILE).find((p) => p.id === req.params.id);
+    if (!product) return res.status(404).json({ error: 'Такого блюда нет' });
+    const b = req.body && typeof req.body === 'object' ? req.body : {};
+    const data = {};
+    const desc = cleanStr(b.description, 1500), weight = cleanStr(b.weight, 40);
+    if (desc && desc !== (product.description || '')) data.description = desc;
+    if (weight && weight !== (product.weight || '')) data.weight = weight;
+    if (b.variantWeights && typeof b.variantWeights === 'object' && Array.isArray(product.variants)) {
+      const vw = {};
+      for (const v of product.variants) {
+        const w = cleanStr(b.variantWeights[v.id], 40);
+        if (w && w !== (v.weight || '')) vw[v.id] = w;
+      }
+      if (Object.keys(vw).length) data.variantWeights = vw;
+    }
+    await db.setProductEdit(product.id, Object.keys(data).length ? data : null);
+    res.json({ ok: true, data });
+  } catch (err) {
+    console.error('Ошибка сохранения описания:', err.message);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+// ==========================================================================
+// ЧАТ С ОПЕРАТОРОМ
+// Клиент пишет с сайта; переписка определяется случайным ключом, который хранится в браузере клиента.
+// Оператор отвечает из админ-панели. В Telegram уходит только «новое сообщение в чате» — без текста и имён.
+// ==========================================================================
+const chatLimiter = makeLimiter(60 * 1000, 20);       // отправка: не больше 20 сообщений в минуту с адреса
+const CHAT_KEY_RE = /^[A-Za-z0-9_-]{16,64}$/;
+const CHAT_AUTOREPLY = 'Здравствуйте! Оператор подключится к чату в течение 5–10 минут. Пока можете описать вопрос — мы всё прочитаем и ответим.';
+let lastChatPing = 0;
+async function pingChat() {
+  const now = Date.now();
+  if (now - lastChatPing < 60000) return;               // не чаще раза в минуту
+  lastChatPing = now;
+  const token = process.env.TELEGRAM_BOT_TOKEN, chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: '💬 Новое сообщение в чате на сайте. Откройте админ-панель → вкладка «Чат».' }),
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch (e) { console.error('Telegram (чат):', e.message); }
+}
+const pubMsg = (m) => ({ id: m.id, sender: m.sender, text: m.text, at: m.at });
+
+app.get('/api/chat', async (req, res) => {
+  try {
+    const key = String(req.query.key || '');
+    if (!CHAT_KEY_RE.test(key)) return res.status(400).json({ error: 'Неверный ключ' });
+    res.set('Cache-Control', 'no-store');
+    res.json((await db.chatMessages(key, req.query.after)).map(pubMsg));
+  } catch (err) { res.status(500).json({ error: 'Внутренняя ошибка сервера' }); }
+});
+app.post('/api/chat', chatLimiter, async (req, res) => {
+  try {
+    const b = req.body || {};
+    const key = String(b.key || '');
+    if (!CHAT_KEY_RE.test(key)) return res.status(400).json({ error: 'Неверный ключ' });
+    const text = cleanStr(b.text, 1000);
+    if (!text) return res.status(400).json({ error: 'Пустое сообщение' });
+    const name = cleanStr(b.name, 40);
+    const first = (await db.chatCount(key, 'client')) === 0;
+    const msg = await db.chatAdd(key, 'client', text, name);
+    let reply = null;
+    if (first) reply = await db.chatAdd(key, 'system', CHAT_AUTOREPLY, '');
+    pingChat();
+    res.json({ message: pubMsg(msg), reply: reply && pubMsg(reply) });
+  } catch (err) {
+    console.error('Ошибка чата:', err.message);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+app.get('/api/admin/chat', adminAuth, async (req, res) => {
+  try { res.json(await db.chatThreads()); } catch (err) { res.status(500).json({ error: 'Внутренняя ошибка сервера' }); }
+});
+app.get('/api/admin/chat/:thread', adminAuth, async (req, res) => {
+  try {
+    if (!CHAT_KEY_RE.test(req.params.thread)) return res.status(400).json({ error: 'Неверный ключ' });
+    await db.chatMarkRead(req.params.thread);
+    res.json(await db.chatMessages(req.params.thread, 0));
+  } catch (err) { res.status(500).json({ error: 'Внутренняя ошибка сервера' }); }
+});
+app.post('/api/admin/chat/:thread', adminAuth, async (req, res) => {
+  try {
+    if (!CHAT_KEY_RE.test(req.params.thread)) return res.status(400).json({ error: 'Неверный ключ' });
+    const text = cleanStr(req.body && req.body.text, 1000);
+    if (!text) return res.status(400).json({ error: 'Пустое сообщение' });
+    res.json(pubMsg(await db.chatAdd(req.params.thread, 'operator', text, '')));
+  } catch (err) { res.status(500).json({ error: 'Внутренняя ошибка сервера' }); }
+});
+// переписки старше 60 дней удаляем (раз в сутки)
+setInterval(() => { db.chatCleanup(60).catch(() => {}); }, 24 * 3600 * 1000).unref();
 
 // ==========================================================================
 // КУРЬЕР ЯНДЕКС ДОСТАВКИ (работает только если задан YANDEX_DELIVERY_TOKEN, см. yandex-delivery.js)
@@ -737,7 +926,7 @@ app.get('/api/admin/courier-config', adminAuth, (req, res) => {
 // Узнать цену курьера (создаёт заявку в Яндексе, но курьера пока не вызывает)
 app.post('/api/admin/orders/:id/courier/estimate', adminAuth, async (req, res) => {
   const order = await loadCourierOrder(req, res); if (!order) return;
-  if (!['принят', 'готов'].includes(order.status)) return res.status(400).json({ error: 'Курьера можно вызвать, когда заказ принят или готов' });
+  if (!['принят', 'готов', 'ищем курьера'].includes(order.status)) return res.status(400).json({ error: 'Курьера можно вызвать, когда заказ принят или готов' });
   if (!order.geo) return res.status(400).json({ error: 'У этого заказа нет точки на карте — вызовите курьера вручную' });
   const c = order.courier;
   if (c && yd.LIVE.has(c.status) && !(c.status === 'ready_for_approval' && Date.now() - new Date(c.createdAt).getTime() > yd.OFFER_TTL_MS)) {
@@ -795,11 +984,11 @@ async function pollCouriers() {
       const patch = {};
       if (fresh.status !== c.status || fresh.price !== c.price || fresh.eta !== c.eta || JSON.stringify(fresh.performer) !== JSON.stringify(c.performer)) patch.courier = fresh;
       const now = new Date();
-      if (['pickuped', 'delivery_arrived', 'ready_for_delivery_confirmation'].includes(fresh.status) && ['принят', 'готов'].includes(o.status)) {
+      if (['pickuped', 'delivery_arrived', 'ready_for_delivery_confirmation'].includes(fresh.status) && ['принят', 'готов', 'ищем курьера'].includes(o.status)) {
         const dm = Math.min(120, Math.max(5, fresh.eta || 20));
         Object.assign(patch, { status: 'передан курьеру', deliveryMinutes: dm, handedToCourierAt: now.toISOString(), courierEta: new Date(now.getTime() + dm * 60000).toISOString() });
       }
-      if (['delivered', 'delivered_finish'].includes(fresh.status) && ['принят', 'готов', 'передан курьеру'].includes(o.status)) {
+      if (['delivered', 'delivered_finish'].includes(fresh.status) && ['принят', 'готов', 'ищем курьера', 'передан курьеру'].includes(o.status)) {
         Object.assign(patch, { status: 'доставлен', deliveredAt: now.toISOString() });
       }
       if (Object.keys(patch).length) await db.updateOrder(o.id, patch);
