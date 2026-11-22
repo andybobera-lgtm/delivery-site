@@ -350,6 +350,7 @@ function addSimpleToCart(product) {
     cart[key] = { productId: product.id, type: 'simple', name: product.name, price: product.price, qty: 0 };
   }
   cart[key].qty += 1;
+  if (window.__goal) window.__goal('add_to_cart', { item: product.name, price: product.price });
   renderCartWidgets();
 }
 
@@ -591,6 +592,7 @@ function openVariantPicker(product) {
         if (e) e.stopPropagation();
         if (!cart[key]) cart[key] = { productId: product.id, type: 'variant', variantId, name: product.name + ' (' + variant.label + ')', price: variant.price, qty: 0 };
         cart[key].qty += 1;
+        if (window.__goal) window.__goal('add_to_cart', { item: product.name, price: variant.price });
         renderCartWidgets();
         render();
       };
@@ -684,6 +686,7 @@ function openComboPicker(product) {
         const comboSelections = product.options.filter((o) => selection[o.id] > 0).map((o) => ({ name: o.name, count: selection[o.id] }));
         const key = product.id + '::' + Date.now();
         cart[key] = { productId: product.id, type: 'combo', name: product.name, price: product.price, qty: 1, comboSelections };
+        if (window.__goal) window.__goal('add_to_cart', { item: product.name, price: product.price });
         renderCartWidgets();
         closePicker();
       });
@@ -1434,7 +1437,11 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
       return;
     }
 
-    window.location.href = data.confirmationUrl;
+    // Цель «нажал оплатить»: даём Метрике долю секунды отправить событие перед переходом на оплату
+    let went = false;
+    const goPay = () => { if (!went) { went = true; window.location.href = data.confirmationUrl; } };
+    if (window.__goal) window.__goal('order_submit', { order_price: data.total || cartTotal() });
+    setTimeout(goPay, 400);
   } catch (err) {
     errorEl.textContent = 'Ошибка сети, попробуйте ещё раз';
   }
@@ -1497,6 +1504,11 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLegal
   const main = document.getElementById('cookie-main');
   const panel = document.getElementById('cookie-panel');
   const chk = document.getElementById('cookie-analytics');
+
+  // Цели Метрики (работают только если человек разрешил аналитику; иначе тихо ничего не делают)
+  window.__goal = function (name, params) {
+    try { if (window.ym && getChoice() === '1') window.ym(METRIKA_ID, 'reachGoal', name, params); } catch (e) {}
+  };
 
   // Яндекс Метрика запускается только с согласия. Вебвизор и карта кликов выключены.
   function loadMetrika() {
