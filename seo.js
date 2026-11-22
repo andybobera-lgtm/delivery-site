@@ -99,8 +99,24 @@ module.exports = function setupSeo(app, opts) {
     return `Доставка по Москве в радиусе ${km} км от нашей кухни, ежедневно с 10:00 до 22:00. Оплата онлайн.` + (min ? ` Минимальный заказ ${money(min)}.` : '');
   }
 
-  const homeTitle = 'Дачная Беседка — доставка шашлыка, хинкала, чуду и пиццы в Москве';
-  const homeDesc = 'Закажите еду с доставкой на дом: шашлык, хинкал, чуду, курзе, узбекские блюда и неаполитанская пицца. Доставка по Москве с 10:00 до 22:00, оплата онлайн.';
+  // ---- Где мы и кого возим (для запросов вроде «заказать хинкал Нагорная») ----
+  const AREA_METRO = ['Нагорная', 'Нахимовский проспект', 'Нагатинская', 'Варшавская', 'Каховская', 'Севастопольская', 'Каширская', 'Коломенская'];
+  const AREA_SENT = 'у метро Нагорная, в Нагорном районе, Нагатино-Садовниках и ближайших районах юга Москвы';
+  // как слово стоит в фразе «заказать … с доставкой»
+  const CAT_NOUN = { 'Акции и Наборы': 'наборы', 'Шашлык': 'шашлык', 'Хинкал': 'хинкал', 'Чуду': 'чуду', 'Курзе': 'курзе', 'Узбекские блюда': 'узбекские блюда', 'Выпечка': 'выпечку', 'Супы': 'суп', 'Салаты': 'салат', 'Неаполитанская пицца': 'пиццу', 'Десерты': 'десерт', 'Соусы': 'соусы', 'Напитки': 'напитки' };
+  function faqFor(noun) {
+    const km = Math.round((opts.farRadiusM ? opts.farRadiusM() : 4000) / 1000);
+    const metro = AREA_METRO.join(', ');
+    return [
+      [`Можно ли заказать ${noun} с доставкой на Нагорную?`, `Да. Наша кухня находится на Электролитном проезде рядом с метро Нагорная, поэтому в этот район привозим быстрее всего. Доставляем в радиусе ${km} км от кухни: это Нагорный район, Нагатино-Садовники и ближайшие районы юга Москвы.`],
+      ['Куда вы доставляете?', `В радиусе ${km} км от кухни на Электролитном проезде, например в районы у метро ${metro}. Подходит ли ваш адрес, сайт проверит, когда вы отметите точку на карте в корзине.`],
+      ['Сколько стоит доставка?', 'Стоимость зависит от расстояния и суммы заказа, а при большом заказе доставка бесплатная или дешевле. Точная цена показывается в корзине до оплаты.'],
+      ['Как оплатить заказ и когда вы работаете?', 'Оплатить можно онлайн банковской картой на сайте. Работаем и доставляем ежедневно с 10:00 до 22:00.'],
+    ];
+  }
+
+  const homeTitle = 'Дачная Беседка — доставка шашлыка, хинкала, чуду, пиццы | Нагорная';
+  const homeDesc = 'Доставка еды у метро Нагорная и в южных районах Москвы: шашлык, хинкал, чуду, курзе, узбекские блюда и неаполитанская пицца. Ежедневно с 10:00 до 22:00, оплата онлайн.';
 
   function headBlock({ title, desc, url, image, type, noindex, extra }) {
     return [
@@ -149,8 +165,13 @@ module.exports = function setupSeo(app, opts) {
         description: homeDesc,
         servesCuisine: ['Кавказская кухня', 'Узбекская кухня', 'Пицца'],
         priceRange: '₽₽',
-        address: { '@type': 'PostalAddress', addressLocality: 'Москва', addressCountry: 'RU' },
-        areaServed: { '@type': 'City', name: 'Москва' },
+        address: { '@type': 'PostalAddress', streetAddress: 'Электролитный проезд, 10, стр. 11', addressLocality: 'Москва', addressCountry: 'RU' },
+        geo: { '@type': 'GeoCoordinates', latitude: 55.673030, longitude: 37.614196 },
+        areaServed: [
+          { '@type': 'GeoCircle', geoMidpoint: { '@type': 'GeoCoordinates', latitude: 55.673030, longitude: 37.614196 }, geoRadius: 4000 },
+          { '@type': 'AdministrativeArea', name: 'Нагорный район, Москва' },
+          { '@type': 'AdministrativeArea', name: 'Нагатино-Садовники, Москва' },
+        ],
         openingHoursSpecification: [{ '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], opens: '10:00', closes: '22:00' }],
         acceptsReservations: false,
       },
@@ -178,6 +199,9 @@ module.exports = function setupSeo(app, opts) {
       '\n' + ld(restaurantLd()) +
       '\n<style>.footer-menu{max-width:980px;margin:0 auto 14px;padding:0 16px;font-size:13px;line-height:1.9;text-align:center}.footer-menu a{color:inherit;opacity:.75;text-decoration:none;white-space:nowrap}.footer-menu a:hover{opacity:1;text-decoration:underline}.footer-menu .fm-title{opacity:.6}</style>';
     html = html.replace(/<title>[\s\S]*?<\/title>/, head);
+    // Текст про доставку внизу главной (для поиска по районам и метро)
+    const homeAbout = `<section class="home-about" style="max-width:980px;margin:28px auto 8px;padding:0 16px;font-size:14px;line-height:1.6;color:#5b5850"><h2 style="font-size:18px;margin:0 0 8px;color:inherit">Доставка еды на Нагорной и в южных районах Москвы</h2><p style="margin:0 0 8px">«${esc(BRAND)}» — кулинарная лавка на Электролитном проезде у метро Нагорная. Готовим шашлык и люля-кебаб, дагестанские чуду, хинкал, курзе, узбекскую кухню и неаполитанскую пиццу и привозим заказы ${esc(AREA_SENT)}.</p><p style="margin:0">${esc(deliveryLine())} Радиус доставки: у метро ${esc(AREA_METRO.join(', '))}.</p></section>`;
+    html = html.replace('<footer class="footer">', homeAbout + '\n<footer class="footer">');
     html = html.replace('<!--SEO_NAV-->', nav);
     return html;
   }
@@ -304,23 +328,28 @@ ${body}
       const from = prices.length ? Math.min(...prices) : null;
       const url = `${SITE}/menu/${catSlug(name)}`;
       const names = items.slice(0, 4).map((p) => p.name).join(', ');
-      const desc = cut(`${seo.lead} В меню: ${names}${items.length > 4 ? ' и другое' : ''}.` + (from ? ` Цены от ${money(from)}.` : '') + ' Доставка по Москве, оплата онлайн.', 158);
+      const noun = CAT_NOUN[name] || name.toLowerCase();
+      const desc = cut(`Заказать ${noun} с доставкой у метро Нагорная и в Нагатино-Садовниках. ${seo.lead} В меню: ${names}${items.length > 4 ? ' и другое' : ''}.` + (from ? ` От ${money(from)}.` : '') + ' Оплата онлайн.', 158);
+      const faq = faqFor(noun);
       const jsonld = [
         { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Главная', item: SITE + '/' },
           { '@type': 'ListItem', position: 2, name, item: url }] },
         { '@context': 'https://schema.org', '@type': 'ItemList', name: seo.h1, itemListElement: items.map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: `${SITE}/dish/${p.id}`, name: p.name })) },
       ];
-      const title = cut(seo.title + ' | ' + BRAND, 70);
+      const geoTitle = `Заказать ${noun} с доставкой на Нагорной и в ЮАО Москвы`;
+      const title = (geoTitle + ' | ' + BRAND).length <= 70 ? geoTitle + ' | ' + BRAND : cut(geoTitle, 70);
+      jsonld.push({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) });
       const head = headBlock({ title, desc, url, image: ogImage(items.find(hasImg) || {}), extra: verificationTags() }) +
         '\n<base href="/" />\n' + jsonld.map(ld).join('\n') + `\n<style>${FOOTER_NAV_CSS}${CAT_CSS}</style>`;
       const nav = '<span class="fm-title">Меню:</span> ' + cats.map((c) => `<a href="/menu/${catSlug(c)}">${esc((CAT_SEO[c] || {}).h1 || c)}</a>`).join(' · ');
       const intro = `<section class="cat-intro"><a class="back" href="/"><span class="bi" aria-hidden="true">⌂</span>На главную</a>
 <h1>${esc(seo.h1)}</h1>
-<p class="lead">${esc(seo.lead)} ${esc(deliveryLine())}</p></section>`;
+<p class="lead">${esc(seo.lead)} Заказать ${esc(noun)} с доставкой можно ${esc(AREA_SENT)}. ${esc(deliveryLine())}</p></section>`;
       const others = cats.filter((c) => c !== name);
+      const faqHtml = `<h2 style="margin-top:28px">Вопросы о доставке</h2>${faq.map(([q, a]) => `<h3 style="font-size:16px;margin:14px 0 4px">${esc(q)}</h3><p style="margin:0">${esc(a)}</p>`).join('')}`;
       const more = `<section class="cat-more"><h2>Другие разделы меню</h2><nav aria-label="Другие разделы">${others.map((c) => `<a href="/menu/${catSlug(c)}">${esc(c)}</a>`).join('')}</nav>
-<p>${esc(deliveryLine())}</p></section>`;
+<p>${esc(deliveryLine())}</p>${faqHtml}</section>`;
       const fallback = `<noscript><ul>${items.map((p) => `<li><a href="/dish/${esc(p.id)}">${esc(p.name)}</a>${priceOf(p) !== null ? ' — ' + (p.type === 'variant' ? 'от ' : '') + money(priceOf(p)) : ''}${p.description ? '. ' + esc(p.description) : ''}</li>`).join('')}</ul></noscript>`;
 
       let html = rawHome();
@@ -390,7 +419,7 @@ ${p.stop ? '<p class="note"><strong>Сейчас нет в наличии.</stro
 ${more}`;
       const sticky = canOrder ? { href: orderHref, label: `Заказать — ${p.type === 'variant' ? 'от ' : ''}${money(pr)}` } : { href: '/', label: 'Перейти к заказу →' };
       res.set({ 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' })
-        .send(page({ title: (`${p.name} — заказать с доставкой в Москве | ${BRAND}`.length <= 70 ? `${p.name} — заказать с доставкой в Москве | ${BRAND}` : cut(`${p.name} — заказать с доставкой в Москве`, 70)), desc, url, image: ogImage(p), type: 'product', body, jsonld, sticky }));
+        .send(page({ title: (`${p.name} — заказать с доставкой на Нагорной | ${BRAND}`.length <= 70 ? `${p.name} — заказать с доставкой на Нагорной | ${BRAND}` : cut(`${p.name} — заказать с доставкой на Нагорной`, 70)), desc, url, image: ogImage(p), type: 'product', body, jsonld, sticky }));
     } catch (e) { console.error('SEO блюдо:', e.message); res.status(500).send('Ошибка'); }
   });
 
