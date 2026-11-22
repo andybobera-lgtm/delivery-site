@@ -185,4 +185,12 @@ const STATUS_TEXT = {
   returning: 'Курьер возвращает заказ', return_arrived: 'Курьер вернулся в лавку', returned: 'Заказ возвращён', returned_finish: 'Заказ возвращён',
 };
 
-module.exports = { enabled, autoMode, estimate, confirm, getInfo, TERMINAL, LIVE, STATUS_TEXT, OFFER_TTL_MS };
+// Отменить заявку (если курьер ещё не забрал заказ). Бесплатная отмена, если Яндекс разрешает; иначе — платная
+async function cancel(courier) {
+  const info = await api('/claims/info', { claim_id: courier.claimId });
+  const state = info.available_cancel_state || 'free';
+  await api('/claims/cancel', { claim_id: courier.claimId }, { version: info.version, cancel_state: state });
+  return state;
+}
+
+module.exports = { enabled, autoMode, estimate, confirm, getInfo, cancel, TERMINAL, LIVE, STATUS_TEXT, OFFER_TTL_MS };
