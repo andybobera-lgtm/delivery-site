@@ -11,6 +11,8 @@ const FILE_PATH = process.env.ORDERS_FILE || '/tmp/orders.json';
 const STOP_FILE_PATH = process.env.STOPLIST_FILE || '/tmp/stoplist.json';
 const NUTRITION_FILE_PATH = process.env.NUTRITION_FILE || '/tmp/nutrition.json';
 const PRICE_FILE_PATH = process.env.PRICES_FILE || '/tmp/prices.json';
+const EDITS_FILE_PATH = process.env.EDITS_FILE || '/tmp/product_edits.json';
+const CHAT_FILE_PATH = process.env.CHAT_FILE || '/tmp/chat.json';
 
 let pool = null;
 let mode = 'file'; // 'postgres' или 'file'
@@ -73,6 +75,26 @@ async function init() {
         PRIMARY KEY (id, variant)
       )
     `);
+    // Правки описания и веса блюд из админ-панели
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS product_edit (
+        id   TEXT PRIMARY KEY,
+        data JSONB NOT NULL
+      )
+    `);
+    // Чат с оператором: одно сообщение — одна строка, переписка = общий thread
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS chat_message (
+        id         BIGSERIAL PRIMARY KEY,
+        thread     TEXT NOT NULL,
+        sender     TEXT NOT NULL,
+        text       TEXT NOT NULL,
+        name       TEXT NOT NULL DEFAULT '',
+        read       BOOLEAN NOT NULL DEFAULT false,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `);
+    await pool.query('CREATE INDEX IF NOT EXISTS chat_message_thread_idx ON chat_message (thread, id)');
     await pool.query('CREATE SEQUENCE IF NOT EXISTS order_number_seq START 1001');
     mode = 'postgres';
     console.log('✔ Заказы хранятся в базе данных PostgreSQL');
@@ -244,4 +266,104 @@ async function setPrice(id, variant, price) {
   fs.writeFileSync(PRICE_FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-module.exports = { init, getMode, nextOrderNumber, addOrder, getOrder, listOrders, setStatus, updateOrder, getStopOverrides, setProductStop, getNutritionOverrides, setNutrition, getPriceOverrides, setPrice };
+// ---------- Правки описания и веса блюд (админ-панель) ----------
+// Возвращает { id блюда: { description?, weight?, variantWeights?: { id варианта: вес } } }
+async function getProductEdits() {
+  if (mode === 'postgres') {
+    const r = await pool.query('SELECT id, data FROM product_edit');
+    const out = {};
+    r.rows.forEach((row) => { out[row.id] = row.data; });
+    return out;
+  }
+  try { return JSON.parse(fs.readFileSync(EDITS_FILE_PATH, 'utf-8')); } catch (e) { return {}; }
+}
+// data = объект с правками; data = null — убрать все правки блюда
+async function setProductEdit(id, data) {
+  if (mode === 'postgres') {
+    if (data === null) await pool.query('DELETE FROM product_edit WHERE id = $1', [id]);
+    else await pool.query(
+      `INSERT INTO product_edit (id, data) VALUES ($1, $2::jsonb)
+       ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`, [id, JSON.stringify(data)]);
+    return;
+  }
+  const all = await getProductEdits();
+  if (data === null) delete all[id]; else all[id] = data;
+  fs.writeFileSync(EDITS_FILE_PATH, JSON.stringify(all, null, 2), 'utf-8');
+}
+
+// ---------- Чат с оператором ----------
+// sender: 'client' (покупатель), 'operator' (кафе), 'system' (автоответ сайта)
+function chatFileRead() {
+  try { return JSON.parse(fs.readFileSync(CHAT_FILE_PATH, 'utf-8')); } catch (e) { return []; }
+}
+function chatFileWrite(list) { fs.writeFileSync(CHAT_FILE_PATH, JSON.stringify(list), 'utf-8'); }
+const chatRow = (r) => ({ id: Number(r.id), thread: r.thread, sender: r.sender, text: r.text, name: r.name || '', read: !!r.read, at: new Date(r.created_at || r.at).toISOString() });
+
+async function chatAdd(thread, sender, text, name) {
+  if (mode === 'postgres') {
+    const r = await pool.query(
+      'INSERT INTO chat_message (thread, sender, text, name, read) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [thread, sender, text, name || '', sender !== 'client']);
+    return chatRow(r.rows[0]);
+  }
+  const list = chatFileRead();
+  const id = (list.length ? list[list.length - 1].id : 0) + 1;
+  const row = { id, thread, sender, text, name: name || '', read: sender !== 'client', at: new Date().toISOString() };
+  list.push(row); chatFileWrite(list);
+  return chatRow(row);
+}
+// Сообщения переписки с номером больше afterId
+async function chatMessages(thread, afterId) {
+  const a = Number(afterId) || 0;
+  if (mode === 'postgres') {
+    const r = await pool.query('SELECT * FROM chat_message WHERE thread = $1 AND id > $2 ORDER BY id LIMIT 300', [thread, a]);
+    return r.rows.map(chatRow);
+  }
+  return chatFileRead().filter((m) => m.thread === thread && m.id > a).map(chatRow);
+}
+// Список переписок для админки: последнее сообщение, число непрочитанных, имя
+async function chatThreads() {
+  let msgs;
+  if (mode === 'postgres') {
+    const r = await pool.query(`
+      SELECT * FROM chat_message
+      WHERE thread IN (SELECT thread FROM chat_message GROUP BY thread ORDER BY MAX(id) DESC LIMIT 60)
+      ORDER BY id`);
+    msgs = r.rows.map(chatRow);
+  } else {
+    msgs = chatFileRead().map(chatRow);
+  }
+  const map = new Map();
+  for (const m of msgs) {
+    const t = map.get(m.thread) || { thread: m.thread, name: '', last: null, unread: 0, count: 0 };
+    t.count++;
+    if (m.name) t.name = m.name;
+    if (m.sender !== 'system') t.last = m;
+    if (m.sender === 'client' && !m.read) t.unread++;
+    map.set(m.thread, t);
+  }
+  return [...map.values()].filter((t) => t.last).sort((a, b) => b.last.id - a.last.id).slice(0, 60);
+}
+async function chatMarkRead(thread) {
+  if (mode === 'postgres') { await pool.query("UPDATE chat_message SET read = true WHERE thread = $1 AND sender = 'client' AND NOT read", [thread]); return; }
+  const list = chatFileRead(); let ch = false;
+  list.forEach((m) => { if (m.thread === thread && m.sender === 'client' && !m.read) { m.read = true; ch = true; } });
+  if (ch) chatFileWrite(list);
+}
+async function chatCount(thread, sender) {
+  if (mode === 'postgres') {
+    const r = await pool.query('SELECT COUNT(*)::int AS n FROM chat_message WHERE thread = $1 AND sender = $2', [thread, sender]);
+    return r.rows[0].n;
+  }
+  return chatFileRead().filter((m) => m.thread === thread && m.sender === sender).length;
+}
+// Удаляем переписки старше N дней (не храним лишние персональные данные)
+async function chatCleanup(days) {
+  if (mode === 'postgres') { await pool.query("DELETE FROM chat_message WHERE created_at < now() - ($1 || ' days')::interval", [String(days)]); return; }
+  const lim = Date.now() - days * 86400000;
+  const list = chatFileRead().filter((m) => new Date(m.at).getTime() >= lim);
+  chatFileWrite(list);
+}
+
+module.exports = { init, getMode, nextOrderNumber, addOrder, getOrder, listOrders, setStatus, updateOrder, getStopOverrides, setProductStop, getNutritionOverrides, setNutrition, getPriceOverrides, setPrice,
+  getProductEdits, setProductEdit, chatAdd, chatMessages, chatThreads, chatMarkRead, chatCount, chatCleanup };
