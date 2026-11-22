@@ -82,11 +82,12 @@
     const stepsEl = document.getElementById('steps');
     const REFRESH_MS = 10000; // страница сама обновляется каждые 10 секунд
 
-    const ORDER = ['оплачен', 'принят', 'готов', 'передан курьеру', 'доставлен'];
+    const ORDER = ['оплачен', 'принят', 'готов', 'ищем курьера', 'передан курьеру', 'доставлен'];
     const TITLES = [
       'Заказ оплачен — ждём подтверждения кафе',
       'Заказ принят, готовим',
-      'Заказ готов, ищем курьера',
+      'Заказ готов',
+      'Ищем курьера',
       'Заказ передан курьеру',
       'Заказ доставлен. Приятного аппетита!',
     ];
@@ -121,6 +122,17 @@
         msgEl.className = 'info'; msgEl.textContent = 'Ждём подтверждения оплаты от банка…';
         cardEl.hidden = true; return;
       }
+      if (d.status === 'отклонён') {
+        document.getElementById('title').textContent = 'Заказ отклонён';
+        document.querySelector('.badge').style.display = 'none';
+        msgEl.className = 'alert';
+        msgEl.innerHTML = '';
+        const t = document.createElement('div'); t.textContent = 'К сожалению, кафе не смогло выполнить заказ.'; msgEl.appendChild(t);
+        const r = document.createElement('div'); r.style.cssText = 'margin-top:10px;font-weight:700'; r.textContent = 'Причина: ' + (d.rejectReason || 'не указана'); msgEl.appendChild(r);
+        const m = document.createElement('div'); m.style.cssText = 'margin-top:12px;font-weight:400;font-size:16px;color:#152f24'; m.textContent = 'Деньги за заказ вернутся на вашу карту автоматически — обычно в течение нескольких дней, в зависимости от банка. Вы можете оформить новый заказ или написать нам в чате на главной странице.'; msgEl.appendChild(m);
+        try { localStorage.removeItem('dachnaya_cart_v1'); } catch (e) {}
+        cardEl.hidden = true; return;
+      }
       if (d.status === 'отменён') {
         msgEl.className = 'alert'; msgEl.textContent = 'Оплата не прошла или была отменена. Заказ не оформлен.';
         cardEl.hidden = true; return;
@@ -133,13 +145,13 @@
       sendPaidGoal(d);
       cardEl.hidden = false;
 
-      const times = [d.paidAt || d.createdAt, d.acceptedAt, d.readyAt, d.handedToCourierAt, d.deliveredAt];
+      const times = [d.paidAt || d.createdAt, d.acceptedAt, d.readyAt, d.courierSearchAt, d.handedToCourierAt, d.deliveredAt];
       stepsEl.innerHTML = TITLES.map((t, i) => {
         const done = i <= idx;
         const next = i === idx + 1;
         let extra = done && times[i] ? hhmm(times[i]) : '';
         if (i === 1 && done && d.readyEta && idx === 1) extra += ` · будет готов примерно к ${hhmm(d.readyEta)}`;
-        if (i === 3 && done && d.courierEta && idx === 3) extra += ` · ≈ через ${d.deliveryMinutes || 20} минут (около ${hhmm(d.courierEta)})`;
+        if (i === 4 && done && d.courierEta && idx === 4) extra += ` · ≈ через ${d.deliveryMinutes || 20} минут (около ${hhmm(d.courierEta)})`;
         return `<li class="${done ? 'done' : next ? 'next' : ''}"><span class="dot">${CHECK}</span><span class="txt">${t}${extra ? `<small>${extra}</small>` : ''}</span></li>`;
       }).join('');
     }
@@ -151,7 +163,7 @@
         const d = await r.json();
         render(d);
         document.getElementById('upd').textContent = 'Обновлено в ' + new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' · страница обновляется сама';
-        if (d.status === 'доставлен' || d.status === 'отменён') return;
+        if (d.status === 'доставлен' || d.status === 'отменён' || d.status === 'отклонён') return;
       } catch (e) {
         document.getElementById('upd').textContent = 'Не удалось обновить, пробуем ещё раз…';
       }
