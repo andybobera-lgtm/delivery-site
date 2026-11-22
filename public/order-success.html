@@ -92,6 +92,25 @@
     ];
     const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
+    // Цель Метрики «заказ оплачен» — один раз на заказ, только если разрешена аналитика
+    const METRIKA_ID = 114152765;
+    function sendPaidGoal(d) {
+      try {
+        if (localStorage.getItem('cookie_consent_v2') !== '1') return;
+        const k = 'ym_paid_' + orderId;
+        if (localStorage.getItem(k)) return;
+        localStorage.setItem(k, '1');
+        (function (m, e, t, r, i, k2, a) {
+          m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments); };
+          m[i].l = 1 * new Date();
+          k2 = e.createElement(t); a = e.getElementsByTagName(t)[0];
+          k2.async = 1; k2.src = r; a.parentNode.insertBefore(k2, a);
+        })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js?id=' + METRIKA_ID, 'ym');
+        window.ym(METRIKA_ID, 'init', { webvisor: false, clickmap: false, accurateTrackBounce: true });
+        window.ym(METRIKA_ID, 'reachGoal', 'order_paid', { order_price: d.total, order_number: d.number });
+      } catch (e) {}
+    }
+
     function hhmm(iso) {
       return iso ? new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '';
     }
@@ -111,6 +130,7 @@
 
       msgEl.textContent = '';
       try { localStorage.removeItem('dachnaya_cart_v1'); } catch (e) {} // заказ оплачен — корзину очищаем
+      sendPaidGoal(d);
       cardEl.hidden = false;
 
       const times = [d.paidAt || d.createdAt, d.acceptedAt, d.readyAt, d.handedToCourierAt, d.deliveredAt];
