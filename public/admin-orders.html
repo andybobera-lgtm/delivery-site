@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
@@ -80,6 +80,124 @@
   .nut-msg { font-size: 13px; color: #2e7d32; align-self: center; }
   .sw .lbl { font-size: 13px; font-weight: 600; min-width: 74px; color: #2e7d32; }
   .sw input:not(:checked) ~ .lbl { color: #b3261e; }
+
+  /* Карточки заказов */
+  .ocards { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 14px; align-items: start; }
+  .ocard { background: #fff; border: 1px solid #e7e0d6; border-radius: 14px; overflow: hidden; }
+  .ocard.waiting { border: 2px solid #f0b429; box-shadow: 0 0 0 3px #fff3cd; }
+  .ocard.rejected { opacity: .75; }
+  .oc-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; background: #f7f2ea; }
+  .oc-num { font-size: 22px; font-weight: 800; }
+  .oc-time { font-size: 13px; color: #777; }
+  .oc-status { font-size: 13px; font-weight: 700; padding: 5px 10px; border-radius: 14px; background: #eee; white-space: nowrap; }
+  .oc-status.status-paid { background: #e3f3e4; } .oc-status.status-work { background: #e1ecfa; }
+  .oc-status.status-canceled { background: #fdecea; } .oc-status.status-pending { background: #fff3cd; }
+  .oc-body { padding: 12px 14px; }
+  .oc-sec { margin-bottom: 12px; }
+  .oc-label { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: #999; margin-bottom: 4px; font-weight: 700; }
+  .oc-client { font-size: 16px; font-weight: 700; }
+  .oc-phone { display: inline-block; margin-top: 2px; font-size: 18px; font-weight: 700; color: #1565c0; text-decoration: none; }
+  .oc-addr { font-size: 15px; margin-top: 4px; }
+  .oc-comment { margin-top: 6px; background: #fff8e1; border-left: 4px solid #f0b429; padding: 8px 10px; border-radius: 6px; font-size: 14px; }
+  ul.items { list-style: none; margin: 0; padding: 0; }
+  ul.items > li { padding: 8px 0; border-bottom: 1px dashed #e7e0d6; }
+  ul.items > li:last-child { border-bottom: 0; }
+  .it-main { display: flex; align-items: baseline; gap: 8px; }
+  .it-name { flex: 1; font-size: 15px; font-weight: 600; }
+  .it-qty { font-weight: 800; font-size: 15px; background: #f2ece2; border-radius: 6px; padding: 1px 8px; white-space: nowrap; }
+  .it-sum { font-size: 14px; color: #666; min-width: 64px; text-align: right; white-space: nowrap; }
+  .it-sub { font-size: 12px; color: #888; margin: 4px 0 2px 2px; }
+  ul.parts { margin: 0 0 0 4px; padding: 0; list-style: none; }
+  ul.parts li { font-size: 14px; padding: 2px 0 2px 14px; position: relative; }
+  ul.parts li::before { content: '•'; position: absolute; left: 2px; color: #d84315; }
+  .oc-total { display: flex; justify-content: space-between; align-items: baseline; border-top: 2px solid #1e1e1e; padding-top: 8px; margin-top: 4px; font-size: 14px; color: #555; }
+  .oc-total b { font-size: 20px; color: #1e1e1e; }
+  .oc-meta { font-size: 13px; color: #666; margin-top: 4px; }
+  .oc-actions { padding: 12px 14px; background: #faf7f2; border-top: 1px solid #efe8dc; }
+  .oc-actions select { padding: 10px; font-size: 15px; margin-bottom: 8px; width: 100%; }
+  .oc-actions button { width: 100%; white-space: normal; margin-top: 6px; padding: 13px 16px; font-size: 16px; }
+  .oc-actions button.green { background: #2e7d32; }
+  .oc-actions button.blue { background: #1565c0; }
+  .oc-actions button.reject { background: #fff; color: #b3261e; border: 1px solid #e0b4af; font-size: 14px; padding: 10px; }
+  .oc-actions .eta { font-size: 13px; color: #555; margin: 6px 0 4px; }
+  .rej-info { background: #fdecea; color: #8c1d18; padding: 8px 10px; border-radius: 8px; font-size: 14px; margin-top: 8px; }
+
+  /* Окно «Отклонить» */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+  .modal-box { background: #fff; border-radius: 14px; padding: 20px; width: 100%; max-width: 460px; max-height: 92vh; overflow: auto; }
+  .modal-box h3 { margin: 0 0 8px; font-size: 20px; }
+  .modal-box p { margin: 0 0 12px; font-size: 14px; color: #555; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .chip { background: #f2ece2; color: #333; padding: 8px 12px; font-size: 13px; border-radius: 16px; font-weight: 500; }
+  .modal-box textarea { width: 100%; min-height: 84px; padding: 10px; font-size: 16px; font-family: inherit; border: 1px solid #d9d2c6; border-radius: 10px; }
+  .modal-box button.grey { background: #eee; color: #333; }
+  .modal-box .btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .modal-box .btns button { flex: 1 1 160px; }
+  .err { color: #b3261e; font-size: 14px; margin-top: 8px; }
+
+  /* Статистика (спрятана, открывается кнопкой) */
+  #stats-btn { background: #eee; color: #444; font-weight: 500; margin-right: 8px; }
+  #stats { display: none; background: #fff; border: 1px solid #e7e0d6; border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+  .st-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .st-card { background: #f7f2ea; border-radius: 10px; padding: 12px; }
+  .st-card .p { font-size: 13px; color: #777; font-weight: 700; margin-bottom: 4px; }
+  .st-card .rv { font-size: 24px; font-weight: 800; }
+  .st-card .sub { font-size: 13px; color: #555; margin-top: 4px; }
+  .st-note { font-size: 12px; color: #999; margin-top: 8px; }
+
+  /* Описание и вес блюда */
+  .det-panel textarea { width: 100%; min-height: 110px; padding: 10px; font-size: 15px; font-family: inherit; border: 1px solid #d9d2c6; border-radius: 8px; }
+  .det-panel input[type=text] { width: 160px; padding: 9px 8px; font-size: 16px; border: 1px solid #d9d2c6; border-radius: 8px; }
+
+  /* Чат */
+  #chat-view { display: none; }
+  .chat-wrap { display: grid; grid-template-columns: 300px 1fr; gap: 14px; }
+  .ch-list { background: #fff; border: 1px solid #e7e0d6; border-radius: 12px; overflow: hidden; max-height: 70vh; overflow-y: auto; }
+  .ch-item { padding: 12px 14px; border-bottom: 1px solid #f0e9dd; cursor: pointer; }
+  .ch-item.active { background: #f2ece2; }
+  .ch-item .n { font-weight: 700; font-size: 15px; display: flex; justify-content: space-between; gap: 8px; }
+  .ch-item .t { font-size: 13px; color: #777; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+  .ch-item .u { background: #d84315; color: #fff; border-radius: 11px; min-width: 22px; text-align: center; font-size: 12px; padding: 1px 6px; }
+  .ch-conv { background: #fff; border: 1px solid #e7e0d6; border-radius: 12px; display: flex; flex-direction: column; height: 70vh; }
+  .ch-top { padding: 10px 14px; border-bottom: 1px solid #f0e9dd; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .ch-back { display: none; background: #eee; color: #333; padding: 6px 12px; }
+  .ch-msgs { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .cm { max-width: 80%; padding: 9px 12px; border-radius: 12px; font-size: 15px; white-space: pre-wrap; word-break: break-word; }
+  .cm .tm { display: block; font-size: 11px; opacity: .6; margin-top: 3px; }
+  .cm.client { background: #f2ece2; align-self: flex-start; }
+  .cm.operator { background: #2e7d32; color: #fff; align-self: flex-end; }
+  .cm.system { background: #eef3f8; color: #667; align-self: center; font-size: 13px; }
+  .ch-send { display: flex; gap: 8px; padding: 10px; border-top: 1px solid #f0e9dd; }
+  .ch-send textarea { flex: 1; padding: 10px; font-size: 16px; font-family: inherit; border: 1px solid #d9d2c6; border-radius: 10px; resize: none; height: 46px; }
+  .ch-empty { color: #999; text-align: center; padding: 40px 14px; }
+
+  /* Телефон */
+  @media (max-width: 720px) {
+    body { padding: 10px 10px 40px; }
+    h1 { font-size: 22px; }
+    .brand img { width: 40px; height: 40px; }
+    #top-bar { gap: 8px; }
+    #sound-state { display: none; }
+    #top-bar > div:last-child { display: flex; gap: 6px; width: 100%; }
+    #top-bar > div:last-child button { flex: 1; padding: 10px 8px; font-size: 14px; margin: 0; }
+    #alert { font-size: 16px; padding: 12px 14px; }
+    .tabs { flex-wrap: nowrap; overflow-x: auto; margin-left: -10px; margin-right: -10px; padding: 0 10px 4px; -webkit-overflow-scrolling: touch; }
+    .tab { padding: 10px 14px; white-space: nowrap; flex: none; font-size: 14px; }
+    .ocards { grid-template-columns: 1fr; }
+    .oc-phone { font-size: 20px; padding: 6px 0; }
+    .st-grid { grid-template-columns: 1fr; }
+    .menu-row { flex-direction: column; align-items: stretch; }
+    .menu-actions { flex-wrap: wrap; gap: 8px; justify-content: space-between; }
+    .nut-row .nut-field input, .det-panel input[type=text] { width: 100%; }
+    .nut-field { flex: 1 1 40%; }
+    .chat-wrap { grid-template-columns: 1fr; }
+    .chat-wrap.open .ch-list { display: none; }
+    .chat-wrap:not(.open) .ch-conv { display: none; }
+    .ch-back { display: inline-block; }
+    .ch-conv { height: 75vh; }
+    .cm { max-width: 90%; }
+    #login { margin: 40px auto; }
+  }
 </style>
 </head>
 <body>
@@ -107,6 +225,7 @@
     </div>
     <div>
       <span id="sound-state">🔇 Звук выключен</span>
+      <button id="stats-btn" onclick="toggleStats()">📊 Выручка</button>
       <button id="sound-btn" onclick="toggleSound()">Включить звук</button>
     </div>
   </div>
@@ -116,12 +235,41 @@
     <button id="alert-sound" onclick="toggleSound()" style="display:none;">Включить звук</button>
   </div>
 
+  <div id="stats">
+    <div class="st-grid" id="st-grid"><div class="st-card">Загружаем…</div></div>
+    <div class="st-note">Считаются оплаченные заказы (кроме отклонённых), время московское. Неделя — с понедельника, месяц — с 1-го числа. Выручка — с доставкой.</div>
+  </div>
+
   <div class="tabs" id="tabs"></div>
   <div id="list"></div>
+  <div id="chat-view">
+    <div class="chat-wrap" id="chat-wrap">
+      <div class="ch-list" id="ch-list"></div>
+      <div class="ch-conv">
+        <div class="ch-top"><button class="ch-back" onclick="closeThread()">← Назад</button><span id="ch-title">Выберите переписку</span></div>
+        <div class="ch-msgs" id="ch-msgs"><div class="ch-empty">Выберите переписку слева</div></div>
+        <div class="ch-send"><textarea id="ch-text" placeholder="Ваш ответ клиенту…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea><button onclick="sendChat()">Отправить</button></div>
+      </div>
+    </div>
+  </div>
   <div id="menu-view">
-    <div class="menu-hint">Переключатель выключен — блюда нет на сайте, его нельзя заказать. Включите обратно, когда блюдо снова есть. Кнопка «КБЖУ» — поменять калории, белки, жиры и углеводы блюда.</div>
+    <div class="menu-hint">Здесь можно быстро поменять цену, описание и состав, вес и КБЖУ блюда. Переключатель выключен — блюда нет на сайте, его нельзя заказать; включите обратно, когда блюдо снова есть.</div>
     <input type="search" id="menu-search" placeholder="Найти блюдо…" oninput="renderMenu()" />
     <div id="menu-list"></div>
+  </div>
+</div>
+
+<div id="rej" class="modal" style="display:none;">
+  <div class="modal-box">
+    <h3>Отклонить заказ №<span id="rej-num"></span></h3>
+    <p>Клиент увидит причину на странице заказа. Деньги вернутся на его карту автоматически (банк обычно зачисляет за несколько дней). Если курьер уже вызван — заявка отменится.</p>
+    <div class="chips" id="rej-chips"></div>
+    <textarea id="rej-text" placeholder="Причина, например: закончился хинкал"></textarea>
+    <div class="err" id="rej-err"></div>
+    <div class="btns">
+      <button id="rej-go" onclick="doReject()" style="background:#b3261e;">Отклонить и вернуть деньги</button>
+      <button class="grey" onclick="closeReject()">Не отклонять</button>
+    </div>
   </div>
 </div>
 
@@ -131,11 +279,12 @@
   const TABS = [
     // «Новые» — главная страница повара: тут и ждущие принятия, и принятые (готовим / везут).
     // Принял заказ — он остаётся здесь, переключать вкладки не нужно. Цифра на вкладке — только число ждущих принятия.
-    { id: 'new',  title: 'Новые',        hint: 'ждут принятия',   match: (o) => ['оплачен', 'принят', 'готов', 'передан курьеру'].includes(o.status), count: (o) => o.status === 'оплачен' },
-    { id: 'work', title: 'В работе',     hint: '',                match: (o) => ['принят', 'готов', 'передан курьеру'].includes(o.status) },
-    { id: 'done', title: 'Завершённые',  hint: '',                match: (o) => ['доставлен', 'отменён'].includes(o.status) },
+    { id: 'new',  title: 'Новые',        hint: 'ждут принятия',   match: (o) => ['оплачен', 'принят', 'готов', 'ищем курьера', 'передан курьеру'].includes(o.status), count: (o) => o.status === 'оплачен' },
+    { id: 'work', title: 'В работе',     hint: '',                match: (o) => ['принят', 'готов', 'ищем курьера', 'передан курьеру'].includes(o.status) },
+    { id: 'done', title: 'Завершённые',  hint: '',                match: (o) => ['доставлен', 'отменён', 'отклонён'].includes(o.status) },
     { id: 'all',  title: 'Все заказы',   hint: '',                match: () => true },
-    { id: 'menu', title: 'Стоп-лист',    hint: '',                match: () => false, menu: true },
+    { id: 'chat', title: '💬 Чат',       hint: '',                match: () => false, chat: true },
+    { id: 'menu', title: 'Меню',         hint: '',                match: () => false, menu: true },
   ];
   let menuItems = [];
 
@@ -161,8 +310,8 @@
   }
   function statusClass(status) {
     if (status === 'оплачен') return 'status-paid';
-    if (status === 'отменён') return 'status-canceled';
-    if (['принят', 'готов', 'передан курьеру'].includes(status)) return 'status-work';
+    if (status === 'отменён' || status === 'отклонён') return 'status-canceled';
+    if (['принят', 'готов', 'ищем курьера', 'передан курьеру'].includes(status)) return 'status-work';
     if (status === 'доставлен') return 'status-paid';
     return 'status-pending';
   }
@@ -347,24 +496,31 @@
   }
 
   // ---------- Кнопки смены статуса ----------
+  const rejectBtn = (o) => `<button class="reject" onclick="openReject('${esc(o.id)}')">✖ Отклонить заказ (с причиной)</button>`;
   function actionHtml(o) {
     const id = esc(o.id);
     if (o.status === 'оплачен') {
       return `<select id="prep-${id}">
           <option value="20">Готовим 20 мин</option>
-          <option value="30" selected>Готовим 30 мин</option>
+          <option value="30">Готовим 30 мин</option>
           <option value="40">Готовим 40 мин</option>
+          <option value="50" selected>Готовим 50 мин</option>
           <option value="60">Готовим 60 мин</option>
+          <option value="75">Готовим 75 мин</option>
         </select>
-        <button class="green" onclick="setStatus('${id}','принят')">✅ Принять заказ</button>`;
+        <button class="green" onclick="setStatus('${id}','принят')">✅ Принять заказ</button>${rejectBtn(o)}`;
     }
     if (o.status === 'принят') {
       const eta = o.readyEta ? new Date(o.readyEta).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '';
       return `<div class="eta">Готовим${eta ? ' до ' + eta : ''}</div>
-        <button onclick="setStatus('${id}','готов')">🍳 Заказ готов</button>${courierPlanHtml(o)}${courierHtml(o)}`;
+        <button onclick="setStatus('${id}','готов')">🍳 Заказ готов</button>${courierPlanHtml(o)}${courierHtml(o)}${rejectBtn(o)}`;
     }
     if (o.status === 'готов') {
-      return `<div class="eta">Заказ готов, ищем курьера</div>${courierHtml(o)}
+      return `<div class="eta">Заказ готов. Нажмите, когда начнёте искать курьера — клиент увидит это на странице заказа.</div>
+        <button class="blue" onclick="setStatus('${id}','ищем курьера')">🔎 Ищем курьера</button>${courierHtml(o)}${rejectBtn(o)}`;
+    }
+    if (o.status === 'ищем курьера') {
+      return `<div class="eta">🔎 Ищем курьера. Когда курьер забрал заказ и поехал — нажмите кнопку ниже.</div>${courierHtml(o)}
         <select id="deliv-${id}">
           <option value="10">Курьер довезёт ~10 мин</option>
           <option value="15">~15 мин</option>
@@ -372,10 +528,57 @@
           <option value="30">~30 мин</option>
           <option value="40">~40 мин</option>
         </select>
-        <button onclick="setStatus('${id}','передан курьеру')">🛵 Передан курьеру</button>`;
+        <button class="green" onclick="setStatus('${id}','передан курьеру')">🛵 Курьер забрал и едет</button>${rejectBtn(o)}`;
     }
-    if (o.status === 'передан курьеру') return courierHtml(o) + `<button class="green" onclick="setStatus('${id}','доставлен')">📦 Доставлен</button>`;
+    if (o.status === 'передан курьеру') return `<div class="eta">Курьер едет к клиенту</div>` + courierHtml(o) + `<button class="green" onclick="setStatus('${id}','доставлен')">📦 Доставлен</button>`;
+    if (o.status === 'отклонён') return `<div class="rej-info"><b>Отклонён:</b> ${esc(o.rejectReason || '')}${o.refundStatus ? '<br>Возврат денег: ' + (o.refundStatus === 'succeeded' ? 'выполнен ✓' : 'оформлен, ждём банк') : ''}</div>`;
     return '';
+  }
+
+  // ---------- Отклонение заказа ----------
+  let rejectId = null;
+  const REJ_REASONS = ['Закончились продукты', 'Блюдо временно недоступно', 'Кухня закрывается', 'Слишком далеко, нет курьера', 'Не дозвонились до вас'];
+  function openReject(id) {
+    const o = orders.find((x) => x.id === id); if (!o) return;
+    rejectId = id;
+    document.getElementById('rej-num').textContent = o.number || '';
+    document.getElementById('rej-text').value = '';
+    document.getElementById('rej-err').textContent = '';
+    document.getElementById('rej-chips').innerHTML = REJ_REASONS.map((r) => `<button type="button" class="chip" onclick="document.getElementById('rej-text').value=this.textContent">${esc(r)}</button>`).join('');
+    document.getElementById('rej').style.display = 'flex';
+  }
+  function closeReject() { rejectId = null; document.getElementById('rej').style.display = 'none'; }
+  async function doReject() {
+    const reason = document.getElementById('rej-text').value.trim();
+    const err = document.getElementById('rej-err');
+    if (reason.length < 3) { err.textContent = 'Напишите причину — клиент её увидит'; return; }
+    const btn = document.getElementById('rej-go'); btn.disabled = true; btn.textContent = 'Возвращаем деньги…'; err.textContent = '';
+    try {
+      const res = await fetch('/api/admin/orders/' + encodeURIComponent(rejectId) + '/reject', { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ reason }) });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) { err.textContent = d.error || 'Не удалось отклонить'; }
+      else { closeReject(); if (d.courierNote) alert(d.courierNote); }
+    } catch (e) { err.textContent = 'Нет связи с сайтом. Заказ мог не отклониться — проверьте список.'; }
+    btn.disabled = false; btn.textContent = 'Отклонить и вернуть деньги';
+    await loadOrders();
+  }
+
+  // ---------- Статистика (спрятана) ----------
+  let statsOpen = false;
+  async function toggleStats() {
+    statsOpen = !statsOpen;
+    document.getElementById('stats').style.display = statsOpen ? 'block' : 'none';
+    document.getElementById('stats-btn').textContent = statsOpen ? '📊 Скрыть' : '📊 Выручка';
+    if (statsOpen) loadStats();
+  }
+  async function loadStats() {
+    try {
+      const res = await fetch('/api/admin/stats', { cache: 'no-store', headers: authHeaders() });
+      const d = await res.json();
+      const money = (n) => Number(n).toLocaleString('ru-RU') + ' ₽';
+      const card = (t, x) => `<div class="st-card"><div class="p">${t}</div><div class="rv">${money(x.revenue)}</div><div class="sub">Заказов: <b>${x.orders}</b><br>Средний чек: <b>${money(x.avg)}</b></div></div>`;
+      document.getElementById('st-grid').innerHTML = card('Сегодня', d.day) + card('Эта неделя', d.week) + card('Этот месяц', d.month);
+    } catch (e) { document.getElementById('st-grid').innerHTML = '<div class="st-card">Не удалось загрузить</div>'; }
   }
 
   async function setStatus(id, status) {
@@ -400,12 +603,12 @@
   function renderTabs() {
     const box = document.getElementById('tabs');
     box.innerHTML = TABS.map((t) => {
-      const n = t.menu ? menuItems.filter((m) => m.stop).length : orders.filter(t.count || t.match).length;
-      const hot = t.id === 'new' && n > 0 ? ' hot' : '';
+      const n = t.chat ? chatUnread : t.menu ? menuItems.filter((m) => m.stop).length : orders.filter(t.count || t.match).length;
+      const hot = (t.id === 'new' || t.chat) && n > 0 ? ' hot' : '';
       return `<button class="tab${currentTab === t.id ? ' active' : ''}${hot}" onclick="selectTab('${t.id}')">${t.title}<span class="cnt">${n}</span></button>`;
     }).join('');
   }
-  function selectTab(id) { currentTab = id; if (id === 'menu') { renderMenu(); loadMenu(); } renderAll(); }
+  function selectTab(id) { currentTab = id; if (id === 'menu') { renderMenu(); loadMenu(); } if (id === 'chat') loadChat(); renderAll(); }
 
   function waitText(o) {
     const mins = Math.max(0, Math.round((Date.now() - new Date(o.paidAt || o.createdAt).getTime()) / 60000));
@@ -419,7 +622,7 @@
       if (!res.ok) return;
       menuItems = await res.json();
       renderTabs();
-      if (currentTab === 'menu' && !editingId && !priceEditId) renderMenu();
+      if (currentTab === 'menu' && !editingId && !priceEditId && !detId) renderMenu();
     } catch (e) { /* нет связи — попробуем позже */ }
   }
 
@@ -488,6 +691,36 @@
     if (confirm('Вернуть цену, которая была задана в меню изначально?')) sendPrice(id, vid, null);
   }
 
+  // ---------- Описание, состав и вес ----------
+  let detId = null;
+  function detPanel(m) {
+    const vw = (m.variantWeights || []).map((v) => `<label class="nut-field">Вес: ${esc(v.label)}<input type="text" id="dv-${esc(m.id)}-${esc(v.id)}" value="${esc(v.weight)}" placeholder="например 350 г" /></label>`).join('');
+    return `<div class="nut-panel det-panel"><div class="nut-note">Состав блюда — в описании (например: «Куриное филе, лаваш, маринованный лук»). Изменения сразу появятся на сайте.${m.isCombo ? ' Набор чуду собирается клиентом из готового списка видов — сам список здесь не меняется.' : ''}</div>
+      <div class="nut-row"><label class="nut-field" style="flex:1 1 100%">Описание и состав<textarea id="dd-${esc(m.id)}">${esc(m.description)}</textarea></label></div>
+      <div class="nut-row">${vw ? vw : `<label class="nut-field">Вес<input type="text" id="dw-${esc(m.id)}" value="${esc(m.weight)}" placeholder="например 350 г" /></label>`}
+        <button class="nut-save" onclick="saveDet('${esc(m.id)}')">Сохранить</button>
+        <span class="nut-msg" id="dm-${esc(m.id)}"></span></div></div>`;
+  }
+  function toggleDet(id) { detId = detId === id ? null : id; renderMenu(); }
+  async function saveDet(id) {
+    const m = menuItems.find((x) => x.id === id);
+    const body = { description: document.getElementById('dd-' + id).value.trim() };
+    const w = document.getElementById('dw-' + id);
+    if (w) body.weight = w.value.trim();
+    if (m.variantWeights && m.variantWeights.length) {
+      body.variantWeights = {};
+      m.variantWeights.forEach((v) => { const el = document.getElementById('dv-' + id + '-' + v.id); if (el) body.variantWeights[v.id] = el.value.trim(); });
+    }
+    if (!body.description) { alert('Описание не должно быть пустым'); return; }
+    try {
+      const res = await fetch('/api/admin/products/' + encodeURIComponent(id) + '/details', { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(body) });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) { alert(d.error || 'Не удалось сохранить'); return; }
+      await loadMenu();
+      const el = document.getElementById('dm-' + id); if (el) el.textContent = 'Сохранено ✓';
+    } catch (e) { alert('Не удалось сохранить. Проверьте интернет.'); }
+  }
+
   function nutTargets(m) {
     return m.variants && m.variants.length
       ? m.variants.map((v) => ({ vid: v.id, label: v.label, per100: v.per100 }))
@@ -550,6 +783,7 @@
           <div><div class="nm">${esc(m.name)}</div><div class="pr">${typeof m.price === 'number' ? esc(m.price) + ' ₽' : 'цена не указана'}</div></div>
           <div class="menu-actions">
             <button class="nut-btn${priceEditId === m.id ? ' open' : ''}" onclick="togglePrice('${esc(m.id)}')">Цена</button>
+            <button class="nut-btn${detId === m.id ? ' open' : ''}" onclick="toggleDet('${esc(m.id)}')">Описание и вес</button>
             <button class="nut-btn${editingId === m.id ? ' open' : ''}" onclick="toggleNut('${esc(m.id)}')">КБЖУ</button>
             <label class="sw">
               <input type="checkbox" ${m.stop ? '' : 'checked'} onchange="toggleStop('${esc(m.id)}', !this.checked)" />
@@ -557,7 +791,7 @@
               <span class="lbl">${m.stop ? 'На стопе' : 'В продаже'}</span>
             </label>
           </div>
-        </div>${priceEditId === m.id ? pricePanel(m) : ''}${editingId === m.id ? nutPanel(m) : ''}`).join('')
+        </div>${priceEditId === m.id ? pricePanel(m) : ''}${detId === m.id ? detPanel(m) : ''}${editingId === m.id ? nutPanel(m) : ''}`).join('')
     ).join('');
   }
 
@@ -583,9 +817,11 @@
 
   function renderList() {
     const tab = TABS.find((t) => t.id === currentTab);
-    const isMenu = !!tab.menu;
-    document.getElementById('list').style.display = isMenu ? 'none' : '';
+    const isMenu = !!tab.menu, isChat = !!tab.chat;
+    document.getElementById('list').style.display = (isMenu || isChat) ? 'none' : '';
     document.getElementById('menu-view').style.display = isMenu ? 'block' : 'none';
+    document.getElementById('chat-view').style.display = isChat ? 'block' : 'none';
+    if (isChat) { renderChatList(); return; }
     if (isMenu) return; // список стоп-листа обновляется только при действиях, чтобы не прыгал
     let rows = orders.filter(tab.match);
     // на вкладке «Новые» сверху — те, что ждут принятия, ниже — уже принятые
@@ -601,26 +837,120 @@
     const prevSel = {};
     document.querySelectorAll('select[id^="prep-"], select[id^="deliv-"]').forEach((x) => { prevSel[x.id] = x.value; });
 
-    box.innerHTML = `<div class="table-wrap"><table>
-      <thead><tr><th>№</th><th>Дата</th><th>Статус</th><th>Сумма</th><th>Покупатель</th><th>Телефон</th><th>Адрес</th><th>Состав заказа</th><th>Приборы</th><th>Действие</th></tr></thead>
-      <tbody>${rows.map((o) => {
-        const c = o.customer || {};
-        const itemsText = (o.items || []).map((it) => `${esc(it.name)} × ${esc(it.qty)}`).join(', ');
-        const date = new Date(o.createdAt).toLocaleString('ru-RU');
-        return `<tr class="${o.status === 'оплачен' ? 'waiting' : ''}">
-          <td><b>${o.number ? esc(o.number) : '—'}</b></td>
-          <td>${date}</td>
-          <td class="${statusClass(o.status)}">${esc(o.status)}${o.status === 'оплачен' ? `<div class="wait">${waitText(o)}</div>` : ''}</td>
-          <td>${esc(o.total)} ₽${o.deliveryFee ? `<div style="font-size:12px;color:#888">вкл. доставка ${esc(o.deliveryFee)} ₽</div>` : (o.subtotal ? '<div style="font-size:12px;color:#2e7d32">доставка бесплатно</div>' : '')}</td>
-          <td>${esc(c.name)}</td>
-          <td>${esc(c.phone)}</td>
-          <td>${esc(c.address)}${c.comment ? '<br><em>' + esc(c.comment) + '</em>' : ''}</td>
-          <td>${itemsText}</td>
-          <td>${esc(o.cutleryCount || 0)}</td>
-          <td class="act">${actionHtml(o)}</td>
-        </tr>`;
-      }).join('')}</tbody></table></div>`;
+    box.innerHTML = `<div class="ocards">${rows.map(orderCard).join('')}</div>`;
     Object.keys(prevSel).forEach((id) => { const x = document.getElementById(id); if (x) x.value = prevSel[id]; });
+  }
+
+  // Состав: обычные блюда — строкой; набор — названием и списком «что внутри»
+  function partsOf(it) {
+    if (Array.isArray(it.parts)) return { set: it.set || it.name, parts: it.parts };
+    const m = String(it.name || '').match(/^(.+?): (.+ ×\d+)$/);   // старые заказы: «Набор: Блюдо ×3, Блюдо ×2»
+    if (!m) return null;
+    return { set: m[1], parts: m[2].split(', ').map((p) => { const q = p.match(/^(.*) ×(\d+)$/); return q ? { name: q[1], count: Number(q[2]) } : { name: p, count: 1 }; }) };
+  }
+  function itemsHtml(o) {
+    return '<ul class="items">' + (o.items || []).map((it) => {
+      const ps = partsOf(it);
+      const sum = it.price === 0 ? '🎁 подарок' : esc(it.price * it.qty) + ' ₽';
+      const main = `<div class="it-main"><span class="it-name">${esc(ps ? ps.set : it.name)}</span><span class="it-qty">× ${esc(it.qty)}</span><span class="it-sum">${sum}</span></div>`;
+      const sub = ps ? `<div class="it-sub">Внутри набора${Number(it.qty) > 1 ? ' (на каждый набор)' : ''}:</div><ul class="parts">${ps.parts.map((p) => `<li>${esc(p.name)} — <b>${esc(p.count)} шт</b></li>`).join('')}</ul>` : '';
+      return `<li>${main}${sub}</li>`;
+    }).join('') + '</ul>';
+  }
+  function orderCard(o) {
+    const c = o.customer || {};
+    const t = new Date(o.createdAt).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const raw = String(c.phone || '').replace(/\D/g, '');
+    const phone = /^[78]\d{10}$/.test(raw) ? `+7 (${raw.slice(1, 4)}) ${raw.slice(4, 7)}-${raw.slice(7, 9)}-${raw.slice(9)}` : String(c.phone || '');
+    const tel = phone.replace(/[^\d+]/g, '');
+    const fee = o.deliveryFee ? `Доставка: ${esc(o.deliveryFee)} ₽` : (o.subtotal ? 'Доставка: бесплатно' : '');
+    return `<div class="ocard${o.status === 'оплачен' ? ' waiting' : ''}${o.status === 'отклонён' ? ' rejected' : ''}">
+      <div class="oc-head">
+        <div><div class="oc-num">№ ${o.number ? esc(o.number) : '—'}</div><div class="oc-time">${esc(t)}${o.status === 'оплачен' ? ` · <span class="wait" style="display:inline">${waitText(o)}</span>` : ''}</div></div>
+        <span class="oc-status ${statusClass(o.status)}">${esc(o.status)}</span>
+      </div>
+      <div class="oc-body">
+        <div class="oc-sec">
+          <div class="oc-label">Клиент</div>
+          <div class="oc-client">${esc(c.name)}</div>
+          ${phone ? `<a class="oc-phone" href="tel:${esc(tel)}">📞 ${esc(phone)}</a>` : ''}
+          <div class="oc-addr">📍 ${esc(c.address)}</div>
+          ${c.comment ? `<div class="oc-comment">💬 ${esc(c.comment)}</div>` : ''}
+        </div>
+        <div class="oc-sec">
+          <div class="oc-label">Что готовить</div>
+          ${itemsHtml(o)}
+          <div class="oc-total"><span>${fee}${fee && o.cutleryCount ? ' · ' : ''}${o.cutleryCount ? '🍴 приборов: ' + esc(o.cutleryCount) : ''}</span><span>Итого <b>${esc(o.total)} ₽</b></span></div>
+        </div>
+      </div>
+      ${actionHtml(o) ? `<div class="oc-actions">${actionHtml(o)}</div>` : ''}
+    </div>`;
+  }
+
+
+  // ---------- Чат с клиентами ----------
+  let chatThreads = [], chatUnread = 0, chatThread = null, chatMsgs = [], chatSeenUnread = 0;
+  function chatDing() {
+    if (!soundOn || !audioCtx) return;
+    const t = audioCtx.currentTime + 0.02;
+    pluck(1318.5, t, 0.3, 0.9); pluck(1760, t + 0.14, 0.45, 0.9);
+  }
+  async function loadChat() {
+    try {
+      const res = await fetch('/api/admin/chat', { cache: 'no-store', headers: authHeaders() });
+      if (!res.ok) return;
+      chatThreads = await res.json();
+      chatUnread = chatThreads.reduce((a, t) => a + t.unread, 0);
+      if (chatUnread > chatSeenUnread) chatDing();
+      chatSeenUnread = chatUnread;
+      if (chatThread) await loadThread(false);
+      renderTabs();
+      if (currentTab === 'chat') renderChatList();
+      const base = waitingCount > 0 ? `(${waitingCount}) НОВЫЙ ЗАКАЗ — Дачная Беседка` : 'Заказы — Дачная Беседка';
+      document.title = chatUnread > 0 && waitingCount === 0 ? `💬 (${chatUnread}) Сообщение — Дачная Беседка` : base;
+    } catch (e) {}
+  }
+  function hm(iso) { return new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }); }
+  function renderChatList() {
+    const box = document.getElementById('ch-list');
+    const wrap = document.getElementById('chat-wrap');
+    wrap.classList.toggle('open', !!chatThread);
+    if (!chatThreads.length) { box.innerHTML = '<div class="ch-empty">Сообщений пока нет</div>'; }
+    else box.innerHTML = chatThreads.map((t) => `<div class="ch-item${chatThread === t.thread ? ' active' : ''}" onclick="openThread('${esc(t.thread)}')">
+      <div class="n"><span>${esc(t.name || 'Гость')}</span>${t.unread ? `<span class="u">${t.unread}</span>` : `<span style="font-weight:400;font-size:12px;color:#999">${hm(t.last.at)}</span>`}</div>
+      <div class="t">${t.last.sender === 'operator' ? 'Вы: ' : ''}${esc(t.last.text)}</div></div>`).join('');
+    renderConv();
+  }
+  function renderConv() {
+    const t = chatThreads.find((x) => x.thread === chatThread);
+    document.getElementById('ch-title').textContent = t ? (t.name || 'Гость') : 'Выберите переписку';
+    const box = document.getElementById('ch-msgs');
+    if (!chatThread) { box.innerHTML = '<div class="ch-empty">Выберите переписку слева</div>'; return; }
+    const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+    box.innerHTML = chatMsgs.map((m) => `<div class="cm ${esc(m.sender)}">${esc(m.text)}<span class="tm">${hm(m.at)}</span></div>`).join('');
+    if (atBottom) box.scrollTop = box.scrollHeight;
+  }
+  async function loadThread(scroll) {
+    const res = await fetch('/api/admin/chat/' + encodeURIComponent(chatThread), { cache: 'no-store', headers: authHeaders() });
+    if (!res.ok) return;
+    chatMsgs = await res.json();
+    const t = chatThreads.find((x) => x.thread === chatThread);
+    if (t && t.unread) { chatUnread -= t.unread; t.unread = 0; chatSeenUnread = chatUnread; renderTabs(); }
+    renderConv();
+    if (scroll) { const box = document.getElementById('ch-msgs'); box.scrollTop = box.scrollHeight; }
+  }
+  async function openThread(id) { chatThread = id; chatMsgs = []; renderChatList(); await loadThread(true); renderChatList(); }
+  function closeThread() { chatThread = null; renderChatList(); }
+  async function sendChat() {
+    const el = document.getElementById('ch-text');
+    const text = el.value.trim();
+    if (!text || !chatThread) return;
+    el.value = '';
+    try {
+      const res = await fetch('/api/admin/chat/' + encodeURIComponent(chatThread), { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ text }) });
+      if (!res.ok) { el.value = text; alert('Не удалось отправить'); return; }
+      await loadChat(); await loadThread(true);
+    } catch (e) { el.value = text; alert('Нет связи с сайтом'); }
   }
 
   function renderAll() {
@@ -672,8 +1002,10 @@
       loadOrders();
       loadMenu();
       loadCourierCfg();
+      loadChat();
       setInterval(loadOrders, REFRESH_MS);
-      setInterval(() => { if (currentTab === 'menu' && !editingId) loadMenu(); }, 15000);
+      setInterval(loadChat, REFRESH_MS);
+      setInterval(() => { if (currentTab === 'menu' && !editingId && !priceEditId && !detId) loadMenu(); }, 15000);
     }
   }
 
