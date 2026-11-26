@@ -31,14 +31,9 @@ function fileWrite(data) {
 }
 
 // ---------- Запуск: подключаемся к базе, если она указана ----------
-async function init() {
-  if (!process.env.DATABASE_URL) {
-    console.warn(
-      '⚠ DATABASE_URL не задан: заказы хранятся во временном файле и пропадут при перезапуске сайта!'
-    );
-    return mode;
-  }
-  try {
+async function connectOnce() {
+  {
+    try {
     const { Pool } = require('pg');
     pool = new Pool({
       connectionString: process.env.DATABASE_URL,
@@ -46,6 +41,8 @@ async function init() {
       max: 5,
       connectionTimeoutMillis: 8000,
     });
+    // если база перезапустится позже — не падаем, запросы просто получат ошибку и повторятся
+    pool.on('error', (e) => console.error('Ошибка соединения с базой:', e.message));
     await pool.query(`
       CREATE TABLE IF NOT EXISTS orders (
         id         TEXT PRIMARY KEY,
@@ -98,14 +95,60 @@ async function init() {
     await pool.query('CREATE SEQUENCE IF NOT EXISTS order_number_seq START 1001');
     mode = 'postgres';
     console.log('✔ Заказы хранятся в базе данных PostgreSQL');
-  } catch (err) {
-    console.error('✖ Не удалось подключиться к базе данных:', err.message);
-    console.warn('⚠ Включён временный режим: заказы пишутся в файл и пропадут при перезапуске!');
-    pool = null;
-    mode = 'file';
+    } catch (err) {
+      try { if (pool) await pool.end(); } catch (e) {}
+      pool = null;
+      throw err;
+    }
   }
+}
+
+// Перенос заказов, принятых во временном режиме, в базу (после переподключения)
+async function migrateFileOrders() {
+  const rows = fileRead();
+  for (const o of rows) {
+    try { await pool.query('INSERT INTO orders (id, data) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING', [o.id, o]); } catch (e) {}
+  }
+  if (rows.length) console.log('✔ Перенесено заказов из временного файла в базу:', rows.length);
+}
+
+let reconnecting = false;
+function reconnectLoop() {
+  if (reconnecting) return;
+  reconnecting = true;
+  const tick = async () => {
+    try {
+      await connectOnce();
+      await migrateFileOrders();
+      reconnecting = false;
+    } catch (err) {
+      console.error('✖ База пока недоступна, пробуем снова через 30 с:', err.message);
+      setTimeout(tick, 30000).unref();
+    }
+  };
+  setTimeout(tick, 30000).unref();
+}
+
+async function init() {
+  if (!process.env.DATABASE_URL) {
+    console.warn('⚠ DATABASE_URL не задан: заказы хранятся во временном файле и пропадут при перезапуске сайта!');
+    return mode;
+  }
+  // База может перезапускаться (обслуживание хостинга) — пробуем несколько раз, а не сдаёмся сразу
+  for (let i = 1; i <= 6; i++) {
+    try { await connectOnce(); return mode; }
+    catch (err) {
+      console.error(`✖ Не удалось подключиться к базе данных (попытка ${i}/6):`, err.message);
+      if (i < 6) await new Promise((r) => setTimeout(r, 5000));
+    }
+  }
+  console.warn('⚠ Включён временный режим: заказы пишутся в файл. Сайт продолжит пробовать подключиться к базе сам.');
+  mode = 'file';
+  reconnectLoop();
   return mode;
 }
+
+
 
 function getMode() {
   return mode;
